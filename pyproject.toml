@@ -1,0 +1,186 @@
+[build-system]
+build-backend = "hatchling.build"
+
+requires = [ "hatchling" ]
+
+[project]
+name = "python-text-extraction-benchmarks"
+version = "0.1.0"
+description = "Comprehensive benchmarking suite for Python text extraction libraries"
+readme = "README.md"
+keywords = [
+  "benchmarking",
+  "comparison",
+  "document-processing",
+  "performance-testing",
+  "text-extraction",
+]
+license = { text = "MIT" }
+authors = [ { name = "Na'aman Hirschfeld", email = "nhirschfed@gmail.com" } ]
+requires-python = ">=3.13"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Text Processing :: General",
+  "Typing :: Typed",
+]
+
+dependencies = [
+  "anyio>=4.9.0",
+  "click>=8.2.1",
+  "docling>=2.15.0",
+  "kreuzberg>=3.3.0",
+  "markitdown>=0.0.1a2",
+  "matplotlib>=3.8.0",
+  "msgspec>=0.18.0",
+  "pandas>=2.2.0",
+  "psutil>=7.0.0",
+  "rich>=14.0.0",
+  "seaborn>=0.13.0",
+  "unstructured[all-docs]>=0.16.11",
+]
+
+scripts.benchmark = "python_text_extraction_benchmarks.cli:main"
+
+[dependency-groups]
+dev = [
+  "covdefaults>=2.3.0",
+  "mypy>=1.16.1",
+  "pandas-stubs>=2.2.0",
+  "pre-commit>=4.2.0",
+  "pytest>=8.4.1",
+  "pytest-asyncio>=0.25.0",
+  "pytest-cov>=6.2.1",
+  "pytest-mock>=3.14.0",
+  "pytest-timeout>=2.4.0",
+  "ruff>=0.12.1",
+  "types-psutil>=7.0.0",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+src = [ "python_text_extraction_benchmarks", "tests" ]
+format.docstring-code-line-length = 120
+format.docstring-code-format = true
+lint.select = [ "ALL" ]
+lint.ignore = [
+  "A005",    # Module shadows standard library (our types.py is fine)
+  "ANN201",  # Missing return type annotation (demo files)
+  "ANN401",  # Dynamically typed ANY for kwargs
+  "ARG002",  # Unused method argument (method signatures matter)
+  "BLE001",  # Blind exception catching (appropriate for CLI error handling)
+  "COM812",  # Conflicts with formatter
+  "D100",    # Missing docstring in public module
+  "D103",    # Missing docstring in public function
+  "D104",    # Missing docstring in public package
+  "D107",    # Missing docstring in __init__
+  "D205",    # 1 blank line required between summary line and description
+  "E501",    # Line too long, handled by ruff format
+  "EM",      # Exception messages,
+  "F841",    # Local variable assigned but never used (plotting variables)
+  "FBT",     # Boolean-typed positional argument in function definition
+  "FIX",     # We allow todo and fixme comments
+  "ISC001",  # Conflicts with formatter
+  "PD010",   # pivot vs pivot_table preference
+  "PLC0415", # Import should be at top-level (we use conditional imports)
+  "PLR2004", # Magic values (200 for text preview is fine)
+  "PLW0603", # Using global statement is discouraged
+  "PTH123",  # Path.open vs open (open is fine for simple cases)
+  "PYI036",  # __aexit__ annotations (Any is fine for this context)
+  "S110",    # try-except-pass detected
+  "S603",    # subprocess-without-shell-equals-true
+  "SIM105",  # Use contextlib.suppress (pass is clearer)
+  "T201",    # print found (demo file is fine)
+  "TC001",   # Type checking imports (not needed for this codebase)
+  "TC003",   # Type checking imports (not needed for this codebase)
+  "TD",      # We allow todo and fixme comments
+  "TRY",     # Try except block, rules are too strict
+  "UP036",   # Version blocks (we support Python 3.13+ only)
+]
+lint.per-file-ignores."tests/**/*.*" = [
+  "A005",    # Module shadows standard library
+  "ANN",     # Disable all annotation rules for tests
+  "ARG001",
+  "ARG002",  # Unused method argument
+  "BLE001",  # Disable blind exception catching for tests
+  "D",
+  "N806",    # Variable naming in tests
+  "N815",
+  "PD",
+  "PGH003",
+  "PLC",     # Disable all PLC rules for tests
+  "PLR0915",
+  "PLR2004",
+  "PT006",
+  "PT007",
+  "PT013",
+  "PT017",   # Assertion on exception in except block
+  "PT031",   # pytest.warns block should contain single statement
+  "RUF012",
+  "S",
+  "SIM117",  # Combine with statements
+  "SLF001",
+]
+lint.isort.known-first-party = [ "python_text_extraction_benchmarks", "tests" ]
+lint.mccabe.max-complexity = 15
+lint.pydocstyle.convention = "google"
+lint.pylint.max-args = 10
+lint.pylint.max-branches = 15
+lint.pylint.max-returns = 10
+
+[tool.codespell]
+ignore-words-list = "inh,te,tha,vie"
+
+[tool.pyproject-fmt]
+keep_full_version = true
+max_supported_python = "3.13"
+
+[tool.pytest.ini_options]
+timeout = 300
+asyncio_mode = "auto"
+filterwarnings = [
+  "ignore:Exception ignored in:pytest.PytestUnraisableExceptionWarning",
+  "ignore:pkg_resources is deprecated as an API:DeprecationWarning",
+  "ignore:ast.Num is deprecated and will be removed in Python 3.14:DeprecationWarning",
+  "ignore:datetime.datetime.utcfromtimestamp() is deprecated:DeprecationWarning",
+  "ignore:Deprecated call to `pkg_resources.declare_namespace('google')`:DeprecationWarning",
+]
+
+[tool.coverage.run]
+omit = [ "tests/*", "scripts/*" ]
+plugins = [ "covdefaults" ]
+source = [ "python_text_extraction_benchmarks" ]
+
+[tool.coverage.report]
+exclude_lines = [ 'if TYPE_CHECKING:', "except ImportError:" ]
+fail_under = 95
+
+[tool.mypy]
+packages = [ "python_text_extraction_benchmarks" ]
+python_version = "3.13"
+disable_error_code = 'import-untyped'
+implicit_reexport = false
+show_error_codes = true
+strict = true
+
+[[tool.mypy.overrides]]
+module = [
+  "rich.*",
+  "click.*",
+  "matplotlib.*",
+  "seaborn.*",
+  "pandas.*",
+  "docling.*",
+  "markitdown.*",
+  "unstructured.*",
+  "kreuzberg.*",
+]
+ignore_missing_imports = true
