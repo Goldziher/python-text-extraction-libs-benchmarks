@@ -52,6 +52,8 @@ scripts.benchmark = "python_text_extraction_benchmarks.cli:main"
 [dependency-groups]
 dev = [
   "covdefaults>=2.3.0",
+  "mdformat>=0.7.22",
+  "mdformat-mkdocs>=4.3.0",
   "mypy>=1.16.1",
   "pandas-stubs>=2.2.0",
   "pre-commit>=4.2.0",
