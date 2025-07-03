@@ -1,0 +1,471 @@
+name: Benchmark by Framework
+
+on:
+  workflow_dispatch:
+    inputs:
+      frameworks:
+        description: 'Frameworks to test (comma-separated or "all")'
+        required: false
+        default: 'all'
+        type: string
+      categories:
+        description: 'Categories to test (comma-separated or "all")'
+        required: false
+        default: 'tiny,small,medium'
+        type: string
+      iterations:
+        description: 'Number of iterations per test'
+        required: false
+        default: '3'
+        type: string
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      frameworks: ${{ steps.setup.outputs.frameworks }}
+      categories: ${{ steps.setup.outputs.categories }}
+      iterations: ${{ steps.setup.outputs.iterations }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Parameters
+        id: setup
+        run: |
+          # Parse frameworks
+          INPUT_FRAMEWORKS="${{ github.event.inputs.frameworks || 'all' }}"
+          if [ "$INPUT_FRAMEWORKS" = "all" ]; then
+            FRAMEWORKS='["kreuzberg_sync","kreuzberg_async","docling","markitdown","unstructured"]'
+          else
+            # Convert comma-separated to JSON array
+            FRAMEWORKS=$(echo "$INPUT_FRAMEWORKS" | sed 's/,/","/g' | sed 's/^/["/' | sed 's/$/"]/')
+          fi
+
+          # Parse categories
+          INPUT_CATEGORIES="${{ github.event.inputs.categories || 'tiny,small,medium' }}"
+          if [ "$INPUT_CATEGORIES" = "all" ]; then
+            CATEGORIES='["tiny","small","medium","large","huge"]'
+          else
+            # Convert comma-separated to JSON array
+            CATEGORIES=$(echo "$INPUT_CATEGORIES" | sed 's/,/","/g' | sed 's/^/["/' | sed 's/$/"]/')
+          fi
+
+          ITERATIONS="${{ github.event.inputs.iterations || '3' }}"
+
+          echo "frameworks=$FRAMEWORKS" >> $GITHUB_OUTPUT
+          echo "categories=$CATEGORIES" >> $GITHUB_OUTPUT
+          echo "iterations=$ITERATIONS" >> $GITHUB_OUTPUT
+
+          echo "Frameworks: $FRAMEWORKS"
+          echo "Categories: $CATEGORIES"
+          echo "Iterations: $ITERATIONS"
+
+  # Separate job for each framework
+  benchmark-kreuzberg-sync:
+    needs: prepare
+    if: contains(needs.prepare.outputs.frameworks, 'kreuzberg_sync')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        category: ${{ fromJson(needs.prepare.outputs.categories) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Dependencies
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Install APT packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+
+      - name: Run Benchmark
+        run: |
+          uv run python -m src.cli benchmark \
+            --framework kreuzberg_sync \
+            --category ${{ matrix.category }} \
+            --iterations ${{ needs.prepare.outputs.iterations }} \
+            --warmup-runs 1 \
+            --timeout 300 \
+            --continue-on-error \
+            --output-dir "results-kreuzberg_sync-${{ matrix.category }}"
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-kreuzberg_sync-${{ matrix.category }}-${{ github.run_id }}
+          path: results-kreuzberg_sync-${{ matrix.category }}/
+          retention-days: 30
+
+  benchmark-kreuzberg-async:
+    needs: prepare
+    if: contains(needs.prepare.outputs.frameworks, 'kreuzberg_async')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        category: ${{ fromJson(needs.prepare.outputs.categories) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Dependencies
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Install APT packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+
+      - name: Run Benchmark
+        run: |
+          uv run python -m src.cli benchmark \
+            --framework kreuzberg_async \
+            --category ${{ matrix.category }} \
+            --iterations ${{ needs.prepare.outputs.iterations }} \
+            --warmup-runs 1 \
+            --timeout 300 \
+            --continue-on-error \
+            --output-dir "results-kreuzberg_async-${{ matrix.category }}"
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-kreuzberg_async-${{ matrix.category }}-${{ github.run_id }}
+          path: results-kreuzberg_async-${{ matrix.category }}/
+          retention-days: 30
+
+  benchmark-docling:
+    needs: prepare
+    if: contains(needs.prepare.outputs.frameworks, 'docling')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90  # Give docling more time
+    strategy:
+      fail-fast: false
+      matrix:
+        category: ${{ fromJson(needs.prepare.outputs.categories) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Dependencies
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Install APT packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+
+      - name: Run Benchmark
+        run: |
+          uv run python -m src.cli benchmark \
+            --framework docling \
+            --category ${{ matrix.category }} \
+            --iterations ${{ needs.prepare.outputs.iterations }} \
+            --warmup-runs 1 \
+            --timeout 300 \
+            --continue-on-error \
+            --output-dir "results-docling-${{ matrix.category }}"
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-docling-${{ matrix.category }}-${{ github.run_id }}
+          path: results-docling-${{ matrix.category }}/
+          retention-days: 30
+
+  benchmark-markitdown:
+    needs: prepare
+    if: contains(needs.prepare.outputs.frameworks, 'markitdown')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        category: ${{ fromJson(needs.prepare.outputs.categories) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Dependencies
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Install APT packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+
+      - name: Run Benchmark
+        run: |
+          uv run python -m src.cli benchmark \
+            --framework markitdown \
+            --category ${{ matrix.category }} \
+            --iterations ${{ needs.prepare.outputs.iterations }} \
+            --warmup-runs 1 \
+            --timeout 300 \
+            --continue-on-error \
+            --output-dir "results-markitdown-${{ matrix.category }}"
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-markitdown-${{ matrix.category }}-${{ github.run_id }}
+          path: results-markitdown-${{ matrix.category }}/
+          retention-days: 30
+
+  benchmark-unstructured:
+    needs: prepare
+    if: contains(needs.prepare.outputs.frameworks, 'unstructured')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        category: ${{ fromJson(needs.prepare.outputs.categories) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Dependencies
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Install APT packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+
+      - name: Run Benchmark
+        run: |
+          uv run python -m src.cli benchmark \
+            --framework unstructured \
+            --category ${{ matrix.category }} \
+            --iterations ${{ needs.prepare.outputs.iterations }} \
+            --warmup-runs 1 \
+            --timeout 300 \
+            --continue-on-error \
+            --output-dir "results-unstructured-${{ matrix.category }}"
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-unstructured-${{ matrix.category }}-${{ github.run_id }}
+          path: results-unstructured-${{ matrix.category }}/
+          retention-days: 30
+
+  # Aggregate all results after benchmarks complete
+  aggregate:
+    needs:
+      - prepare
+      - benchmark-kreuzberg-sync
+      - benchmark-kreuzberg-async
+      - benchmark-docling
+      - benchmark-markitdown
+      - benchmark-unstructured
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Dependencies
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Download All Results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: benchmark-*-${{ github.run_id }}
+          path: all-results/
+
+      - name: List Downloaded Results
+        run: |
+          echo "Downloaded benchmark results:"
+          find all-results/ -name "*.json" -type f | sort
+          echo "Total result files: $(find all-results/ -name "*.json" -type f | wc -l)"
+
+      - name: Aggregate Results
+        run: |
+          # Find all result directories
+          RESULT_DIRS=""
+          for dir in all-results/*/; do
+            if [ -f "${dir}benchmark_results.json" ]; then
+              RESULT_DIRS="$RESULT_DIRS $dir"
+            fi
+          done
+
+          if [ -n "$RESULT_DIRS" ]; then
+            echo "Aggregating results from: $RESULT_DIRS"
+            uv run python -m src.cli aggregate $RESULT_DIRS --output-dir aggregated-results
+          else
+            echo "No valid result directories found"
+            exit 1
+          fi
+
+      - name: Generate Reports
+        run: |
+          if [ -f "aggregated-results/aggregated_results.json" ]; then
+            echo "Generating comprehensive reports..."
+
+            # Generate all report formats
+            uv run python -m src.cli report \
+              --aggregated-file aggregated-results/aggregated_results.json \
+              --output-dir final-reports \
+              --format markdown \
+              --format json \
+              --format html
+
+            echo "Reports generated successfully"
+            ls -la final-reports/
+          else
+            echo "No aggregated results found"
+            exit 1
+          fi
+
+      - name: Generate Visualizations
+        run: |
+          if [ -f "aggregated-results/aggregated_results.json" ]; then
+            echo "Generating comprehensive visualizations..."
+
+            # Generate all visualizations
+            uv run python -m src.cli visualize \
+              --aggregated-file aggregated-results/aggregated_results.json \
+              --output-dir final-visualizations
+
+            echo "Visualizations generated successfully"
+            ls -la final-visualizations/
+          else
+            echo "No aggregated results found"
+            exit 1
+          fi
+
+      - name: Create Summary
+        run: |
+          if [ -f "final-reports/benchmark_report.md" ]; then
+            echo "## 📊 Benchmark Results Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Framework-Specific Jobs" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            # List which framework jobs completed
+            for framework in kreuzberg_sync kreuzberg_async docling markitdown unstructured; do
+              if ls all-results/benchmark-${framework}-*/ >/dev/null 2>&1; then
+                echo "✅ **${framework}**: Completed" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "❌ **${framework}**: Failed or skipped" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📋 **Detailed reports available in artifacts below**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload Aggregated Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aggregated-benchmark-results-${{ github.run_id }}
+          path: aggregated-results/
+          retention-days: 90
+
+      - name: Upload Final Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-reports-${{ github.run_id }}
+          path: final-reports/
+          retention-days: 90
+
+      - name: Upload Visualizations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-visualizations-${{ github.run_id }}
+          path: final-visualizations/
+          retention-days: 90
