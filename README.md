@@ -111,7 +111,7 @@ Our benchmarks use a comprehensive collection of 94 test documents across multip
 - **Python**: 3.13+
 - **Concurrency**: Single-threaded per extraction (async where supported)
 
-### Benchmarking Approach
+### Benchmarking Methodology
 
 #### 1. **Performance Metrics**
 
@@ -119,46 +119,66 @@ Our benchmarks use a comprehensive collection of 94 test documents across multip
 - **Memory Usage**: Peak RSS memory consumption during extraction
 - **CPU Utilization**: Average CPU percentage during processing
 - **Success Rate**: Percentage of successful extractions
+- **Throughput**: Files processed per second
+- **Quality Assessment**: ML-based text quality evaluation (optional)
 
-#### 2. **Profiling Method**
+#### 2. **Document Categorization**
 
-```python
-# Synchronous profiling
-with profile_performance() as metrics:
-    extracted_text = extractor.extract_text(file_path)
+Documents are automatically categorized by size for systematic testing:
 
-# Asynchronous profiling
-async with AsyncPerformanceProfiler() as metrics:
-    extracted_text = await extractor.extract_text(file_path)
-```
+- **Tiny**: < 100KB (quick validation tests)
+- **Small**: 100KB - 1MB (typical documents)
+- **Medium**: 1MB - 10MB (complex documents, books)
+- **Large**: 10MB - 50MB (technical manuals)
+- **Huge**: > 50MB (comprehensive references)
 
-#### 3. **Resource Monitoring**
+#### 3. **Framework Isolation**
 
-- **Memory**: Peak RSS usage via `psutil.Process().memory_info()`
-- **CPU**: Average percentage via `psutil.Process().cpu_percent()`
-- **Sampling**: 100ms intervals during extraction
-- **Baseline**: Garbage collection forced before each test
+Each framework runs in a separate CI job to ensure:
 
-#### 4. **Error Handling**
+- **No interference**: Slow frameworks don't block others
+- **Better visibility**: Clear per-framework success/failure status
+- **Optimal timeouts**: Each framework gets appropriate time limits
+- **Fair comparison**: Cache cleared between runs (especially for Kreuzberg)
 
-- **Timeouts**: Configurable per-extraction timeout (default: 300s)
-- **Graceful Degradation**: Missing dependencies handled transparently
-- **Retry Logic**: No retries (single-shot measurements)
+#### 4. **Comprehensive Testing**
 
-### Test Document Selection Criteria
+- **Multiple iterations**: Default 3 runs per document for statistical significance
+- **Warmup runs**: Optional warmup to stabilize performance
+- **Retry logic**: Automatic retry with exponential backoff on failures
+- **Continue on error**: Failed extractions don't stop the benchmark suite
 
-1. **Size Diversity**: Documents from 91 bytes to 59MB to test memory efficiency
-1. **Format Coverage**: All major document formats used in enterprise and academic settings
-1. **Language Variety**: Multiple languages and scripts to test Unicode handling
-1. **Complexity Levels**: From simple text to complex layouts with tables, images, and formulas
-1. **Real-World Examples**: Actual documents from Wikipedia, technical manuals, and open-source projects
-1. **Edge Cases**: Rotated text, copy protection, malformed documents, special encodings
+#### 5. **Resource Monitoring**
+
+- **Memory tracking**: Peak and average RSS usage via `psutil`
+- **CPU monitoring**: Average CPU percentage during extraction
+- **I/O metrics**: Read/write operations and bytes transferred
+- **Sampling rate**: 50ms intervals for accurate profiling
+
+#### 6. **Error Handling & Timeouts**
+
+- **Per-extraction timeout**: 300 seconds (5 minutes) default
+- **Job-level timeout**: 240 minutes (4 hours) for CI jobs
+- **Graceful degradation**: Missing dependencies handled transparently
+- **Detailed error logging**: Error types and messages captured
+
+#### 7. **CI/CD Pipeline**
+
+Our GitHub Actions workflow provides:
+
+- **Framework-specific jobs**: Independent execution for each framework
+- **Parallel category processing**: Each framework tests all categories in parallel
+- **Automatic aggregation**: Results combined across all successful jobs
+- **Comprehensive reporting**: Markdown, HTML, and JSON reports generated
+- **Visual analytics**: Charts and interactive dashboards
+- **Artifact storage**: 30-90 day retention for all results
 
 ### Statistical Approach
 
-- **Single Run**: Each framework tested once per file
-- **Reproducibility**: Fixed test documents for consistent comparison
-- **No Warmup**: Cold-start performance measured (realistic usage)
+- **Multiple iterations**: 3 runs per document by default
+- **Cold-start performance**: No warmup by default (realistic usage)
+- **Outlier handling**: Median and standard deviation calculated
+- **Fair comparison**: Caches cleared between frameworks
 
 ## Installation & Setup
 
@@ -322,6 +342,47 @@ uv run python -m src.cli quality-assess \
   --results-file results-framework-category/benchmark_results.json \
   --output-file enhanced_results.json
 ```
+
+### CI/CD Workflows
+
+#### 1. **Framework-Specific Benchmarks** (Recommended)
+
+Run benchmarks with each framework in isolation for better reliability:
+
+```yaml
+# .github/workflows/benchmark-by-framework.yml
+# Each framework runs in its own job with 4-hour timeout
+```
+
+**Trigger via GitHub Actions:**
+
+```bash
+# Run all frameworks on default categories
+gh workflow run "Benchmark by Framework"
+
+# Run specific frameworks
+gh workflow run "Benchmark by Framework" \
+  -f frameworks="kreuzberg_sync,docling" \
+  -f categories="tiny,small" \
+  -f iterations="5"
+```
+
+**Benefits:**
+
+- ✅ Framework isolation (no interference)
+- ✅ Parallel execution within each framework
+- ✅ Clear visibility of failures
+- ✅ Appropriate timeouts per framework
+- ✅ Automatic result aggregation
+
+#### 2. **Monitoring Progress**
+
+The workflow provides detailed progress tracking:
+
+- Individual job status per framework
+- Real-time artifact uploads
+- Automatic aggregation after all jobs complete
+- Summary report in GitHub Actions UI
 
 ### Custom Test Documents
 
