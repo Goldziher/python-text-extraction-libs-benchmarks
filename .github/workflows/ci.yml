@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Load Cached Pre-Commit Dependencies
+        id: cached-pre-commit-dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit/
+          key: pre-commit|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Execute Pre-Commit
+        run: uv run pre-commit run --show-diff-on-failure --color=always --all-files
+
+  test:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        id: setup-python
+        with:
+          python-version: "3.13"
+
+      - name: Cache Python Dependencies
+        id: python-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            .venv
+          key: python-dependencies-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            python-dependencies-${{ runner.os }}-3.13-
+
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Cache and Install APT Packages
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: tesseract-ocr tesseract-ocr-eng poppler-utils libmagic1
+          version: 1.0
+
+      - name: Test CLI Commands
+        run: |
+          uv run python -m src.cli list-frameworks
+          uv run python -m src.cli list-categories
+
+      - name: Run Basic Benchmark Test
+        run: |
+          uv run python -m src.cli benchmark \
+            --framework kreuzberg_sync \
+            --category tiny \
+            --iterations 1 \
+            --warmup-runs 0 \
+            --timeout 60 \
+            --output-dir test-results
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Verify Results
+        run: |
+          ls -la test-results/
+          if [ -f test-results/benchmark_results.json ]; then
+            echo "✓ Benchmark results generated successfully"
+            uv run python -c "
+import msgspec
+with open('test-results/benchmark_results.json', 'rb') as f:
+    data = msgspec.json.decode(f.read())
+    print(f'Generated {len(data)} benchmark results')
+    if data:
+        print(f'Sample result keys: {list(data[0].keys()) if isinstance(data[0], dict) else \"Structured object\"}')"
+          else
+            echo "✗ No benchmark results generated"
+            exit 1
+          fi
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-benchmark-results-${{ github.run_id }}
+          path: test-results/
+          retention-days: 7
