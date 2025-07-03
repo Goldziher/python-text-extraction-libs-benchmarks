@@ -267,6 +267,86 @@ class KreuzbergPaddleOCRExtractor:
         return result.content
 
 
+class KreuzbergEasyOCRSyncExtractor:
+    """Kreuzberg with EasyOCR backend (synchronous)."""
+
+    def extract_text(self, file_path: str) -> str:
+        """Extract text using Kreuzberg with EasyOCR synchronously."""
+        if kreuzberg is None or EasyOCRConfig is None:
+            msg = "Kreuzberg with EasyOCR is not installed. Install with: pip install kreuzberg[easyocr]"
+            raise ImportError(msg)
+
+        # Map language codes for EasyOCR
+        lang_code = get_language_config(file_path)
+        easyocr_langs = {
+            "eng": "en",
+            "deu": "de",
+            "heb": "en",  # Hebrew not supported, fallback to English
+            "chi_sim": "ch_sim",
+            "jpn": "ja",
+            "kor": "ko",
+        }
+
+        # EasyOCR language parameter can be string or list
+        easyocr_lang = easyocr_langs.get(lang_code, "en")
+
+        # Optimized EasyOCR configuration for speed
+        config = ExtractionConfig(
+            ocr_backend="easyocr",
+            ocr_config=EasyOCRConfig(
+                language=easyocr_lang,
+                use_gpu=False,  # CPU-only for benchmarking
+                decoder="greedy",  # Fastest decoder
+                text_threshold=0.5,  # Lower threshold for faster processing
+                link_threshold=0.3,  # Lower threshold for faster processing
+                canvas_size=1280,  # Smaller canvas for faster processing
+                mag_ratio=1.0,  # No magnification for speed
+            ),
+            force_ocr=False,
+        )
+
+        result = kreuzberg.extract_file_sync(file_path, config=config)
+        return result.content
+
+
+class KreuzbergPaddleOCRSyncExtractor:
+    """Kreuzberg with PaddleOCR backend (synchronous)."""
+
+    def extract_text(self, file_path: str) -> str:
+        """Extract text using Kreuzberg with PaddleOCR synchronously."""
+        if kreuzberg is None or PaddleOCRConfig is None:
+            msg = "Kreuzberg with PaddleOCR is not installed. Install with: pip install kreuzberg[paddleocr]"
+            raise ImportError(msg)
+
+        # Map language codes for PaddleOCR
+        lang_code = get_language_config(file_path)
+        paddleocr_langs = {
+            "eng": "en",
+            "deu": "german",
+            "heb": "en",  # Hebrew not fully supported, fallback to English
+            "chi_sim": "ch",
+            "jpn": "japan",
+            "kor": "korean",
+        }
+
+        paddleocr_lang = paddleocr_langs.get(lang_code, "en")
+
+        # Optimized PaddleOCR configuration for speed
+        config = ExtractionConfig(
+            ocr_backend="paddleocr",
+            ocr_config=PaddleOCRConfig(
+                language=paddleocr_lang,
+                use_gpu=False,  # CPU-only for benchmarking
+                use_angle_cls=False,  # Skip angle classification for speed
+                table=False,  # Disable table recognition for speed
+            ),
+            force_ocr=False,
+        )
+
+        result = kreuzberg.extract_file_sync(file_path, config=config)
+        return result.content
+
+
 class UnstructuredExtractor:
     """Unstructured text extractor."""
 
@@ -313,7 +393,9 @@ def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
         "kreuzberg_async": KreuzbergAsyncExtractor,
         "kreuzberg_tesseract": KreuzbergTesseractExtractor,
         "kreuzberg_easyocr": KreuzbergEasyOCRExtractor,
+        "kreuzberg_easyocr_sync": KreuzbergEasyOCRSyncExtractor,
         "kreuzberg_paddleocr": KreuzbergPaddleOCRExtractor,
+        "kreuzberg_paddleocr_sync": KreuzbergPaddleOCRSyncExtractor,
         "docling": DoclingExtractor,
         "markitdown": MarkItDownExtractor,
         "unstructured": UnstructuredExtractor,
