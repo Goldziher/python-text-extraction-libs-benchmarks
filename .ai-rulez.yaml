@@ -4,22 +4,22 @@ description: "Comprehensive benchmarking suite for Python text extraction framew
 
 # Kreuzberg Configuration Notes
 kreuzberg_optimizations:
-  tesseract_optimized:
-    description: "Default Tesseract configuration is already optimal"
+  default_configuration:
+    description: "Kreuzberg defaults are optimized out-of-the-box for modern documents"
     settings:
-      psm: "AUTO_ONLY"  # Default - faster than AUTO without orientation detection
-      # Benchmarking showed disabling ngram/dict actually makes it slower
-      # Keep defaults for best performance
+      psm: "AUTO_ONLY"  # Fast without orientation detection overhead
+      language_model_ngram_on: false  # Optimized for modern documents
+      tessedit_enable_dict_correction: true  # Balanced accuracy
     use_cases:
-      - "All document types"
-      - "Balanced speed and quality"
+      - "Modern PDFs and standard documents"
+      - "Optimal speed and quality balance"
   
-  tesseract_default:
-    description: "Default Tesseract configuration with all quality features"
+  accuracy_configuration:
+    description: "Enhanced configuration for degraded or historical documents"
     settings:
+      psm: "AUTO"  # Full analysis with orientation detection
       language_model_ngram_on: true  # Better for degraded text
       tessedit_enable_dict_correction: true  # Correct OCR errors
-      psm: "AUTO_ONLY"  # Default
     use_cases:
       - "Scanned documents"
       - "Historical documents"

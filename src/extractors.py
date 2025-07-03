@@ -155,7 +155,7 @@ class MarkItDownExtractor:
 
 
 class KreuzbergTesseractExtractor:
-    """Kreuzberg with Tesseract OCR (optimized configuration)."""
+    """Kreuzberg with Tesseract OCR backend."""
 
     def extract_text(self, file_path: str) -> str:
         """Extract text using Kreuzberg with Tesseract OCR."""
@@ -166,20 +166,14 @@ class KreuzbergTesseractExtractor:
         # Detect language from filename
         lang_code = get_language_config(file_path)
 
-        # Use default configuration - benchmarking showed it's already optimal
+        # Use default configuration
         config = ExtractionConfig(
             ocr_backend="tesseract",
-            ocr_config=TesseractConfig(
-                language=lang_code,
-                # Default configuration with PSM AUTO_ONLY
-            ),
-            force_ocr=False,  # Only use OCR when needed
+            ocr_config=TesseractConfig(language=lang_code),
         )
 
         result = kreuzberg.extract_file_sync(file_path, config=config)
         return result.content
-
-
 
 
 class KreuzbergEasyOCRExtractor:
@@ -202,23 +196,15 @@ class KreuzbergEasyOCRExtractor:
             "kor": "ko",
         }
 
-        # EasyOCR language parameter can be string or list
-        # Use comma-separated string for multiple languages
         easyocr_lang = easyocr_langs.get(lang_code, "en")
 
-        # Optimized EasyOCR configuration for speed
+        # Default EasyOCR configuration
         config = ExtractionConfig(
             ocr_backend="easyocr",
             ocr_config=EasyOCRConfig(
                 language=easyocr_lang,
-                use_gpu=False,  # CPU-only for benchmarking
-                decoder="greedy",  # Fastest decoder
-                text_threshold=0.5,  # Lower threshold for faster processing
-                link_threshold=0.3,  # Lower threshold for faster processing
-                canvas_size=1280,  # Smaller canvas for faster processing
-                mag_ratio=1.0,  # No magnification for speed
+                use_gpu=False,  # CPU-only for fair benchmarking
             ),
-            force_ocr=False,
         )
 
         result = await kreuzberg.extract_file(file_path, config=config)
@@ -247,22 +233,13 @@ class KreuzbergPaddleOCRExtractor:
 
         paddle_lang = paddle_langs.get(lang_code, "en")
 
-        # Optimized PaddleOCR configuration for speed
+        # Default PaddleOCR configuration
         config = ExtractionConfig(
             ocr_backend="paddleocr",
             ocr_config=PaddleOCRConfig(
                 language=paddle_lang,
-                use_gpu=False,  # CPU-only for benchmarking
-                det_db_thresh=0.2,  # Lower threshold for faster detection
-                det_db_box_thresh=0.4,  # Lower box threshold
-                det_max_side_len=640,  # Smaller max size for faster processing
-                drop_score=0.3,  # Lower confidence threshold
-                rec_algorithm="CRNN",  # Fastest recognition algorithm
-                enable_mkldnn=True,  # Enable MKL-DNN acceleration on Intel CPUs
-                use_angle_cls=False,  # Skip angle classification for speed
-                table=False,  # Disable table recognition for speed
+                use_gpu=False,  # CPU-only for fair benchmarking
             ),
-            force_ocr=False,
         )
 
         result = await kreuzberg.extract_file(file_path, config=config)
@@ -289,22 +266,15 @@ class KreuzbergEasyOCRSyncExtractor:
             "kor": "ko",
         }
 
-        # EasyOCR language parameter can be string or list
         easyocr_lang = easyocr_langs.get(lang_code, "en")
 
-        # Optimized EasyOCR configuration for speed
+        # Default EasyOCR configuration
         config = ExtractionConfig(
             ocr_backend="easyocr",
             ocr_config=EasyOCRConfig(
                 language=easyocr_lang,
-                use_gpu=False,  # CPU-only for benchmarking
-                decoder="greedy",  # Fastest decoder
-                text_threshold=0.5,  # Lower threshold for faster processing
-                link_threshold=0.3,  # Lower threshold for faster processing
-                canvas_size=1280,  # Smaller canvas for faster processing
-                mag_ratio=1.0,  # No magnification for speed
+                use_gpu=False,  # CPU-only for fair benchmarking
             ),
-            force_ocr=False,
         )
 
         result = kreuzberg.extract_file_sync(file_path, config=config)
@@ -333,16 +303,13 @@ class KreuzbergPaddleOCRSyncExtractor:
 
         paddleocr_lang = paddleocr_langs.get(lang_code, "en")
 
-        # Optimized PaddleOCR configuration for speed
+        # Default PaddleOCR configuration
         config = ExtractionConfig(
             ocr_backend="paddleocr",
             ocr_config=PaddleOCRConfig(
                 language=paddleocr_lang,
-                use_gpu=False,  # CPU-only for benchmarking
-                use_angle_cls=False,  # Skip angle classification for speed
-                table=False,  # Disable table recognition for speed
+                use_gpu=False,  # CPU-only for fair benchmarking
             ),
-            force_ocr=False,
         )
 
         result = kreuzberg.extract_file_sync(file_path, config=config)
