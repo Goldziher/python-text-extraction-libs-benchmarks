@@ -1,0 +1,60 @@
+name: Quick Benchmark Test
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  quick-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install minimal system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr poppler-utils libmagic1
+
+      - name: Install dependencies
+        run: |
+          uv pip install -e .
+
+      - name: Run quick benchmark
+        run: |
+          # Test with tiny documents only for quick feedback
+          python -m src.cli benchmark \
+            --framework kreuzberg_sync \
+            --category tiny \
+            --iterations 1 \
+            --output-dir quick-results
+
+      - name: Display results
+        if: always()
+        run: |
+          if [ -f quick-results/benchmark_summaries.json ]; then
+            echo "## Quick Benchmark Results"
+            python -c "
+import json
+import sys
+with open('quick-results/benchmark_summaries.json') as f:
+    data = json.load(f)
+    for summary in data:
+        print(f\"Framework: {summary['framework']}\")
+        print(f\"Category: {summary['category']}\")
+        print(f\"Success Rate: {summary['success_rate']:.1%}\")
+        print(f\"Avg Time: {summary.get('avg_extraction_time', 0):.2f}s\")
+        print()
+            "
+          fi
