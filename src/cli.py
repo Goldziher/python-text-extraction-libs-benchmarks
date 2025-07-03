@@ -339,9 +339,7 @@ def quality_assess(results_file: Path, reference_dir: Path | None, output_file: 
         from .quality_assessment import enhance_benchmark_results_with_quality
 
         # Enhance results with quality metrics
-        enhanced_file = enhance_benchmark_results_with_quality(
-            results_file, reference_dir
-        )
+        enhanced_file = enhance_benchmark_results_with_quality(results_file, reference_dir)
 
         # Move to custom output file if specified
         if output_file:
@@ -352,17 +350,19 @@ def quality_assess(results_file: Path, reference_dir: Path | None, output_file: 
 
         # Show quality summary
         import msgspec
+
         with open(enhanced_file, "rb") as f:
             results = msgspec.json.decode(f.read())
 
-        quality_scores = []
-        for result in results:
-            if isinstance(result, dict) and result.get('overall_quality_score') is not None:
-                quality_scores.append(result['overall_quality_score'])
+        quality_scores = [
+            result["overall_quality_score"]
+            for result in results
+            if isinstance(result, dict) and result.get("overall_quality_score") is not None
+        ]
 
         if quality_scores:
             avg_quality = sum(quality_scores) / len(quality_scores)
-            console.print(f"[cyan]📊 Quality Summary:[/cyan]")
+            console.print("[cyan]📊 Quality Summary:[/cyan]")
             console.print(f"  - Results with quality scores: {len(quality_scores)}")
             console.print(f"  - Average quality score: {avg_quality:.3f}")
             console.print(f"  - Quality range: {min(quality_scores):.3f} - {max(quality_scores):.3f}")

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +11,7 @@ from typing import Any
 def update_readme_with_results(
     readme_path: Path,
     summary_metrics: dict[str, Any],
-    visualizations_dir: Path,
+    visualizations_dir: Path,  # noqa: ARG001
     run_id: str | None = None,
 ) -> None:
     """Update README.md with latest benchmark results."""
@@ -23,7 +23,7 @@ def update_readme_with_results(
         content = "# Python Text Extraction Libraries Benchmarks\n\n"
 
     # Generate timestamp
-    timestamp = datetime.fromtimestamp(summary_metrics["timestamp"]).strftime("%Y-%m-%d %H:%M:%S UTC")
+    timestamp = datetime.fromtimestamp(summary_metrics["timestamp"], tz=UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
 
     # Create benchmark results section
     results_section = f"""

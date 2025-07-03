@@ -64,21 +64,20 @@ class BenchmarkVisualizer:
         files = []
 
         # Prepare data for plotting
-        perf_data = []
-        for framework, summaries in aggregated.framework_summaries.items():
-            for summary in summaries:
-                if summary.avg_extraction_time is not None:
-                    perf_data.append(
-                        {
-                            "Framework": framework.value,
-                            "Category": summary.category.value,
-                            "Avg Time (s)": summary.avg_extraction_time,
-                            "Median Time (s)": summary.median_extraction_time or 0,
-                            "Success Rate (%)": summary.success_rate * 100,
-                            "Files per Second": summary.files_per_second or 0,
-                            "Total Files": summary.total_files,
-                        }
-                    )
+        perf_data = [
+            {
+                "Framework": framework.value,
+                "Category": summary.category.value,
+                "Avg Time (s)": summary.avg_extraction_time,
+                "Median Time (s)": summary.median_extraction_time or 0,
+                "Success Rate (%)": summary.success_rate * 100,
+                "Files per Second": summary.files_per_second or 0,
+                "Total Files": summary.total_files,
+            }
+            for framework, summaries in aggregated.framework_summaries.items()
+            for summary in summaries
+            if summary.avg_extraction_time is not None
+        ]
 
         if not perf_data:
             return files
@@ -172,18 +171,17 @@ class BenchmarkVisualizer:
         files = []
 
         # Prepare resource data
-        resource_data = []
-        for framework, summaries in aggregated.framework_summaries.items():
-            for summary in summaries:
-                if summary.avg_peak_memory_mb is not None:
-                    resource_data.append(
-                        {
-                            "Framework": framework.value,
-                            "Category": summary.category.value,
-                            "Peak Memory (MB)": summary.avg_peak_memory_mb,
-                            "CPU Usage (%)": summary.avg_cpu_percent or 0,
-                        }
-                    )
+        resource_data = [
+            {
+                "Framework": framework.value,
+                "Category": summary.category.value,
+                "Peak Memory (MB)": summary.avg_peak_memory_mb,
+                "CPU Usage (%)": summary.avg_cpu_percent or 0,
+            }
+            for framework, summaries in aggregated.framework_summaries.items()
+            for summary in summaries
+            if summary.avg_peak_memory_mb is not None
+        ]
 
         if not resource_data:
             return files
@@ -261,19 +259,18 @@ class BenchmarkVisualizer:
         files = []
 
         # Category performance breakdown
-        category_data = []
-        for category, summaries in aggregated.category_summaries.items():
-            for summary in summaries:
-                if summary.avg_extraction_time is not None:
-                    category_data.append(
-                        {
-                            "Category": category.value,
-                            "Framework": summary.framework.value,
-                            "Avg Time (s)": summary.avg_extraction_time,
-                            "Success Rate (%)": summary.success_rate * 100,
-                            "Total Files": summary.total_files,
-                        }
-                    )
+        category_data = [
+            {
+                "Category": category.value,
+                "Framework": summary.framework.value,
+                "Avg Time (s)": summary.avg_extraction_time,
+                "Success Rate (%)": summary.success_rate * 100,
+                "Total Files": summary.total_files,
+            }
+            for category, summaries in aggregated.category_summaries.items()
+            for summary in summaries
+            if summary.avg_extraction_time is not None
+        ]
 
         if not category_data:
             return files
@@ -307,23 +304,22 @@ class BenchmarkVisualizer:
         files = []
 
         # Prepare comprehensive data
-        all_data = []
-        for framework, summaries in aggregated.framework_summaries.items():
-            for summary in summaries:
-                all_data.append(
-                    {
-                        "Framework": framework.value,
-                        "Category": summary.category.value,
-                        "Avg Time (s)": summary.avg_extraction_time or 0,
-                        "Success Rate (%)": summary.success_rate * 100,
-                        "Peak Memory (MB)": summary.avg_peak_memory_mb or 0,
-                        "CPU Usage (%)": summary.avg_cpu_percent or 0,
-                        "Files per Second": summary.files_per_second or 0,
-                        "Total Files": summary.total_files,
-                        "Successful Files": summary.successful_files,
-                        "Failed Files": summary.failed_files,
-                    }
-                )
+        all_data = [
+            {
+                "Framework": framework.value,
+                "Category": summary.category.value,
+                "Avg Time (s)": summary.avg_extraction_time or 0,
+                "Success Rate (%)": summary.success_rate * 100,
+                "Peak Memory (MB)": summary.avg_peak_memory_mb or 0,
+                "CPU Usage (%)": summary.avg_cpu_percent or 0,
+                "Files per Second": summary.files_per_second or 0,
+                "Total Files": summary.total_files,
+                "Successful Files": summary.successful_files,
+                "Failed Files": summary.failed_files,
+            }
+            for framework, summaries in aggregated.framework_summaries.items()
+            for summary in summaries
+        ]
 
         if not all_data:
             return files
@@ -406,14 +402,14 @@ class BenchmarkVisualizer:
     def _generate_quality_charts(self, aggregated: AggregatedResults) -> list[Path]:
         """Generate quality assessment visualizations."""
         files = []
-        
+
         # Check if we have quality data
         quality_data = []
         has_quality_data = False
-        
+
         # This would need to be updated to use quality-enhanced results
         # For now, return empty to avoid breaking existing functionality
-        
+
         return files
 
     def generate_summary_metrics(self, aggregated_file: Path) -> dict[str, Any]:

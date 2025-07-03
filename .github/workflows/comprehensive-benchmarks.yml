@@ -88,7 +88,7 @@ jobs:
   benchmark:
     needs: prepare
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
@@ -125,6 +125,43 @@ jobs:
         run: |
           uv sync --all-packages --all-extras --dev
 
+      - name: Record Package Sizes
+        shell: bash
+        run: |
+          echo "## 📦 Package Installation Sizes" > package_sizes.md
+          echo "" >> package_sizes.md
+          echo "| Package | Size | Version |" >> package_sizes.md
+          echo "|---------|------|---------|" >> package_sizes.md
+
+          # Get package sizes from the virtual environment
+          uv run python -c "
+          import pkg_resources
+          import os
+          import json
+
+          packages = {}
+          for dist in pkg_resources.working_set:
+              try:
+                  size = sum(os.path.getsize(os.path.join(dirpath, filename))
+                           for dirpath, dirnames, filenames in os.walk(dist.location)
+                           for filename in filenames)
+                  packages[dist.project_name] = {
+                      'size': size,
+                      'version': dist.version,
+                      'size_mb': round(size / (1024*1024), 2)
+                  }
+              except Exception:
+                  pass
+
+          # Sort by size
+          sorted_packages = sorted(packages.items(), key=lambda x: x[1]['size'], reverse=True)[:20]
+
+          for pkg, info in sorted_packages:
+              print(f\"| {pkg} | {info['size_mb']} MB | {info['version']} |\")
+          " >> package_sizes.md
+
+          echo "Package sizes recorded in package_sizes.md"
+
       - name: Cache and Install APT Packages
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
@@ -141,7 +178,7 @@ jobs:
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
-            --timeout 300 \
+            --timeout 600 \
             --continue-on-error \
             --output-dir "$OUTPUT_DIR"
         env:
@@ -169,13 +206,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results-${{ matrix.framework }}-${{ matrix.category }}-${{ github.run_id }}
-          path: results-${{ matrix.framework }}-${{ matrix.category }}/
+          path: |
+            results-${{ matrix.framework }}-${{ matrix.category }}/
+            package_sizes.md
           retention-days: 30
 
   aggregate:
     needs: [prepare, benchmark]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     if: always()
     steps:
       - name: Checkout
@@ -250,7 +289,7 @@ jobs:
       - name: Run Quality Assessment
         run: |
           echo "Running ML-based quality assessment on benchmark results..."
-          
+
           # Find all benchmark result files and enhance them with quality metrics
           find all-results/ -name "benchmark_results.json" | while read -r file; do
             echo "Assessing quality for: $file"
@@ -258,7 +297,7 @@ jobs:
               --results-file "$file" \
               --output-file "${file%.*}_with_quality.json"
           done
-          
+
           echo "Quality assessment completed"
 
       - name: Generate Visualizations
