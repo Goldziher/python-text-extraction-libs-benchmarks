@@ -50,8 +50,13 @@ python-text-extraction-libraries-benchmarks-2025/
 1. **Kreuzberg** (v3.3.0+)
 
     - Both synchronous and asynchronous APIs
+    - Multiple OCR backend configurations:
+        - Default: Uses system Tesseract with auto language detection
+        - Tesseract: Optimized configuration with language-specific settings
+        - EasyOCR: Deep learning OCR with multi-language support
+        - PaddleOCR: Specialized for Asian languages
     - Comprehensive format support with OCR capabilities
-    - Smallest installation footprint (71MB)
+    - Smallest installation footprint (71MB base, more with OCR backends)
 
 1. **Docling** (v2.15.0+)
 
@@ -131,6 +136,24 @@ Commands:
     - Email attachments
     - Various text encodings
 
+## Language Configuration
+
+The benchmarking suite automatically detects and configures languages based on filenames:
+
+- **Hebrew**: Files containing "hebrew", "israel", "tel_aviv"
+- **German**: Files containing "german", "germany", "berlin"
+- **Chinese**: Files containing "chinese", "china", "beijing", "chi_sim"
+- **Japanese**: Files containing "japanese", "japan", "jpn"
+- **Korean**: Files containing "korean", "korea", "kor"
+- **Default**: English with German and French as fallbacks
+
+Each framework handles languages differently:
+
+- **Kreuzberg**: Configures Tesseract/EasyOCR/PaddleOCR with appropriate language models
+- **Unstructured**: Passes language hints for better OCR accuracy
+- **Docling**: Auto-detects languages using ML models
+- **MarkItDown**: Uses ONNX models with built-in multilingual support
+
 ## Comprehensive Benchmark Methodology
 
 ### Document Categorization
@@ -193,6 +216,12 @@ uv run python -m src.cli benchmark \
 # Test specific file types
 uv run benchmark run --test-files-dir test_documents \
   --file-types pdf --file-types docx
+
+# Test OCR backends (install optional dependencies first)
+uv sync --extra ocr
+uv run python -m src.cli benchmark \
+  --framework kreuzberg_tesseract,kreuzberg_easyocr,kreuzberg_paddleocr \
+  --category images
 ```
 
 ### Generating Reports
@@ -315,6 +344,7 @@ To add a new framework:
 1. Add to Framework enum in `types.py`
 1. Register in `get_extractor()` factory
 1. Add to dependencies in `pyproject.toml`
+1. Consider language configuration in `get_language_config()`
 
 ## Important Notes
 

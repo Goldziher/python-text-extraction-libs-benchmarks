@@ -14,6 +14,9 @@ class Framework(str, Enum):
 
     KREUZBERG_SYNC = "kreuzberg_sync"
     KREUZBERG_ASYNC = "kreuzberg_async"
+    KREUZBERG_TESSERACT = "kreuzberg_tesseract"
+    KREUZBERG_EASYOCR = "kreuzberg_easyocr"
+    KREUZBERG_PADDLEOCR = "kreuzberg_paddleocr"
     DOCLING = "docling"
     MARKITDOWN = "markitdown"
     UNSTRUCTURED = "unstructured"

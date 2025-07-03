@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 if sys.version_info >= (3, 13):
     pass
@@ -11,8 +12,22 @@ else:
 
 try:
     import kreuzberg
+    from kreuzberg import ExtractionConfig, PSMMode, TesseractConfig
 except ImportError:
     kreuzberg = None  # type: ignore[assignment]
+    ExtractionConfig = None  # type: ignore[assignment,misc]
+    TesseractConfig = None  # type: ignore[assignment,misc]
+    PSMMode = None  # type: ignore[assignment,misc]
+
+try:
+    from kreuzberg import EasyOCRConfig
+except ImportError:
+    EasyOCRConfig = None  # type: ignore[assignment,misc]
+
+try:
+    from kreuzberg import PaddleOCRConfig
+except ImportError:
+    PaddleOCRConfig = None  # type: ignore[assignment,misc]
 
 try:
     from docling.document_converter import DocumentConverter
@@ -31,6 +46,32 @@ except ImportError:
     partition = None  # type: ignore[assignment]
 
 from .types import AsyncExtractorProtocol, ExtractorProtocol
+
+
+def get_language_config(file_path: str | Path) -> str:
+    """Determine language configuration based on file path and content hints.
+
+    Returns language codes appropriate for the framework being used.
+    For Tesseract: eng, deu, heb, chi_sim, jpn, kor
+    For EasyOCR: en, de, he, ch_sim, ja, ko
+    For PaddleOCR: en, german, ch, japan, korean
+    """
+    file_path = Path(file_path)
+    filename = file_path.name.lower()
+
+    # Check for specific language indicators in filename
+    if any(x in filename for x in ["hebrew", "israel", "tel_aviv", "heb", "he_"]):
+        return "heb"  # Hebrew
+    if any(x in filename for x in ["german", "germany", "berlin", "deu", "de_"]):
+        return "deu"  # German
+    if any(x in filename for x in ["chinese", "china", "beijing", "chi_sim", "zh_", "cn_"]):
+        return "chi_sim"  # Simplified Chinese
+    if any(x in filename for x in ["japanese", "japan", "jpn", "jp_", "ja_"]):
+        return "jpn"  # Japanese
+    if any(x in filename for x in ["korean", "korea", "kor", "kr_", "ko_"]):
+        return "kor"  # Korean
+    # Default to English with common secondary languages
+    return "eng+deu+fra"  # English, German, French
 
 
 class KreuzbergSyncExtractor:
@@ -88,6 +129,8 @@ class DoclingExtractor:
 
     def extract_text(self, file_path: str) -> str:
         """Extract text using Docling."""
+        # Docling handles language detection automatically
+        # No explicit language configuration needed
         result = self.converter.convert(file_path)
         # Use text export instead of markdown for better performance
         return result.document.export_to_text()
@@ -105,8 +148,107 @@ class MarkItDownExtractor:
 
     def extract_text(self, file_path: str) -> str:
         """Extract text using MarkItDown."""
+        # MarkItDown uses ONNX models that handle multiple languages automatically
+        # No explicit language configuration available
         result = self.converter.convert(file_path)
         return result.text_content
+
+
+class KreuzbergTesseractExtractor:
+    """Kreuzberg with Tesseract OCR (optimized configuration)."""
+
+    def extract_text(self, file_path: str) -> str:
+        """Extract text using Kreuzberg with Tesseract OCR."""
+        if kreuzberg is None or TesseractConfig is None:
+            msg = "Kreuzberg is not installed"
+            raise ImportError(msg)
+
+        # Detect language from filename
+        lang_code = get_language_config(file_path)
+
+        # Configure Tesseract with optimal settings
+        config = ExtractionConfig(
+            ocr_backend="tesseract",
+            ocr_config=TesseractConfig(
+                language=lang_code,
+                psm=PSMMode.AUTO,  # Automatic page segmentation
+            ),
+            force_ocr=False,  # Only use OCR when needed
+        )
+
+        result = kreuzberg.extract_file_sync(file_path, config=config)
+        return result.content
+
+
+class KreuzbergEasyOCRExtractor:
+    """Kreuzberg with EasyOCR backend."""
+
+    def extract_text(self, file_path: str) -> str:
+        """Extract text using Kreuzberg with EasyOCR."""
+        if kreuzberg is None or EasyOCRConfig is None:
+            msg = "Kreuzberg with EasyOCR is not installed. Install with: pip install kreuzberg[easyocr]"
+            raise ImportError(msg)
+
+        # Map language codes for EasyOCR
+        lang_code = get_language_config(file_path)
+        easyocr_langs = {
+            "eng": ["en"],
+            "deu": ["de"],
+            "heb": ["he"],
+            "chi_sim": ["ch_sim"],
+            "jpn": ["ja"],
+            "kor": ["ko"],
+            "eng+deu+fra": ["en", "de", "fr"],
+        }
+
+        lang_list = easyocr_langs.get(lang_code, ["en"])
+
+        config = ExtractionConfig(
+            ocr_backend="easyocr",
+            ocr_config=EasyOCRConfig(
+                language_list=lang_list,
+                use_gpu=False,  # CPU-only for benchmarking
+            ),
+            force_ocr=False,
+        )
+
+        result = kreuzberg.extract_file_sync(file_path, config=config)
+        return result.content
+
+
+class KreuzbergPaddleOCRExtractor:
+    """Kreuzberg with PaddleOCR backend."""
+
+    def extract_text(self, file_path: str) -> str:
+        """Extract text using Kreuzberg with PaddleOCR."""
+        if kreuzberg is None or PaddleOCRConfig is None:
+            msg = "Kreuzberg with PaddleOCR is not installed. Install with: pip install kreuzberg[paddleocr]"
+            raise ImportError(msg)
+
+        # Map language codes for PaddleOCR
+        lang_code = get_language_config(file_path)
+        paddle_langs = {
+            "eng": "en",
+            "deu": "german",
+            "chi_sim": "ch",
+            "jpn": "japan",
+            "kor": "korean",
+            "eng+deu+fra": "en",  # PaddleOCR doesn't support multiple languages
+        }
+
+        paddle_lang = paddle_langs.get(lang_code, "en")
+
+        config = ExtractionConfig(
+            ocr_backend="paddleocr",
+            ocr_config=PaddleOCRConfig(
+                language=paddle_lang,
+                use_gpu=False,  # CPU-only for benchmarking
+            ),
+            force_ocr=False,
+        )
+
+        result = kreuzberg.extract_file_sync(file_path, config=config)
+        return result.content
 
 
 class UnstructuredExtractor:
@@ -117,7 +259,24 @@ class UnstructuredExtractor:
         if partition is None:
             msg = "Unstructured is not installed"
             raise ImportError(msg)
-        elements = partition(filename=file_path)
+
+        # Configure languages for Unstructured
+        lang_code = get_language_config(file_path)
+        # Unstructured uses ISO 639-1 codes
+        unstructured_langs = {
+            "eng": ["eng"],
+            "deu": ["deu"],
+            "heb": ["heb"],
+            "chi_sim": ["chi"],
+            "jpn": ["jpn"],
+            "kor": ["kor"],
+            "eng+deu+fra": ["eng", "deu", "fra"],
+        }
+
+        languages = unstructured_langs.get(lang_code, ["eng"])
+
+        # Unstructured auto-detects OCR needs and language
+        elements = partition(filename=file_path, languages=languages)
         return "\n".join(str(element) for element in elements)
 
 
@@ -136,6 +295,9 @@ def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
     extractors = {
         "kreuzberg_sync": KreuzbergSyncExtractor,
         "kreuzberg_async": KreuzbergAsyncExtractor,
+        "kreuzberg_tesseract": KreuzbergTesseractExtractor,
+        "kreuzberg_easyocr": KreuzbergEasyOCRExtractor,
+        "kreuzberg_paddleocr": KreuzbergPaddleOCRExtractor,
         "docling": DoclingExtractor,
         "markitdown": MarkItDownExtractor,
         "unstructured": UnstructuredExtractor,

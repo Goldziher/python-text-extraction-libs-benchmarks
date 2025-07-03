@@ -33,6 +33,10 @@ graph LR
 ## Tested Frameworks
 
 - **[Kreuzberg](https://github.com/Goldziher/kreuzberg)** - Fast async/sync text extraction
+    - Default (sync/async)
+    - With Tesseract OCR (optimized)
+    - With EasyOCR backend
+    - With PaddleOCR backend
 - **[Docling](https://github.com/docling-project/docling)** - IBM's deep learning document processor
 - **[MarkItDown](https://github.com/microsoft/markitdown)** - Microsoft's LLM-optimized converter
 - **[Unstructured](https://github.com/Unstructured-IO/unstructured)** - Enterprise ETL solution
@@ -50,6 +54,10 @@ uv run python -m src.cli benchmark
 
 # Run specific framework
 uv run python -m src.cli benchmark --framework kreuzberg_sync --category small
+
+# Run with OCR backends (install optional dependencies first)
+uv sync --extra ocr
+uv run python -m src.cli benchmark --framework kreuzberg_easyocr --category images
 ```
 
 ## Test Dataset
