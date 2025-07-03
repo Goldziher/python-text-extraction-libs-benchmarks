@@ -5,7 +5,7 @@
 - **Main CLI**: `uv run python -m src.cli <command>`
 - **Test Documents**: `test_documents/` (94 files, ~210MB)
 - **CI Workflows**: `.github/workflows/benchmark-by-framework.yml` (recommended)
-- **Key Timeouts**: 300s per extraction, 240min per CI job
+- **Key Timeouts**: 300s per extraction, 120min per CI job
 - **Cache Clearing**: Kreuzberg cache cleared before each benchmark
 
 ## Repository Overview
@@ -369,6 +369,7 @@ To add a new framework:
     - Clear caches between runs
     - Monitor memory usage (some frameworks use 1GB+)
     - Use continue-on-error for robustness
+    - 2-hour timeout per job (docling medium will likely timeout)
 
 1. **Result Aggregation**:
 

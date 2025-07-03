@@ -159,9 +159,10 @@ Each framework runs in a separate CI job to ensure:
 #### 6. **Error Handling & Timeouts**
 
 - **Per-extraction timeout**: 300 seconds (5 minutes) default
-- **Job-level timeout**: 240 minutes (4 hours) for CI jobs
+- **Job-level timeout**: 120 minutes (2 hours) for CI jobs
 - **Graceful degradation**: Missing dependencies handled transparently
 - **Detailed error logging**: Error types and messages captured
+- **Note**: Docling may timeout on medium documents with 2-hour limit
 
 #### 7. **CI/CD Pipeline**
 
@@ -352,20 +353,25 @@ Run benchmarks with each framework in isolation for better reliability:
 
 ```yaml
 # .github/workflows/benchmark-by-framework.yml
-# Each framework runs in its own job with 4-hour timeout
+# Each framework runs in its own job with 2-hour timeout
 ```
 
 **Trigger via GitHub Actions:**
 
+The benchmark workflow runs automatically on release publication, or can be triggered manually:
+
 ```bash
-# Run all frameworks on default categories
+# Manual trigger - all frameworks on default categories
 gh workflow run "Benchmark by Framework"
 
-# Run specific frameworks
+# Manual trigger - specific frameworks
 gh workflow run "Benchmark by Framework" \
   -f frameworks="kreuzberg_sync,docling" \
   -f categories="tiny,small" \
   -f iterations="5"
+
+# Create a release to trigger benchmarks
+gh release create v1.0.0 --title "Version 1.0.0" --notes "Release notes"
 ```
 
 **Benefits:**
