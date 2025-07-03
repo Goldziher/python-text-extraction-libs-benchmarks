@@ -102,13 +102,7 @@ jobs:
           ls -la test-results/
           if [ -f test-results/benchmark_results.json ]; then
             echo "✓ Benchmark results generated successfully"
-            uv run python -c "
-import msgspec
-with open('test-results/benchmark_results.json', 'rb') as f:
-    data = msgspec.json.decode(f.read())
-    print(f'Generated {len(data)} benchmark results')
-    if data:
-        print(f'Sample result keys: {list(data[0].keys()) if isinstance(data[0], dict) else \"Structured object\"}')"
+            uv run python -c "import msgspec; data = msgspec.json.decode(open('test-results/benchmark_results.json', 'rb').read()); print(f'Generated {len(data)} benchmark results')"
           else
             echo "✗ No benchmark results generated"
             exit 1
