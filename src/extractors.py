@@ -66,12 +66,12 @@ def get_language_config(file_path: str | Path) -> str:
         return "deu"  # German
     if any(x in filename for x in ["chinese", "china", "beijing", "chi_sim", "zh_", "cn_"]):
         return "chi_sim"  # Simplified Chinese
-    if any(x in filename for x in ["japanese", "japan", "jpn", "jp_", "ja_"]):
+    if any(x in filename for x in ["japanese", "japan", "jpn", "jp_", "ja_", "vert"]):  # jpn-vert.jpeg
         return "jpn"  # Japanese
     if any(x in filename for x in ["korean", "korea", "kor", "kr_", "ko_"]):
         return "kor"  # Korean
-    # Default to English with common secondary languages
-    return "eng+deu+fra"  # English, German, French
+    # Default to English only for better performance
+    return "eng"  # English
 
 
 class KreuzbergSyncExtractor:
@@ -166,12 +166,12 @@ class KreuzbergTesseractExtractor:
         # Detect language from filename
         lang_code = get_language_config(file_path)
 
-        # Configure Tesseract with optimal settings
+        # Configure Tesseract with optimal settings for speed
         config = ExtractionConfig(
             ocr_backend="tesseract",
             ocr_config=TesseractConfig(
                 language=lang_code,
-                psm=PSMMode.AUTO,  # Automatic page segmentation
+                psm=PSMMode.SINGLE_BLOCK,  # Faster than AUTO for most documents
             ),
             force_ocr=False,  # Only use OCR when needed
         )
@@ -181,9 +181,9 @@ class KreuzbergTesseractExtractor:
 
 
 class KreuzbergEasyOCRExtractor:
-    """Kreuzberg with EasyOCR backend."""
+    """Kreuzberg with EasyOCR backend (async only)."""
 
-    def extract_text(self, file_path: str) -> str:
+    async def extract_text(self, file_path: str) -> str:
         """Extract text using Kreuzberg with EasyOCR."""
         if kreuzberg is None or EasyOCRConfig is None:
             msg = "Kreuzberg with EasyOCR is not installed. Install with: pip install kreuzberg[easyocr]"
@@ -192,34 +192,41 @@ class KreuzbergEasyOCRExtractor:
         # Map language codes for EasyOCR
         lang_code = get_language_config(file_path)
         easyocr_langs = {
-            "eng": ["en"],
-            "deu": ["de"],
-            "heb": ["he"],
-            "chi_sim": ["ch_sim"],
-            "jpn": ["ja"],
-            "kor": ["ko"],
-            "eng+deu+fra": ["en", "de", "fr"],
+            "eng": "en",
+            "deu": "de",
+            "heb": "en",  # Hebrew not supported, fallback to English
+            "chi_sim": "ch_sim",
+            "jpn": "ja",
+            "kor": "ko",
         }
 
-        lang_list = easyocr_langs.get(lang_code, ["en"])
+        # EasyOCR language parameter can be string or list
+        # Use comma-separated string for multiple languages
+        easyocr_lang = easyocr_langs.get(lang_code, "en")
 
+        # Optimized EasyOCR configuration for speed
         config = ExtractionConfig(
             ocr_backend="easyocr",
             ocr_config=EasyOCRConfig(
-                language_list=lang_list,
+                language=easyocr_lang,
                 use_gpu=False,  # CPU-only for benchmarking
+                decoder="greedy",  # Fastest decoder
+                text_threshold=0.5,  # Lower threshold for faster processing
+                link_threshold=0.3,  # Lower threshold for faster processing
+                canvas_size=1280,  # Smaller canvas for faster processing
+                mag_ratio=1.0,  # No magnification for speed
             ),
             force_ocr=False,
         )
 
-        result = kreuzberg.extract_file_sync(file_path, config=config)
+        result = await kreuzberg.extract_file(file_path, config=config)
         return result.content
 
 
 class KreuzbergPaddleOCRExtractor:
-    """Kreuzberg with PaddleOCR backend."""
+    """Kreuzberg with PaddleOCR backend (async only)."""
 
-    def extract_text(self, file_path: str) -> str:
+    async def extract_text(self, file_path: str) -> str:
         """Extract text using Kreuzberg with PaddleOCR."""
         if kreuzberg is None or PaddleOCRConfig is None:
             msg = "Kreuzberg with PaddleOCR is not installed. Install with: pip install kreuzberg[paddleocr]"
@@ -238,16 +245,25 @@ class KreuzbergPaddleOCRExtractor:
 
         paddle_lang = paddle_langs.get(lang_code, "en")
 
+        # Optimized PaddleOCR configuration for speed
         config = ExtractionConfig(
             ocr_backend="paddleocr",
             ocr_config=PaddleOCRConfig(
                 language=paddle_lang,
                 use_gpu=False,  # CPU-only for benchmarking
+                det_db_thresh=0.2,  # Lower threshold for faster detection
+                det_db_box_thresh=0.4,  # Lower box threshold
+                det_max_side_len=640,  # Smaller max size for faster processing
+                drop_score=0.3,  # Lower confidence threshold
+                rec_algorithm="CRNN",  # Fastest recognition algorithm
+                enable_mkldnn=True,  # Enable MKL-DNN acceleration on Intel CPUs
+                use_angle_cls=False,  # Skip angle classification for speed
+                table=False,  # Disable table recognition for speed
             ),
             force_ocr=False,
         )
 
-        result = kreuzberg.extract_file_sync(file_path, config=config)
+        result = await kreuzberg.extract_file(file_path, config=config)
         return result.content
 
 

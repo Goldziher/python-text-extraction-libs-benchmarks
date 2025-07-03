@@ -1,0 +1,24 @@
+Starting comprehensive benchmark run...
+Starting comprehensive benchmark suite
+Iterations: 1
+Frameworks: kreuzberg_sync, kreuzberg_async, kreuzberg_tesseract
+Categories: tiny
+
+
+Running warmup iterations...
+
+Starting iteration 1/1
+/Users/naamanhirschfeld/workspace/python-text-extraction-libraries-benchmarks-2025/.venv/lib/python3.13/site-packages/pypdfium2/_helpers/textpage.py:80: UserWarning: get_text_range() call with default params will be implicitly redirected to get_text_bounded()
+  warnings.warn("get_text_range() call with default params will be implicitly redirected to get_text_bounded()")
+/Users/naamanhirschfeld/workspace/python-text-extraction-libraries-benchmarks-2025/.venv/lib/python3.13/site-packages/pypdfium2/_helpers/textpage.py:80: UserWarning: get_text_range() call with default params will be implicitly redirected to get_text_bounded()
+  warnings.warn("get_text_range() call with default params will be implicitly redirected to get_text_bounded()")
+/Users/naamanhirschfeld/workspace/python-text-extraction-libraries-benchmarks-2025/.venv/lib/python3.13/site-packages/pypdfium2/_helpers/textpage.py:80: UserWarning: get_text_range() call with default params will be implicitly redirected to get_text_bounded()
+  warnings.warn("get_text_range() call with default params will be implicitly redirected to get_text_bounded()")
+/Users/naamanhirschfeld/workspace/python-text-extraction-libraries-benchmarks-2025/.venv/lib/python3.13/site-packages/pypdfium2/_helpers/textpage.py:80: UserWarning: get_text_range() call with default params will be implicitly redirected to get_text_bounded()
+  warnings.warn("get_text_range() call with default params will be implicitly redirected to get_text_bounded()")
+/Users/naamanhirschfeld/workspace/python-text-extraction-libraries-benchmarks-2025/.venv/lib/python3.13/site-packages/pypdfium2/_helpers/textpage.py:80: UserWarning: get_text_range() call with default params will be implicitly redirected to get_text_bounded()
+  warnings.warn("get_text_range() call with default params will be implicitly redirected to get_text_bounded()")
+
+
+Results saved to results
+✓ Completed 150 benchmarks
