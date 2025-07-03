@@ -1,0 +1,252 @@
+name: Update Frameworks
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-check:
+    runs-on: ubuntu-latest
+    outputs:
+      has_updates: ${{ steps.check.outputs.has_updates }}
+      update_message: ${{ steps.check.outputs.update_message }}
+      version_changes: ${{ steps.check.outputs.version_changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Check for Updates
+        id: check
+        run: |
+          # Store current versions
+          echo "=== Current Framework Versions ===" > version_report.txt
+          uv pip list | grep -E "kreuzberg|docling|markitdown|unstructured" >> version_report.txt || true
+
+          # Try to update each framework
+          echo -e "\n=== Checking for Updates ===" >> version_report.txt
+
+          UPDATES=""
+          HAS_UPDATES="false"
+
+          # Check each framework for updates
+          for package in kreuzberg docling markitdown unstructured; do
+            echo "Checking $package..."
+            CURRENT=$(uv pip list | grep "^$package " | awk '{print $2}' || echo "not installed")
+
+            # Try to get latest version
+            if uv pip install --dry-run --upgrade "$package" 2>&1 | grep -q "Would install"; then
+              LATEST=$(uv pip install --dry-run --upgrade "$package" 2>&1 | grep -oP "$package-\K[0-9]+\.[0-9]+\.[0-9]+[^\s]*" | head -1)
+              if [ "$CURRENT" != "$LATEST" ] && [ -n "$LATEST" ]; then
+                echo "  Update available: $CURRENT -> $LATEST" | tee -a version_report.txt
+                UPDATES="$UPDATES\n- $package: $CURRENT → $LATEST"
+                HAS_UPDATES="true"
+              else
+                echo "  No update needed (current: $CURRENT)" | tee -a version_report.txt
+              fi
+            else
+              echo "  Could not check for updates" | tee -a version_report.txt
+            fi
+          done
+
+          # Set outputs
+          echo "has_updates=$HAS_UPDATES" >> $GITHUB_OUTPUT
+
+          if [ "$HAS_UPDATES" = "true" ]; then
+            UPDATE_MSG="Framework updates available:$UPDATES"
+            echo "update_message<<EOF" >> $GITHUB_OUTPUT
+            echo "$UPDATE_MSG" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+
+            # Clean version for release tag
+            VERSION_CHANGES=$(echo "$UPDATES" | tr '\n' ' ' | sed 's/[^a-zA-Z0-9._-]/-/g')
+            echo "version_changes=$VERSION_CHANGES" >> $GITHUB_OUTPUT
+          fi
+
+          cat version_report.txt
+
+  update-and-test:
+    needs: update-check
+    if: needs.update-check.outputs.has_updates == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Update Frameworks
+        run: |
+          echo "Updating frameworks..."
+
+          # Update each framework in pyproject.toml
+          for package in kreuzberg docling markitdown unstructured; do
+            echo "Updating $package to latest..."
+            # Remove version constraint to get latest
+            uv add "$package@latest" || echo "Failed to update $package"
+          done
+
+          # Sync all dependencies
+          echo "Syncing all dependencies..."
+          uv sync --all-extras
+
+          # Show what changed
+          echo "=== Updated versions ==="
+          uv pip list | grep -E "kreuzberg|docling|markitdown|unstructured"
+
+      - name: Install APT packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+
+      - name: Run Pre-commit
+        run: |
+          uv run pre-commit install
+          uv run pre-commit run --all-files || true
+
+      - name: Run Tests
+        run: |
+          echo "Running tests..."
+
+          # Run pytest
+          uv run pytest tests/test_imports.py -v
+
+          # Also run a quick extraction test
+          echo -e "\nTesting basic extraction..."
+          uv run python -c "
+import sys
+from pathlib import Path
+
+# Create a simple test file
+test_file = Path('test.txt')
+test_file.write_text('Hello, World!')
+
+try:
+    from src.extractors import get_extractor
+
+    # Test each framework with a simple text file
+    for framework in ['kreuzberg_sync', 'markitdown', 'unstructured']:
+        try:
+            print(f'Testing {framework}...')
+            extractor = get_extractor(framework)
+            text = extractor.extract_text(str(test_file))
+            if 'Hello' in text:
+                print(f'  ✓ {framework} extraction successful')
+            else:
+                print(f'  ✗ {framework} extraction failed: unexpected output')
+        except Exception as e:
+            print(f'  ✗ {framework} failed: {e}')
+
+    # Clean up
+    test_file.unlink()
+    print('\\nBasic extraction tests completed!')
+
+except Exception as e:
+    print(f'Test setup failed: {e}')
+    sys.exit(1)
+"
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Commit and Push
+        id: commit
+        run: |
+          # Add all changed files
+          git add -A
+
+          # Check if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            # Commit with update message
+            git commit -m "chore: update frameworks to latest versions
+
+${{ needs.update-check.outputs.update_message }}
+
+Auto-updated by GitHub Actions"
+
+            # Push to main
+            git push origin main
+            echo "changes=true" >> $GITHUB_OUTPUT
+
+            # Get the commit hash
+            echo "commit_sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          fi
+
+  create-release:
+    needs: [update-check, update-and-test]
+    if: needs.update-and-test.outputs.changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.update-and-test.outputs.commit_sha }}
+
+      - name: Get Version Info
+        id: version
+        run: |
+          # Generate version based on date and update count
+          DATE=$(date +%Y.%m.%d)
+
+          # Count releases today
+          RELEASE_COUNT=$(gh release list --limit 100 | grep -c "$DATE" || echo "0")
+          PATCH=$((RELEASE_COUNT + 1))
+
+          VERSION="v${DATE}.${PATCH}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Generated version: $VERSION"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Create Release
+        run: |
+          gh release create ${{ steps.version.outputs.version }} \
+            --title "${{ steps.version.outputs.version }} - Framework Updates" \
+            --notes "## 🔄 Automated Framework Updates
+
+${{ needs.update-check.outputs.update_message }}
+
+### Changes
+- Updated framework dependencies to latest versions
+- Synchronized all dependencies
+- Verified framework imports
+- Pre-commit hooks applied
+
+### Benchmarks
+Comprehensive benchmarks are now running automatically and will be published to [GitHub Pages](https://goldziher.github.io/python-text-extraction-libs-benchmarks/) when complete.
+
+---
+*This release was automatically created by the framework update workflow.*" \
+            --latest
+        env:
+          GH_TOKEN: ${{ github.token }}

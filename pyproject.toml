@@ -107,6 +107,7 @@ lint.ignore = [
   "TRY",     # Try except block, rules are too strict
   "UP036",   # Version blocks (we support Python 3.13+ only)
 ]
+lint.per-file-ignores."tests/**/*.py" = [ "S101" ] # Allow assert in tests
 lint.isort.known-first-party = [ "src" ]
 lint.mccabe.max-complexity = 15
 lint.pydocstyle.convention = "google"
