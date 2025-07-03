@@ -249,6 +249,23 @@ jobs:
             exit 1
           fi
 
+      - name: Generate Visualizations
+        run: |
+          if [ -f "aggregated-results/aggregated_results.json" ]; then
+            echo "Generating comprehensive visualizations..."
+
+            # Generate all visualizations
+            uv run python -m src.cli visualize \
+              --aggregated-file aggregated-results/aggregated_results.json \
+              --output-dir final-visualizations
+
+            echo "Visualizations generated successfully"
+            ls -la final-visualizations/
+          else
+            echo "No aggregated results found"
+            exit 1
+          fi
+
       - name: Create Summary
         run: |
           if [ -f "final-reports/benchmark_report.md" ]; then
@@ -276,6 +293,14 @@ jobs:
         with:
           name: benchmark-reports-${{ github.run_id }}
           path: final-reports/
+          retention-days: 90
+
+      - name: Upload Visualizations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-visualizations-${{ github.run_id }}
+          path: final-visualizations/
           retention-days: 90
 
       - name: Update Benchmark Summary

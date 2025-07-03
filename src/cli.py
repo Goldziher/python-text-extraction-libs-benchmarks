@@ -258,6 +258,59 @@ def report(aggregated_file: Path | None, output_dir: Path, output_formats: tuple
         sys.exit(1)
 
 
+@main.command(name="visualize")
+@click.option(
+    "--aggregated-file",
+    "-a",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=Path),
+    help="Path to aggregated results JSON file",
+)
+@click.option(
+    "--output-dir",
+    "-o",
+    type=click.Path(file_okay=False, dir_okay=True, path_type=Path),
+    default="visualizations",
+    help="Output directory for generated visualizations",
+)
+def visualize(aggregated_file: Path | None, output_dir: Path) -> None:
+    """Generate comprehensive visualizations from benchmark results."""
+    console.print("[bold blue]Generating benchmark visualizations...[/bold blue]")
+
+    from .visualize import BenchmarkVisualizer
+
+    visualizer = BenchmarkVisualizer(output_dir)
+
+    try:
+        # Find aggregated file if not provided
+        if not aggregated_file:
+            default_file = Path("aggregated-results/aggregated_results.json")
+            if default_file.exists():
+                aggregated_file = default_file
+            else:
+                console.print("[red]No aggregated results found. Use --aggregated-file or run aggregate first.[/red]")
+                sys.exit(1)
+
+        # Generate all visualizations
+        generated_files = visualizer.generate_all_visualizations(aggregated_file)
+
+        console.print(f"[green]✓ Generated {len(generated_files)} visualizations:[/green]")
+        for file_path in generated_files:
+            console.print(f"  - {file_path}")
+
+        # Generate summary metrics for README
+        import json
+
+        summary = visualizer.generate_summary_metrics(aggregated_file)
+        summary_file = output_dir / "summary_metrics.json"
+        with open(summary_file, "w") as f:
+            json.dump(summary, f, indent=2)
+        console.print(f"[green]✓ Generated summary metrics: {summary_file}[/green]")
+
+    except Exception as e:
+        console.print(f"[red]✗ Visualization generation failed: {e}[/red]")
+        sys.exit(1)
+
+
 @main.command(name="list-frameworks")
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON array")
 def list_frameworks(output_json: bool) -> None:

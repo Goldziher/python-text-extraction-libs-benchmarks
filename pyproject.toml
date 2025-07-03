@@ -36,6 +36,7 @@ dependencies = [
   "matplotlib>=3.8.0",
   "msgspec>=0.18.0",
   "pandas>=2.2.0",
+  "plotly>=5.15.0",
   "psutil>=7.0.0",
   "rich>=14.0.0",
   "seaborn>=0.13.0",

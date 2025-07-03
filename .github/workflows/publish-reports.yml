@@ -1,0 +1,281 @@
+name: Publish Benchmark Reports
+
+on:
+  workflow_run:
+    workflows: ["Comprehensive Benchmarks"]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Benchmark run ID to publish'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Get Latest Benchmark Run
+        id: get-run
+        run: |
+          if [ -n "${{ github.event.inputs.run_id }}" ]; then
+            RUN_ID="${{ github.event.inputs.run_id }}"
+          else
+            # Get the most recent successful comprehensive benchmark run
+            RUN_ID=$(gh run list --workflow=comprehensive-benchmarks.yml --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+          fi
+          echo "run-id=$RUN_ID" >> $GITHUB_OUTPUT
+          echo "Using benchmark run ID: $RUN_ID"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Benchmark Artifacts
+        run: |
+          RUN_ID="${{ steps.get-run.outputs.run-id }}"
+
+          # Download aggregated results
+          gh run download $RUN_ID --pattern "aggregated-benchmark-results-*" --dir downloads/
+
+          # Download reports
+          gh run download $RUN_ID --pattern "benchmark-reports-*" --dir downloads/
+
+          # Download visualizations
+          gh run download $RUN_ID --pattern "benchmark-visualizations-*" --dir downloads/
+
+          # List downloaded files
+          echo "Downloaded artifacts:"
+          find downloads/ -type f | head -15
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Organize Downloaded Files
+        run: |
+          # Create organized structure
+          mkdir -p {aggregated-results,reports,visualizations}
+
+          # Move aggregated results
+          find downloads/ -name "aggregated_results.json" -exec cp {} aggregated-results/ \;
+          find downloads/ -name "all_summaries.json" -exec cp {} aggregated-results/ \;
+
+          # Move reports
+          find downloads/ -name "benchmark_report.md" -exec cp {} reports/ \;
+          find downloads/ -name "benchmark_metrics.json" -exec cp {} reports/ \;
+          find downloads/ -name "benchmark_report.html" -exec cp {} reports/ \;
+
+          # Move visualizations if they exist from artifacts
+          find downloads/ -name "*.png" -exec cp {} visualizations/ \; 2>/dev/null || true
+          find downloads/ -name "*.html" -path "*/final-visualizations/*" -exec cp {} visualizations/ \; 2>/dev/null || true
+          find downloads/ -name "summary_metrics.json" -exec cp {} visualizations/ \; 2>/dev/null || true
+
+          echo "Organized files:"
+          ls -la aggregated-results/ reports/ visualizations/
+
+      - name: Generate Visualizations
+        run: |
+          if [ -f "aggregated-results/aggregated_results.json" ]; then
+            # Check if we already have visualizations from artifacts
+            if [ "$(ls -A visualizations/ 2>/dev/null)" ]; then
+              echo "Using visualizations from artifacts"
+              ls -la visualizations/
+            else
+              echo "Generating comprehensive visualizations..."
+              uv run python -m src.cli visualize \
+                --aggregated-file aggregated-results/aggregated_results.json \
+                --output-dir visualizations
+
+              echo "Generated visualizations:"
+              ls -la visualizations/
+            fi
+          else
+            echo "No aggregated results found"
+            exit 1
+          fi
+
+      - name: Update README
+        run: |
+          if [ -f "visualizations/summary_metrics.json" ]; then
+            echo "Updating README with latest results..."
+            uv run python src/update_readme.py \
+              --summary-file visualizations/summary_metrics.json \
+              --readme-path README.md \
+              --visualizations-dir visualizations \
+              --run-id "${{ steps.get-run.outputs.run-id }}"
+
+            echo "README updated successfully"
+          else
+            echo "No summary metrics found"
+            exit 1
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Create Pages Structure
+        run: |
+          mkdir -p pages
+
+          # Copy all reports and visualizations to pages directory
+          cp -r reports/ pages/
+          cp -r visualizations/ pages/
+
+          # Create index page
+          cat > pages/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Benchmark Reports</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 20px; }
+                  .container { max-width: 1200px; margin: 0 auto; }
+                  .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+                  .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin: 20px 0; }
+                  .chart-item { text-align: center; }
+                  .chart-item img { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; }
+                  a { color: #0066cc; text-decoration: none; }
+                  a:hover { text-decoration: underline; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>📊 Python Text Extraction Libraries Benchmark Results</h1>
+
+                  <div class="section">
+                      <h2>🎯 Interactive Dashboard</h2>
+                      <p><a href="visualizations/interactive_dashboard.html">📈 Open Interactive Dashboard</a></p>
+                  </div>
+
+                  <div class="section">
+                      <h2>📊 Performance Charts</h2>
+                      <div class="chart-grid">
+                          <div class="chart-item">
+                              <h3>Performance Comparison</h3>
+                              <img src="visualizations/performance_comparison.png" alt="Performance Comparison">
+                          </div>
+                          <div class="chart-item">
+                              <h3>Throughput Analysis</h3>
+                              <img src="visualizations/throughput_comparison.png" alt="Throughput Comparison">
+                          </div>
+                          <div class="chart-item">
+                              <h3>Success Rate Analysis</h3>
+                              <img src="visualizations/success_rate_comparison.png" alt="Success Rate Comparison">
+                          </div>
+                          <div class="chart-item">
+                              <h3>Performance Heatmap</h3>
+                              <img src="visualizations/performance_heatmap.png" alt="Performance Heatmap">
+                          </div>
+                          <div class="chart-item">
+                              <h3>Memory Usage</h3>
+                              <img src="visualizations/memory_usage.png" alt="Memory Usage">
+                          </div>
+                          <div class="chart-item">
+                              <h3>Category Analysis</h3>
+                              <img src="visualizations/category_analysis.png" alt="Category Analysis">
+                          </div>
+                      </div>
+                  </div>
+
+                  <div class="section">
+                      <h2>📋 Detailed Reports</h2>
+                      <ul>
+                          <li><a href="reports/benchmark_report.html">🌐 HTML Report</a></li>
+                          <li><a href="reports/benchmark_report.md">📝 Markdown Report</a></li>
+                          <li><a href="reports/benchmark_metrics.json">📊 JSON Metrics</a></li>
+                      </ul>
+                  </div>
+
+                  <div class="section">
+                      <h2>🔗 Links</h2>
+                      <ul>
+                          <li><a href="https://github.com/Goldziher/python-text-extraction-libs-benchmarks">📂 Repository</a></li>
+                          <li><a href="https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions">⚙️ GitHub Actions</a></li>
+                      </ul>
+                  </div>
+              </div>
+          </body>
+          </html>
+          EOF
+
+          echo "Pages structure created:"
+          find pages/ -type f | head -20
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Commit Updated README
+        if: success()
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          if git diff --quiet README.md; then
+            echo "No changes to README"
+          else
+            git add README.md
+            git commit -m "docs: update README with latest benchmark results
+
+Updated from benchmark run ${{ steps.get-run.outputs.run-id }}
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+            git push
+            echo "README updated and committed"
+          fi
+
+      - name: Create Release Summary
+        run: |
+          echo "## 📊 Benchmark Reports Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Benchmark Run:** ${{ steps.get-run.outputs.run-id }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Pages URL:** ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📈 Available Reports" >> $GITHUB_STEP_SUMMARY
+          echo "- [Interactive Dashboard](${{ steps.deployment.outputs.page_url }}visualizations/interactive_dashboard.html)" >> $GITHUB_STEP_SUMMARY
+          echo "- [HTML Report](${{ steps.deployment.outputs.page_url }}reports/benchmark_report.html)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Full Report Index](${{ steps.deployment.outputs.page_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Visualizations Generated" >> $GITHUB_STEP_SUMMARY
+          echo "- Performance comparison charts" >> $GITHUB_STEP_SUMMARY
+          echo "- Success rate analysis" >> $GITHUB_STEP_SUMMARY
+          echo "- Resource utilization graphs" >> $GITHUB_STEP_SUMMARY
+          echo "- Framework comparison heatmaps" >> $GITHUB_STEP_SUMMARY
+          echo "- Interactive Plotly dashboard" >> $GITHUB_STEP_SUMMARY
