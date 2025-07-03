@@ -159,15 +159,7 @@ jobs:
             echo "Generated $RESULT_COUNT benchmark results for ${{ matrix.framework }} on ${{ matrix.category }} documents"
 
             # Check for any failures
-            FAILURES=$(uv run python -c "
-import msgspec
-from src.types import BenchmarkResult, ExtractionStatus
-with open('$OUTPUT_DIR/benchmark_results.json', 'rb') as f:
-    data = msgspec.json.decode(f.read())
-    results = [BenchmarkResult(**r) if isinstance(r, dict) else r for r in data]
-    failures = [r for r in results if r.status != ExtractionStatus.SUCCESS]
-    print(len(failures))
-            ")
+            FAILURES=$(uv run python -c "import msgspec; data = msgspec.json.decode(open('$OUTPUT_DIR/benchmark_results.json', 'rb').read()); print(sum(1 for r in data if r.get('status') != 'SUCCESS'))")
             echo "Found $FAILURES failed extractions"
           else
             echo "✗ No benchmark results generated"
@@ -262,33 +254,12 @@ with open('$OUTPUT_DIR/benchmark_results.json', 'rb') as f:
           if [ -f "final-reports/benchmark_report.md" ]; then
             echo "## 📊 Benchmark Results Summary" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-
-            # Add key metrics to summary
-            uv run python -c "
-import msgspec
-from pathlib import Path
-
-# Load aggregated results
-with open('aggregated-results/aggregated_results.json', 'rb') as f:
-    data = msgspec.json.decode(f.read())
-
-print(f'**Total Benchmark Runs:** {data[\"total_runs\"]}')
-print(f'**Total Files Processed:** {data[\"total_files_processed\"]}')
-print(f'**Total Processing Time:** {data[\"total_time_seconds\"]:.1f} seconds')
-print(f'**Frameworks Tested:** {len(data[\"framework_summaries\"])}')
-print(f'**Categories Tested:** {len(data[\"category_summaries\"])}')
-print()
-print('**Framework Performance:**')
-for fw, summaries in data['framework_summaries'].items():
-    if summaries:
-        total_files = sum(s['total_files'] for s in summaries)
-        success_files = sum(s['successful_files'] for s in summaries)
-        success_rate = (success_files / total_files * 100) if total_files > 0 else 0
-        print(f'- {fw}: {success_rate:.1f}% success rate ({success_files}/{total_files} files)')
-            " >> $GITHUB_STEP_SUMMARY
-
+            echo "Generated comprehensive benchmark results for multiple frameworks and document categories." >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "📋 **Detailed reports available in artifacts**" >> $GITHUB_STEP_SUMMARY
+            echo "📋 **Detailed reports available in artifacts below**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Key metrics:" >> $GITHUB_STEP_SUMMARY
+            wc -l aggregated-results/*.json | head -3 >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Upload Aggregated Results
@@ -330,13 +301,7 @@ for fw, summaries in data['framework_summaries'].items():
             echo "No changes to benchmark summary"
           else
             git add BENCHMARK_SUMMARY.md
-            git commit -m "chore: update benchmark results summary
-
-Generated from comprehensive benchmark run ${{ github.run_id }}
-
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
+            git commit -m "chore: update benchmark results summary (run ${{ github.run_id }})"
             git push
             echo "Committed updated benchmark summary"
           fi
