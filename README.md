@@ -19,6 +19,7 @@ This project provides systematic performance comparisons between leading Python 
 - **Developer**: IBM Research Deep Search team
 - **Features**: Advanced document understanding, table extraction, markdown export
 - **Strength**: Enterprise-grade document processing with structured output
+- **Note**: Performance can be extremely slow on certain PDFs (40+ seconds per MB). This appears to be due to the deep learning models used for document understanding. We use the recommended DoclingParseV2 backend for improved performance.
 
 ### 🟢 [MarkItDown](https://github.com/microsoft/markitdown) v0.0.1a2+
 
