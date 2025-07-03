@@ -1,0 +1,136 @@
+name: Deploy Results to GitHub Pages
+
+on:
+  workflow_run:
+    workflows: ["Benchmark by Framework"]
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Dependencies
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Download Benchmark Artifacts
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: benchmark-*
+          path: downloaded-results/
+
+      - name: Download Latest Release Artifacts
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          # Get the latest release benchmark run
+          LATEST_RUN=$(gh api repos/${{ github.repository }}/actions/runs \
+            --jq '.workflow_runs[] | select(.event == "release") | select(.name == "Benchmark by Framework") | select(.conclusion == "success") | .id' \
+            | head -1)
+
+          if [ -n "$LATEST_RUN" ]; then
+            echo "Downloading artifacts from run: $LATEST_RUN"
+            gh run download "$LATEST_RUN" --pattern "benchmark-*" --dir downloaded-results/
+          else
+            echo "No successful release benchmark found"
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Aggregate Results
+        run: |
+          # Find all result directories
+          RESULT_DIRS=""
+          for dir in downloaded-results/*/; do
+            if [ -f "${dir}benchmark_results.json" ]; then
+              RESULT_DIRS="$RESULT_DIRS $dir"
+            fi
+          done
+
+          if [ -n "$RESULT_DIRS" ]; then
+            echo "Aggregating results from: $RESULT_DIRS"
+            uv run python -m src.cli aggregate $RESULT_DIRS --output-dir aggregated-results
+          else
+            echo "No valid result directories found"
+            exit 1
+          fi
+
+      - name: Generate Reports
+        run: |
+          # Generate enhanced HTML report
+          uv run python -c "
+from pathlib import Path
+import msgspec
+from src.enhanced_report import EnhancedHTMLReporter
+from src.report import ReportGenerator
+
+# Load aggregated results
+with open('aggregated-results/aggregated_results.json', 'rb') as f:
+    # Need to handle the msgspec loading properly
+    import json
+    data = json.load(f)
+
+    # Convert to proper types
+    from src.types import AggregatedResults
+    aggregated = AggregatedResults(**data)
+
+# Generate enhanced HTML report
+reporter = EnhancedHTMLReporter()
+output_dir = Path('public')
+output_dir.mkdir(exist_ok=True)
+
+reporter.generate_html_report(aggregated, output_dir / 'index.html')
+
+# Also generate JSON metrics
+generator = ReportGenerator()
+generator.generate_json_metrics(aggregated, output_dir / 'benchmark_metrics.json')
+
+print('Reports generated successfully')
+"
+
+      - name: Create 404 Page
+        run: |
+          cp public/index.html public/404.html
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

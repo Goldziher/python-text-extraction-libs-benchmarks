@@ -5,7 +5,7 @@
 - **Main CLI**: `uv run python -m src.cli <command>`
 - **Test Documents**: `test_documents/` (94 files, ~210MB)
 - **CI Workflows**: `.github/workflows/benchmark-by-framework.yml` (recommended)
-- **Key Timeouts**: 300s per extraction, 120min per CI job
+- **Key Timeouts**: 300s per extraction, 150min per CI job
 - **Cache Clearing**: Kreuzberg cache cleared before each benchmark
 
 ## Repository Overview

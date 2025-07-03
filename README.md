@@ -2,6 +2,10 @@
 
 A comprehensive benchmarking suite comparing the performance of popular Python text extraction frameworks on macOS with CPU-only processing.
 
+### 📊 [View Latest Benchmark Results](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)
+
+The benchmark results are automatically published to GitHub Pages after each release.
+
 ## Overview
 
 This project provides systematic performance comparisons between leading Python text extraction libraries, focusing on real-world usage patterns and resource efficiency. The benchmarks are designed to help developers choose the most appropriate framework for their specific use cases.
@@ -26,6 +30,7 @@ This project provides systematic performance comparisons between leading Python 
 - **Developer**: Microsoft
 - **Features**: Lightweight converter to Markdown for LLM processing
 - **Strength**: Fast, simple conversion optimized for AI workflows
+- **Note**: Requires extended timeout (2.5 hours) for medium documents due to processing overhead on larger files. While fast on small documents, performance degrades significantly with file size.
 
 ### 🟡 [Unstructured](https://github.com/Unstructured-IO/unstructured) v0.16.11+
 
@@ -159,10 +164,10 @@ Each framework runs in a separate CI job to ensure:
 #### 6. **Error Handling & Timeouts**
 
 - **Per-extraction timeout**: 300 seconds (5 minutes) default
-- **Job-level timeout**: 120 minutes (2 hours) for CI jobs
+- **Job-level timeout**: 150 minutes (2.5 hours) for CI jobs
 - **Graceful degradation**: Missing dependencies handled transparently
 - **Detailed error logging**: Error types and messages captured
-- **Note**: Docling may timeout on medium documents with 2-hour limit
+- **Extended timeout rationale**: Set to 2.5 hours to accommodate MarkItDown's processing of medium documents (observed ~2.5 hour requirement). This ensures comprehensive results for all frameworks except Docling, which may still timeout on complex PDFs.
 
 #### 7. **CI/CD Pipeline**
 
@@ -353,7 +358,7 @@ Run benchmarks with each framework in isolation for better reliability:
 
 ```yaml
 # .github/workflows/benchmark-by-framework.yml
-# Each framework runs in its own job with 2-hour timeout
+# Each framework runs in its own job with 2.5-hour timeout
 ```
 
 **Trigger via GitHub Actions:**
