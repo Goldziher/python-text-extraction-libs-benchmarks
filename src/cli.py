@@ -311,6 +311,69 @@ def visualize(aggregated_file: Path | None, output_dir: Path) -> None:
         sys.exit(1)
 
 
+@main.command(name="quality-assess")
+@click.option(
+    "--results-file",
+    "-r",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=Path),
+    required=True,
+    help="Path to benchmark results JSON file",
+)
+@click.option(
+    "--reference-dir",
+    "-ref",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    help="Directory containing reference text files for comparison",
+)
+@click.option(
+    "--output-file",
+    "-o",
+    type=click.Path(file_okay=True, dir_okay=False, path_type=Path),
+    help="Output file for enhanced results (default: enhanced_<original_name>)",
+)
+def quality_assess(results_file: Path, reference_dir: Path | None, output_file: Path | None) -> None:
+    """Enhance benchmark results with ML-based quality assessment."""
+    console.print("[bold blue]Running quality assessment on benchmark results...[/bold blue]")
+
+    try:
+        from .quality_assessment import enhance_benchmark_results_with_quality
+
+        # Enhance results with quality metrics
+        enhanced_file = enhance_benchmark_results_with_quality(
+            results_file, reference_dir
+        )
+
+        # Move to custom output file if specified
+        if output_file:
+            enhanced_file.rename(output_file)
+            enhanced_file = output_file
+
+        console.print(f"[green]✓ Enhanced results saved to: {enhanced_file}[/green]")
+
+        # Show quality summary
+        import msgspec
+        with open(enhanced_file, "rb") as f:
+            results = msgspec.json.decode(f.read())
+
+        quality_scores = []
+        for result in results:
+            if isinstance(result, dict) and result.get('overall_quality_score') is not None:
+                quality_scores.append(result['overall_quality_score'])
+
+        if quality_scores:
+            avg_quality = sum(quality_scores) / len(quality_scores)
+            console.print(f"[cyan]📊 Quality Summary:[/cyan]")
+            console.print(f"  - Results with quality scores: {len(quality_scores)}")
+            console.print(f"  - Average quality score: {avg_quality:.3f}")
+            console.print(f"  - Quality range: {min(quality_scores):.3f} - {max(quality_scores):.3f}")
+        else:
+            console.print("[yellow]No quality scores generated (no successful extractions with text)[/yellow]")
+
+    except Exception as e:
+        console.print(f"[red]✗ Quality assessment failed: {e}[/red]")
+        sys.exit(1)
+
+
 @main.command(name="list-frameworks")
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON array")
 def list_frameworks(output_json: bool) -> None:

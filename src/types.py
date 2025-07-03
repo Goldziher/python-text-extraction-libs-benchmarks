@@ -161,6 +161,11 @@ class BenchmarkResult(msgspec.Struct, kw_only=True):
     error_type: str | None = None
     error_message: str | None = None
 
+    # Quality metrics (optional, added by quality assessment)
+    quality_metrics: dict[str, Any] | None = None
+    overall_quality_score: float | None = None
+    extracted_text: str | None = None
+
     # Metadata
     attempts: int = 1
     timestamp: float = msgspec.field(default_factory=lambda: __import__("time").time())

@@ -247,6 +247,20 @@ jobs:
             exit 1
           fi
 
+      - name: Run Quality Assessment
+        run: |
+          echo "Running ML-based quality assessment on benchmark results..."
+          
+          # Find all benchmark result files and enhance them with quality metrics
+          find all-results/ -name "benchmark_results.json" | while read -r file; do
+            echo "Assessing quality for: $file"
+            uv run python -m src.cli quality-assess \
+              --results-file "$file" \
+              --output-file "${file%.*}_with_quality.json"
+          done
+          
+          echo "Quality assessment completed"
+
       - name: Generate Visualizations
         run: |
           if [ -f "aggregated-results/aggregated_results.json" ]; then

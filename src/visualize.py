@@ -54,6 +54,9 @@ class BenchmarkVisualizer:
         # Interactive dashboard
         generated_files.extend(self._generate_interactive_dashboard(aggregated))
 
+        # Quality assessment charts (if quality data available)
+        generated_files.extend(self._generate_quality_charts(aggregated))
+
         return generated_files
 
     def _generate_performance_charts(self, aggregated: AggregatedResults) -> list[Path]:
@@ -398,6 +401,19 @@ class BenchmarkVisualizer:
         fig.write_html(dashboard_file)
         files.append(dashboard_file)
 
+        return files
+
+    def _generate_quality_charts(self, aggregated: AggregatedResults) -> list[Path]:
+        """Generate quality assessment visualizations."""
+        files = []
+        
+        # Check if we have quality data
+        quality_data = []
+        has_quality_data = False
+        
+        # This would need to be updated to use quality-enhanced results
+        # For now, return empty to avoid breaking existing functionality
+        
         return files
 
     def generate_summary_metrics(self, aggregated_file: Path) -> dict[str, Any]:
