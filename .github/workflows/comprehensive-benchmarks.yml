@@ -1,0 +1,342 @@
+name: Comprehensive Benchmarks
+
+on:
+  workflow_dispatch:
+    inputs:
+      frameworks:
+        description: 'Frameworks to test (comma-separated or "all")'
+        required: false
+        default: 'all'
+        type: string
+      categories:
+        description: 'Categories to test (comma-separated or "all")'
+        required: false
+        default: 'tiny,small,medium'
+        type: string
+      iterations:
+        description: 'Number of iterations per test'
+        required: false
+        default: '3'
+        type: string
+  schedule:
+    # Run comprehensive benchmarks weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      framework-matrix: ${{ steps.setup-matrix.outputs.framework-matrix }}
+      category-matrix: ${{ steps.setup-matrix.outputs.category-matrix }}
+      iterations: ${{ steps.setup-matrix.outputs.iterations }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Setup Matrix
+        id: setup-matrix
+        run: |
+          # Get available frameworks and categories
+          FRAMEWORKS=$(uv run python -m src.cli list-frameworks --json)
+          CATEGORIES=$(uv run python -m src.cli list-categories --json)
+
+          # Parse input parameters
+          INPUT_FRAMEWORKS="${{ github.event.inputs.frameworks || 'all' }}"
+          INPUT_CATEGORIES="${{ github.event.inputs.categories || 'tiny,small,medium' }}"
+          INPUT_ITERATIONS="${{ github.event.inputs.iterations || '3' }}"
+
+          # Create framework matrix
+          if [ "$INPUT_FRAMEWORKS" = "all" ]; then
+            FRAMEWORK_MATRIX="$FRAMEWORKS"
+          else
+            # Convert comma-separated list to JSON array
+            FRAMEWORK_MATRIX=$(echo "$INPUT_FRAMEWORKS" | sed 's/,/","/g' | sed 's/^/["/' | sed 's/$/"]/')
+          fi
+
+          # Create category matrix
+          if [ "$INPUT_CATEGORIES" = "all" ]; then
+            CATEGORY_MATRIX="$CATEGORIES"
+          else
+            # Convert comma-separated list to JSON array
+            CATEGORY_MATRIX=$(echo "$INPUT_CATEGORIES" | sed 's/,/","/g' | sed 's/^/["/' | sed 's/$/"]/')
+          fi
+
+          echo "framework-matrix=$FRAMEWORK_MATRIX" >> $GITHUB_OUTPUT
+          echo "category-matrix=$CATEGORY_MATRIX" >> $GITHUB_OUTPUT
+          echo "iterations=$INPUT_ITERATIONS" >> $GITHUB_OUTPUT
+
+          echo "Framework matrix: $FRAMEWORK_MATRIX"
+          echo "Category matrix: $CATEGORY_MATRIX"
+          echo "Iterations: $INPUT_ITERATIONS"
+
+  benchmark:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: ${{ fromJson(needs.prepare.outputs.framework-matrix) }}
+        category: ${{ fromJson(needs.prepare.outputs.category-matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        id: setup-python
+        with:
+          python-version: "3.13"
+
+      - name: Cache Python Dependencies
+        id: python-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            .venv
+          key: python-dependencies-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            python-dependencies-${{ runner.os }}-3.13-
+
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Cache and Install APT Packages
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+          version: 1.0
+
+      - name: Run Benchmark
+        run: |
+          # Create unique output directory for this matrix combination
+          OUTPUT_DIR="results-${{ matrix.framework }}-${{ matrix.category }}"
+
+          uv run python -m src.cli benchmark \
+            --framework ${{ matrix.framework }} \
+            --category ${{ matrix.category }} \
+            --iterations ${{ needs.prepare.outputs.iterations }} \
+            --warmup-runs 1 \
+            --timeout 300 \
+            --max-memory-mb 8192 \
+            --concurrent-files 1 \
+            --continue-on-error \
+            --output-dir "$OUTPUT_DIR"
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Verify Results
+        run: |
+          OUTPUT_DIR="results-${{ matrix.framework }}-${{ matrix.category }}"
+
+          if [ -f "$OUTPUT_DIR/benchmark_results.json" ]; then
+            echo "✓ Benchmark results generated successfully"
+            RESULT_COUNT=$(uv run python -c "import msgspec; data = msgspec.json.decode(open('$OUTPUT_DIR/benchmark_results.json', 'rb').read()); print(len(data))")
+            echo "Generated $RESULT_COUNT benchmark results for ${{ matrix.framework }} on ${{ matrix.category }} documents"
+
+            # Check for any failures
+            FAILURES=$(uv run python -c "
+import msgspec
+from src.types import BenchmarkResult, ExtractionStatus
+with open('$OUTPUT_DIR/benchmark_results.json', 'rb') as f:
+    data = msgspec.json.decode(f.read())
+    results = [BenchmarkResult(**r) if isinstance(r, dict) else r for r in data]
+    failures = [r for r in results if r.status != ExtractionStatus.SUCCESS]
+    print(len(failures))
+            ")
+            echo "Found $FAILURES failed extractions"
+          else
+            echo "✗ No benchmark results generated"
+            exit 1
+          fi
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ matrix.framework }}-${{ matrix.category }}-${{ github.run_id }}
+          path: results-${{ matrix.framework }}-${{ matrix.category }}/
+          retention-days: 30
+
+  aggregate:
+    needs: [prepare, benchmark]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Download All Results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: benchmark-results-*-${{ github.run_id }}
+          path: all-results/
+          merge-multiple: true
+
+      - name: List Downloaded Results
+        run: |
+          echo "Downloaded benchmark results:"
+          find all-results/ -name "*.json" | head -20
+          echo "Total result files: $(find all-results/ -name "*.json" | wc -l)"
+
+      - name: Aggregate Results
+        run: |
+          # Find all result directories
+          RESULT_DIRS=""
+          for dir in all-results/*/; do
+            if [ -f "${dir}benchmark_results.json" ]; then
+              RESULT_DIRS="$RESULT_DIRS $dir"
+            fi
+          done
+
+          if [ -n "$RESULT_DIRS" ]; then
+            echo "Aggregating results from: $RESULT_DIRS"
+            uv run python -m src.cli aggregate $RESULT_DIRS --output-dir aggregated-results
+          else
+            echo "No valid result directories found"
+            exit 1
+          fi
+
+      - name: Generate Reports
+        run: |
+          if [ -f "aggregated-results/aggregated_results.json" ]; then
+            echo "Generating comprehensive reports..."
+
+            # Generate all report formats
+            uv run python -m src.cli report \
+              --aggregated-file aggregated-results/aggregated_results.json \
+              --output-dir final-reports \
+              --format markdown \
+              --format json \
+              --format html
+
+            echo "Reports generated successfully"
+            ls -la final-reports/
+          else
+            echo "No aggregated results found"
+            exit 1
+          fi
+
+      - name: Create Summary
+        run: |
+          if [ -f "final-reports/benchmark_report.md" ]; then
+            echo "## 📊 Benchmark Results Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            # Add key metrics to summary
+            uv run python -c "
+import msgspec
+from pathlib import Path
+
+# Load aggregated results
+with open('aggregated-results/aggregated_results.json', 'rb') as f:
+    data = msgspec.json.decode(f.read())
+
+print(f'**Total Benchmark Runs:** {data[\"total_runs\"]}')
+print(f'**Total Files Processed:** {data[\"total_files_processed\"]}')
+print(f'**Total Processing Time:** {data[\"total_time_seconds\"]:.1f} seconds')
+print(f'**Frameworks Tested:** {len(data[\"framework_summaries\"])}')
+print(f'**Categories Tested:** {len(data[\"category_summaries\"])}')
+print()
+print('**Framework Performance:**')
+for fw, summaries in data['framework_summaries'].items():
+    if summaries:
+        total_files = sum(s['total_files'] for s in summaries)
+        success_files = sum(s['successful_files'] for s in summaries)
+        success_rate = (success_files / total_files * 100) if total_files > 0 else 0
+        print(f'- {fw}: {success_rate:.1f}% success rate ({success_files}/{total_files} files)')
+            " >> $GITHUB_STEP_SUMMARY
+
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📋 **Detailed reports available in artifacts**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload Aggregated Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aggregated-benchmark-results-${{ github.run_id }}
+          path: aggregated-results/
+          retention-days: 90
+
+      - name: Upload Final Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-reports-${{ github.run_id }}
+          path: final-reports/
+          retention-days: 90
+
+      - name: Update Benchmark Summary
+        if: success()
+        run: |
+          # Create or update BENCHMARK_SUMMARY.md in the repo
+          cp final-reports/benchmark_report.md BENCHMARK_SUMMARY.md
+
+          # Add metadata header
+          sed -i '1i# 📊 Latest Benchmark Results\n' BENCHMARK_SUMMARY.md
+          sed -i "2i*Generated on: $(date -u '+%Y-%m-%d %H:%M:%S UTC')*" BENCHMARK_SUMMARY.md
+          sed -i "3i*Run ID: ${{ github.run_id }}*\n" BENCHMARK_SUMMARY.md
+
+          echo "Updated BENCHMARK_SUMMARY.md with latest results"
+
+      - name: Commit Results Summary
+        if: success() && github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          if git diff --quiet BENCHMARK_SUMMARY.md; then
+            echo "No changes to benchmark summary"
+          else
+            git add BENCHMARK_SUMMARY.md
+            git commit -m "chore: update benchmark results summary
+
+Generated from comprehensive benchmark run ${{ github.run_id }}
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+            git push
+            echo "Committed updated benchmark summary"
+          fi

@@ -142,13 +142,7 @@ def benchmark(
 
 
 @main.command(name="aggregate")
-@click.option(
-    "--input-dir",
-    "-i",
-    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
-    default=".",
-    help="Input directory containing benchmark results",
-)
+@click.argument("input_dirs", nargs=-1, type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path))
 @click.option(
     "--output-dir",
     "-o",
@@ -156,7 +150,7 @@ def benchmark(
     default="aggregated-results",
     help="Output directory for aggregated results",
 )
-def aggregate(input_dir: Path, output_dir: Path) -> None:
+def aggregate(input_dirs: tuple[Path, ...], output_dir: Path) -> None:
     """Aggregate results from multiple benchmark runs."""
     console.print("[bold blue]Aggregating benchmark results...[/bold blue]")
 
@@ -164,13 +158,20 @@ def aggregate(input_dir: Path, output_dir: Path) -> None:
 
     aggregator = ResultAggregator()
 
-    # Find all result files
-    result_files = list(input_dir.rglob("benchmark_results.json"))
+    # If no input dirs provided, use current directory
+    if not input_dirs:
+        input_dirs = (Path(),)
+
+    # Find all result files from all input directories
+    result_files = []
+    for input_dir in input_dirs:
+        result_files.extend(input_dir.rglob("benchmark_results.json"))
+
     if not result_files:
         console.print("[red]No result files found[/red]")
         sys.exit(1)
 
-    console.print(f"Found {len(result_files)} result files")
+    console.print(f"Found {len(result_files)} result files from {len(input_dirs)} directories")
 
     try:
         aggregated = aggregator.aggregate_results([f.parent for f in result_files])
@@ -187,20 +188,27 @@ def aggregate(input_dir: Path, output_dir: Path) -> None:
 
 @main.command(name="report")
 @click.option(
-    "--results-dir",
-    "-r",
-    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
-    default="aggregated-results",
-    help="Directory containing aggregated results",
+    "--aggregated-file",
+    "-a",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=Path),
+    help="Path to aggregated results JSON file",
 )
 @click.option(
-    "--output-format",
-    "-f",
-    type=str,
-    default="markdown",
-    help="Output format (comma-separated: markdown,json,html)",
+    "--output-dir",
+    "-o",
+    type=click.Path(file_okay=False, dir_okay=True, path_type=Path),
+    default="reports",
+    help="Output directory for generated reports",
 )
-def report(results_dir: Path, output_format: str) -> None:
+@click.option(
+    "--format",
+    "output_formats",
+    multiple=True,
+    type=click.Choice(["markdown", "json", "html"]),
+    default=["markdown"],
+    help="Output format(s) to generate",
+)
+def report(aggregated_file: Path | None, output_dir: Path, output_formats: tuple[str, ...]) -> None:
     """Generate reports from aggregated benchmark results."""
     console.print("[bold blue]Generating benchmark report...[/bold blue]")
 
@@ -208,29 +216,42 @@ def report(results_dir: Path, output_format: str) -> None:
 
     generator = ReportGenerator()
 
-    # Parse output formats
-    formats = [f.strip() for f in output_format.split(",")]
-
     try:
         # Load aggregated results
-        aggregated = generator.load_results(results_dir)
+        if aggregated_file:
+            import msgspec
+
+            with open(aggregated_file, "rb") as f:
+                aggregated = msgspec.json.decode(f.read())
+        else:
+            # Default to looking for aggregated results in current directory
+            default_file = Path("aggregated-results/aggregated_results.json")
+            if default_file.exists():
+                import msgspec
+
+                with open(default_file, "rb") as f:
+                    aggregated = msgspec.json.decode(f.read())
+            else:
+                console.print("[red]No aggregated results found. Use --aggregated-file or run aggregate first.[/red]")
+                sys.exit(1)
+
+        # Create output directory
+        output_dir.mkdir(parents=True, exist_ok=True)
 
         # Generate reports
-        for fmt in formats:
+        for fmt in output_formats:
             if fmt == "markdown":
-                report_path = results_dir / "benchmark_report.md"
+                report_path = output_dir / "benchmark_report.md"
                 generator.generate_markdown_report(aggregated, report_path)
                 console.print(f"[green]✓ Generated markdown report: {report_path}[/green]")
             elif fmt == "json":
-                metrics_path = results_dir / "benchmark_metrics.json"
+                metrics_path = output_dir / "benchmark_metrics.json"
                 generator.generate_json_metrics(aggregated, metrics_path)
                 console.print(f"[green]✓ Generated JSON metrics: {metrics_path}[/green]")
             elif fmt == "html":
-                html_path = results_dir / "benchmark_report.html"
+                html_path = output_dir / "benchmark_report.html"
                 generator.generate_html_report(aggregated, html_path)
                 console.print(f"[green]✓ Generated HTML report: {html_path}[/green]")
-            else:
-                console.print(f"[yellow]Unknown format: {fmt}[/yellow]")
 
     except Exception as e:
         console.print(f"[red]✗ Report generation failed: {e}[/red]")
@@ -238,19 +259,35 @@ def report(results_dir: Path, output_format: str) -> None:
 
 
 @main.command(name="list-frameworks")
-def list_frameworks() -> None:
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON array")
+def list_frameworks(output_json: bool) -> None:
     """List all supported frameworks."""
-    console.print("[bold blue]Available Frameworks:[/bold blue]")
-    for framework in Framework:
-        console.print(f"  - {framework.value}")
+    frameworks = [framework.value for framework in Framework]
+
+    if output_json:
+        import json
+
+        print(json.dumps(frameworks))
+    else:
+        console.print("[bold blue]Available Frameworks:[/bold blue]")
+        for framework in frameworks:
+            console.print(f"  - {framework}")
 
 
 @main.command(name="list-categories")
-def list_categories() -> None:
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON array")
+def list_categories(output_json: bool) -> None:
     """List all available document categories."""
-    console.print("[bold blue]Available Document Categories:[/bold blue]")
-    for cat in DocumentCategory:
-        console.print(f"  - {cat.value}")
+    categories = [cat.value for cat in DocumentCategory]
+
+    if output_json:
+        import json
+
+        print(json.dumps(categories))
+    else:
+        console.print("[bold blue]Available Document Categories:[/bold blue]")
+        for cat in categories:
+            console.print(f"  - {cat}")
 
 
 @main.command(name="list-file-types")
