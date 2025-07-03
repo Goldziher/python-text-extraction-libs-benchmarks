@@ -250,13 +250,16 @@ jobs:
             echo "No changes to README"
           else
             git add README.md
-            git commit -m "docs: update README with latest benchmark results
+            git commit -m "$(cat <<'EOF'
+docs: update README with latest benchmark results
 
 Updated from benchmark run ${{ steps.get-run.outputs.run-id }}
 
 🤖 Generated with [Claude Code](https://claude.ai/code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>"
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
             git push
             echo "README updated and committed"
           fi
