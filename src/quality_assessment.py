@@ -76,8 +76,8 @@ class TextQualityAssessor:
             "word_count": len(words),
             "sentence_count": len([s for s in sentences if s.strip()]),
             "paragraph_count": len([p for p in paragraphs if p.strip()]),
-            "avg_word_length": np.mean([len(word) for word in words]) if words else 0,
-            "avg_sentence_length": np.mean([len(s.split()) for s in sentences if s.strip()]) if sentences else 0,
+            "avg_word_length": float(np.mean([len(word) for word in words])) if words else 0.0,
+            "avg_sentence_length": float(np.mean([len(s.split()) for s in sentences if s.strip()])) if sentences else 0.0,
         }
 
     def _content_quality_metrics(self, text: str) -> dict[str, Any]:

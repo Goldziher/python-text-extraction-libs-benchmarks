@@ -52,7 +52,8 @@ python-text-extraction-libraries-benchmarks-2025/
     - Both synchronous and asynchronous APIs
     - Multiple OCR backend configurations:
         - Default: Uses system Tesseract with auto language detection
-        - Tesseract: Optimized configuration with language-specific settings
+        - Tesseract Optimized: Ngram disabled, dict correction disabled for 30x+ speedup
+        - Tesseract Default: All quality features enabled for comparison
         - EasyOCR: Deep learning OCR with multi-language support
         - PaddleOCR: Specialized for Asian languages
     - Comprehensive format support with OCR capabilities

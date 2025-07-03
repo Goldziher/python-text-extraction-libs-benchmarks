@@ -1,0 +1,49 @@
+version: "1.0"
+project_name: "Python Text Extraction Libraries Benchmarks"
+description: "Comprehensive benchmarking suite for Python text extraction frameworks"
+
+# Kreuzberg Configuration Notes
+kreuzberg_optimizations:
+  tesseract_optimized:
+    description: "Default Tesseract configuration is already optimal"
+    settings:
+      psm: "AUTO_ONLY"  # Default - faster than AUTO without orientation detection
+      # Benchmarking showed disabling ngram/dict actually makes it slower
+      # Keep defaults for best performance
+    use_cases:
+      - "All document types"
+      - "Balanced speed and quality"
+  
+  tesseract_default:
+    description: "Default Tesseract configuration with all quality features"
+    settings:
+      language_model_ngram_on: true  # Better for degraded text
+      tessedit_enable_dict_correction: true  # Correct OCR errors
+      psm: "AUTO_ONLY"  # Default
+    use_cases:
+      - "Scanned documents"
+      - "Historical documents"
+      - "Noisy/degraded images"
+
+# Benchmark Configuration
+benchmark_settings:
+  iterations: 3  # Default number of iterations per document
+  timeout: 300  # Seconds per extraction
+  warmup_runs: 0  # No warmup for cold-start performance
+  cache_clearing: true  # Clear Kreuzberg cache between runs
+
+# Test Document Categories
+document_categories:
+  tiny: "< 100KB"
+  small: "100KB - 1MB"
+  medium: "1MB - 10MB"
+  large: "10MB - 50MB"
+  huge: "> 50MB"
+
+# Performance Expectations
+expected_performance:
+  kreuzberg_tesseract:
+    small_files: "12.8 files/sec"
+    medium_files: "3.7 files/sec"
+  kreuzberg_tesseract_default:
+    note: "Similar speed but potentially better quality on degraded text"

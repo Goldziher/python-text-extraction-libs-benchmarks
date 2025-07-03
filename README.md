@@ -34,7 +34,7 @@ graph LR
 
 - **[Kreuzberg](https://github.com/Goldziher/kreuzberg)** - Fast async/sync text extraction
     - Default (sync/async)
-    - With Tesseract OCR (optimized)
+    - With Tesseract OCR (default configuration)
     - With EasyOCR backend
     - With PaddleOCR backend
 - **[Docling](https://github.com/docling-project/docling)** - IBM's deep learning document processor

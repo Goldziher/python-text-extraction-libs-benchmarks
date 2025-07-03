@@ -78,6 +78,12 @@ def main() -> None:
     default=True,
     help="Continue benchmarking even if some files fail",
 )
+@click.option(
+    "--enable-quality-assessment",
+    is_flag=True,
+    default=False,
+    help="Enable quality assessment by saving extracted text for analysis",
+)
 def benchmark(
     framework: str,
     category: str,
@@ -86,6 +92,7 @@ def benchmark(
     warmup_runs: int,
     timeout: int,
     continue_on_error: bool,
+    enable_quality_assessment: bool,
 ) -> None:
     """Run comprehensive benchmarks for text extraction frameworks."""
     console.print("[bold blue]Starting comprehensive benchmark run...[/bold blue]")
@@ -125,6 +132,7 @@ def benchmark(
         warmup_runs=warmup_runs,
         timeout_seconds=timeout,
         continue_on_error=continue_on_error,
+        save_extracted_text=enable_quality_assessment,
     )
 
     # Run benchmarks
@@ -133,6 +141,18 @@ def benchmark(
     try:
         results = asyncio.run(runner.run_benchmark_suite())
         console.print(f"[green]✓ Completed {len(results)} benchmarks[/green]")
+        
+        # Automatically run quality assessment if enabled
+        if enable_quality_assessment:
+            console.print("[bold blue]Running quality assessment...[/bold blue]")
+            results_file = output_dir / "benchmark_results.json"
+            if results_file.exists():
+                from .quality_assessment import enhance_benchmark_results_with_quality
+                enhanced_file = enhance_benchmark_results_with_quality(results_file)
+                console.print(f"[green]✓ Quality assessment completed: {enhanced_file}[/green]")
+            else:
+                console.print("[yellow]Warning: Could not find results file for quality assessment[/yellow]")
+        
     except KeyboardInterrupt:
         console.print("\n[yellow]Benchmark interrupted by user[/yellow]")
         sys.exit(1)

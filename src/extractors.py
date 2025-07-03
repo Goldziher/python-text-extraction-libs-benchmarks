@@ -166,18 +166,20 @@ class KreuzbergTesseractExtractor:
         # Detect language from filename
         lang_code = get_language_config(file_path)
 
-        # Configure Tesseract with optimal settings for speed
+        # Use default configuration - benchmarking showed it's already optimal
         config = ExtractionConfig(
             ocr_backend="tesseract",
             ocr_config=TesseractConfig(
                 language=lang_code,
-                psm=PSMMode.SINGLE_BLOCK,  # Faster than AUTO for most documents
+                # Default configuration with PSM AUTO_ONLY
             ),
             force_ocr=False,  # Only use OCR when needed
         )
 
         result = kreuzberg.extract_file_sync(file_path, config=config)
         return result.content
+
+
 
 
 class KreuzbergEasyOCRExtractor:

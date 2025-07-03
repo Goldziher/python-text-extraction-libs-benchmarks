@@ -211,6 +211,7 @@ class ComprehensiveBenchmarkRunner:
                     word_count=extraction_result.word_count,
                     error_type=extraction_result.error_type,
                     error_message=extraction_result.error_message,
+                    extracted_text=extraction_result.extracted_text,
                     attempts=attempt + 1,
                 )
 
@@ -263,6 +264,7 @@ class ComprehensiveBenchmarkRunner:
                         status=ExtractionStatus.FAILED,
                         error_type=type(e).__name__,
                         error_message=str(e) if self.config.detailed_errors else "Extraction failed",
+                        extracted_text=None,
                         attempts=attempt + 1,
                     )
 
