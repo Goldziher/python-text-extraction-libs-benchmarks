@@ -1,512 +1,109 @@
 # Python Text Extraction Libraries Benchmarks 2025
 
-A comprehensive benchmarking suite comparing the performance of popular Python text extraction frameworks on macOS with CPU-only processing.
+Automated performance benchmarking of Python text extraction frameworks, updated whenever new framework versions are released.
 
-### 📊 [View Latest Benchmark Results](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)
+## 📊 [View Live Results](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)
 
-The benchmark results are automatically published to GitHub Pages after each release.
+## 🏆 Latest Performance Results
 
-## Overview
+| Framework     | Speed (files/sec) | Success Rate | Avg Time (s) | Notes                                       |
+| ------------- | ----------------- | ------------ | ------------ | ------------------------------------------- |
+| **Kreuzberg** | **19.5**          | 79.1%        | **0.12**     | 🚀 Lightning fast - 100x faster than others |
+| Unstructured  | 1.5               | 90.1%        | 11.70        | Best success rate                           |
+| MarkItDown    | 10.5              | 74.4%        | 14.36        | Struggles with medium files                 |
+| Docling       | 0.14              | 82.8%        | 12.28        | ⚠️ Extremely slow on PDFs                   |
 
-This project provides systematic performance comparisons between leading Python text extraction libraries, focusing on real-world usage patterns and resource efficiency. The benchmarks are designed to help developers choose the most appropriate framework for their specific use cases.
+*Results from 94 test documents (210MB) across multiple formats and languages*
+
+## 🔄 Automated Update Pipeline
+
+```mermaid
+graph LR
+    A[Daily Check] -->|New Version Found| B[Update Frameworks]
+    B --> C[Run Tests]
+    C --> D[Create Release]
+    D --> E[Run Benchmarks]
+    E --> F[Deploy Results]
+    F --> G[GitHub Pages]
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style G fill:#9f9,stroke:#333,stroke-width:2px
+```
 
 ## Tested Frameworks
 
-### 🏆 [Kreuzberg](https://github.com/Goldziher/kreuzberg) v3.3.0+
+- **[Kreuzberg](https://github.com/Goldziher/kreuzberg)** - Fast async/sync text extraction
+- **[Docling](https://github.com/docling-project/docling)** - IBM's deep learning document processor
+- **[MarkItDown](https://github.com/microsoft/markitdown)** - Microsoft's LLM-optimized converter
+- **[Unstructured](https://github.com/Unstructured-IO/unstructured)** - Enterprise ETL solution
 
-- **Sync & Async**: Both synchronous and asynchronous APIs tested
-- **Features**: PDF, images, office documents, OCR support with multiple backends
-- **Strength**: Comprehensive format support with async capabilities
+## Quick Start
 
-### 🔵 [Docling](https://github.com/docling-project/docling) v2.15.0+
+```bash
+# Clone and install
+git clone https://github.com/Goldziher/python-text-extraction-libs-benchmarks
+cd python-text-extraction-libs-benchmarks
+uv sync --dev
 
-- **Developer**: IBM Research Deep Search team
-- **Features**: Advanced document understanding, table extraction, markdown export
-- **Strength**: Enterprise-grade document processing with structured output
-- **Note**: Performance can be extremely slow on certain PDFs (40+ seconds per MB). This appears to be due to the deep learning models used for document understanding. We use the recommended DoclingParseV2 backend for improved performance.
+# Run benchmarks
+uv run python -m src.cli benchmark
 
-### 🟢 [MarkItDown](https://github.com/microsoft/markitdown) v0.0.1a2+
+# Run specific framework
+uv run python -m src.cli benchmark --framework kreuzberg_sync --category small
+```
 
-- **Developer**: Microsoft
-- **Features**: Lightweight converter to Markdown for LLM processing
-- **Strength**: Fast, simple conversion optimized for AI workflows
-- **Note**: Requires extended timeout (2.5 hours) for medium documents due to processing overhead on larger files. While fast on small documents, performance degrades significantly with file size.
+## Test Dataset
 
-### 🟡 [Unstructured](https://github.com/Unstructured-IO/unstructured) v0.16.11+
-
-- **Developer**: Unstructured.io
-- **Features**: 35+ sources, 64+ file types, enterprise ETL capabilities
-- **Strength**: Broad format support with enterprise features
+- **94 documents** across PDF, DOCX, HTML, images, and more
+- **Multiple languages**: English, Hebrew, German, Chinese, Japanese, Korean
+- **Size categories**: Tiny (\<100KB), Small (100KB-1MB), Medium (1MB-10MB), Large (10MB-50MB)
+- **Special cases**: OCR, rotated text, tables, formulas, encrypted PDFs
 
 ## Methodology
 
-### Test Documents Collection
+1. **Framework Isolation**: Each framework runs in its own CI job
+1. **Fair Comparison**: Caches cleared, 3 iterations per test
+1. **Comprehensive Metrics**: Speed, memory, CPU, success rate
+1. **Timeout Protection**: 5min per file, 2.5h per job
+1. **Automatic Updates**: New framework versions trigger fresh benchmarks
 
-Our benchmarks use a comprehensive collection of 94 test documents across multiple formats, languages, and complexity levels. This diverse dataset ensures realistic performance measurements that reflect real-world usage scenarios.
+## Key Findings
 
-#### Document Categories
+### 🚀 Kreuzberg
 
-##### PDF Documents (24 files)
+- **100x faster** than other frameworks
+- Processes ~20 files/second
+- Best for high-volume extraction
 
-- **Size range**: 17KB to 59MB
-- **Types**: Academic papers, technical manuals, presentations, scanned documents
-- **Special cases**: OCR test PDFs (rotated at 90°, 180°, 270°), copy-protected PDFs, PDFs with embedded images and tables
-- **Examples**: Intel Architecture Manual (50MB), Proof of Concept magazine (59MB), simple memos (13KB)
+### ⚠️ Docling
 
-##### HTML Documents (15 files)
+- Advanced ML features but **extremely slow** (40+ seconds/MB)
+- Often timeouts on medium PDFs
+- Best for complex document understanding when speed isn't critical
 
-- **Languages**: English, Hebrew, German, Chinese
-- **Sources**: Wikipedia Good Articles of varying lengths
-- **Size range**: 70KB to 1.6MB
-- **Examples**: World War II article (1.1MB), consciousness philosophy article (715KB), shortest Good Article (70KB)
+### 📊 Unstructured
 
-##### Office Documents (35 files)
+- **Highest success rate** (90%)
+- Balanced performance
+- Best for diverse document types
 
-- **DOCX** (14 files): Tables, equations, headers, formatting, text boxes, EMF graphics
-- **PPTX** (4 files): Standard presentations, image-heavy slides, malformed documents
-- **XLSX** (2 files): Spreadsheets with formulas and data
-- **XLS** (1 file): Legacy Excel format
-- **ODT** (2 files): OpenDocument text format
-- **EPUB** (2 files): E-book format including a 31.6MB book
-- **MSG** (3 files): Outlook message format with attachments
-- **EML** (1 file): Standard email format
+### 🟢 MarkItDown
 
-##### Markdown & Text Documents (9 files)
-
-- **Markdown**: README files, tables, converted Wikipedia articles
-- **Plain text**: Simple text, War and Peace excerpt, various encodings
-- **Markup formats**: reStructuredText, Org-mode
-
-##### Images (11 files)
-
-- **Formats**: JPEG, PNG, BMP
-- **Content**: OCR test images, multi-language text (Chinese, Japanese, Korean), document scans
-- **Special cases**: Vertical Japanese text, mixed English-Korean text
-
-##### Data Formats (4 files)
-
-- **CSV**: Simple data tables
-- **JSON**: Structured data
-- **YAML**: Configuration format
-- **XLSX**: Excel with CSV data
-
-#### Language Coverage
-
-- **Primary**: English
-- **International**: Hebrew (ישראל, תל אביב), German (Deutschland, Berlin), Chinese (中国, 北京市)
-- **OCR Languages**: Japanese, Korean, Chinese
-
-#### Document Characteristics
-
-- **Size range**: 91 bytes to 59MB
-- **Total collection size**: ~210MB
-- **Special features**:
-    - Mathematical equations and formulas
-    - Complex tables and layouts
-    - Rotated and skewed text
-    - Copy protection
-    - Multiple languages and scripts
-    - Embedded images and graphics
-    - Email attachments
-    - Various text encodings
-
-### Test Environment
-
-- **Platform**: macOS (Darwin 24.5.0)
-- **Processing**: CPU-only (no GPU acceleration)
-- **Python**: 3.13+
-- **Concurrency**: Single-threaded per extraction (async where supported)
-
-### Benchmarking Methodology
-
-#### 1. **Performance Metrics**
-
-- **Extraction Time**: Wall-clock time from start to completion
-- **Memory Usage**: Peak RSS memory consumption during extraction
-- **CPU Utilization**: Average CPU percentage during processing
-- **Success Rate**: Percentage of successful extractions
-- **Throughput**: Files processed per second
-- **Quality Assessment**: ML-based text quality evaluation (optional)
-
-#### 2. **Document Categorization**
-
-Documents are automatically categorized by size for systematic testing:
-
-- **Tiny**: < 100KB (quick validation tests)
-- **Small**: 100KB - 1MB (typical documents)
-- **Medium**: 1MB - 10MB (complex documents, books)
-- **Large**: 10MB - 50MB (technical manuals)
-- **Huge**: > 50MB (comprehensive references)
-
-#### 3. **Framework Isolation**
-
-Each framework runs in a separate CI job to ensure:
-
-- **No interference**: Slow frameworks don't block others
-- **Better visibility**: Clear per-framework success/failure status
-- **Optimal timeouts**: Each framework gets appropriate time limits
-- **Fair comparison**: Cache cleared between runs (especially for Kreuzberg)
-
-#### 4. **Comprehensive Testing**
-
-- **Multiple iterations**: Default 3 runs per document for statistical significance
-- **Warmup runs**: Optional warmup to stabilize performance
-- **Retry logic**: Automatic retry with exponential backoff on failures
-- **Continue on error**: Failed extractions don't stop the benchmark suite
-
-#### 5. **Resource Monitoring**
-
-- **Memory tracking**: Peak and average RSS usage via `psutil`
-- **CPU monitoring**: Average CPU percentage during extraction
-- **I/O metrics**: Read/write operations and bytes transferred
-- **Sampling rate**: 50ms intervals for accurate profiling
-
-#### 6. **Error Handling & Timeouts**
-
-- **Per-extraction timeout**: 300 seconds (5 minutes) default
-- **Job-level timeout**: 150 minutes (2.5 hours) for CI jobs
-- **Graceful degradation**: Missing dependencies handled transparently
-- **Detailed error logging**: Error types and messages captured
-- **Extended timeout rationale**: Set to 2.5 hours to accommodate MarkItDown's processing of medium documents (observed ~2.5 hour requirement). This ensures comprehensive results for all frameworks except Docling, which may still timeout on complex PDFs.
-
-#### 7. **CI/CD Pipeline**
-
-Our GitHub Actions workflow provides:
-
-- **Framework-specific jobs**: Independent execution for each framework
-- **Parallel category processing**: Each framework tests all categories in parallel
-- **Automatic aggregation**: Results combined across all successful jobs
-- **Comprehensive reporting**: Markdown, HTML, and JSON reports generated
-- **Visual analytics**: Charts and interactive dashboards
-- **Artifact storage**: 30-90 day retention for all results
-
-### Statistical Approach
-
-- **Multiple iterations**: 3 runs per document by default
-- **Cold-start performance**: No warmup by default (realistic usage)
-- **Outlier handling**: Median and standard deviation calculated
-- **Fair comparison**: Caches cleared between frameworks
-
-## Installation & Setup
-
-### Prerequisites
-
-- Python 3.13+
-- macOS (tested) or Linux
-- 8GB+ RAM recommended for comprehensive tests
-
-### Quick Start
-
-```bash
-# Clone repository
-git clone <repository-url>
-cd python-text-extraction-libraries-benchmarks-2025
-
-# Install with uv (recommended)
-uv sync --dev
-
-# Or with pip
-pip install -e ".[dev]"
-
-# Install pre-commit hooks
-uv run pre-commit install --hook-type commit-msg
-uv run pre-commit install
-```
-
-### Optional Dependencies
-
-Some frameworks require additional system dependencies:
-
-```bash
-# For OCR support (Kreuzberg)
-brew install tesseract
-
-# For advanced table extraction (Kreuzberg + GMFT)
-# GPU support recommended but not required
-
-# For advanced document processing features
-```
-
-## Usage Guide
-
-### Running Benchmarks
-
-#### 1. **List Available Options**
-
-```bash
-# Show supported frameworks
-uv run python -m src.cli list-frameworks
-
-# Show supported document categories
-uv run python -m src.cli list-categories
-
-# Show supported file types
-uv run python -m src.cli list-file-types
-```
-
-#### 2. **Basic Benchmark Run**
-
-```bash
-# Test all frameworks on all categories
-uv run python -m src.cli benchmark
-
-# Test specific framework and category
-uv run python -m src.cli benchmark \
-  --framework kreuzberg_sync \
-  --category tiny \
-  --iterations 3
-
-# Test multiple frameworks
-uv run python -m src.cli benchmark \
-  --framework kreuzberg_sync,kreuzberg_async,markitdown \
-  --category small,medium \
-  --iterations 5
-```
-
-#### 3. **Advanced Configuration**
-
-```bash
-# Custom output directory and timeout
-uv run python -m src.cli benchmark \
-  --framework docling \
-  --category large \
-  --output-dir custom_results \
-  --timeout 900 \
-  --warmup-runs 2
-
-# Full comprehensive benchmark
-uv run python -m src.cli benchmark \
-  --framework all \
-  --category all \
-  --iterations 3 \
-  --continue-on-error
-```
-
-### Analyzing Results
-
-#### 1. **Console Output**
-
-Results are displayed in rich progress bars and summaries during execution:
-
-```
-[10:05:53] Starting comprehensive benchmark run...
-[10:05:54] Running kreuzberg_sync on tiny documents (3 iterations)
-Progress: ████████████ 100% | 15/15 files | 0:02:15 elapsed
-✓ Completed 15 benchmarks for kreuzberg_sync on tiny documents
-```
-
-#### 2. **File Structure**
-
-Results are automatically saved in comprehensive formats:
-
-```
-results-framework-category/
-├─ benchmark_results.json           # Individual benchmark results
-├─ profiling_data.json             # Resource usage metrics
-└─ package_sizes.md                # Package installation sizes
-
-# After aggregation:
-aggregated-results/
-├─ aggregated_results.json         # Combined cross-framework results
-└─ summary_statistics.json         # Performance summaries
-
-# After report generation:
-reports/
-├─ benchmark_report.md             # Comprehensive markdown report
-├─ benchmark_report.html           # Interactive HTML report
-└─ benchmark_metrics.json          # Machine-readable metrics
-
-# After visualization generation:
-visualizations/
-├─ interactive_dashboard.html      # Plotly interactive dashboard
-├─ performance_comparison.png      # Framework performance charts
-├─ throughput_comparison.png       # Files per second analysis
-├─ success_rate_comparison.png     # Success rate by framework
-├─ memory_usage.png               # Peak memory consumption
-├─ performance_heatmap.png        # Framework vs category heatmap
-└─ category_analysis.png          # Document category difficulty
-```
-
-#### 3. **Generate Reports from Results**
-
-```bash
-# Aggregate multiple benchmark runs
-uv run python -m src.cli aggregate results-*/ --output-dir combined-results
-
-# Generate comprehensive reports
-uv run python -m src.cli report \
-  --aggregated-file combined-results/aggregated_results.json \
-  --output-dir final-reports \
-  --format markdown --format html --format json
-
-# Create visualizations
-uv run python -m src.cli visualize \
-  --aggregated-file combined-results/aggregated_results.json \
-  --output-dir final-charts
-
-# Run quality assessment
-uv run python -m src.cli quality-assess \
-  --results-file results-framework-category/benchmark_results.json \
-  --output-file enhanced_results.json
-```
-
-### CI/CD Workflows
-
-#### 1. **Framework-Specific Benchmarks** (Recommended)
-
-Run benchmarks with each framework in isolation for better reliability:
-
-```yaml
-# .github/workflows/benchmark-by-framework.yml
-# Each framework runs in its own job with 2.5-hour timeout
-```
-
-**Trigger via GitHub Actions:**
-
-The benchmark workflow runs automatically on release publication, or can be triggered manually:
-
-```bash
-# Manual trigger - all frameworks on default categories
-gh workflow run "Benchmark by Framework"
-
-# Manual trigger - specific frameworks
-gh workflow run "Benchmark by Framework" \
-  -f frameworks="kreuzberg_sync,docling" \
-  -f categories="tiny,small" \
-  -f iterations="5"
-
-# Create a release to trigger benchmarks
-gh release create v1.0.0 --title "Version 1.0.0" --notes "Release notes"
-```
-
-**Benefits:**
-
-- ✅ Framework isolation (no interference)
-- ✅ Parallel execution within each framework
-- ✅ Clear visibility of failures
-- ✅ Appropriate timeouts per framework
-- ✅ Automatic result aggregation
-
-#### 2. **Monitoring Progress**
-
-The workflow provides detailed progress tracking:
-
-- Individual job status per framework
-- Real-time artifact uploads
-- Automatic aggregation after all jobs complete
-- Summary report in GitHub Actions UI
-
-### Custom Test Documents
-
-#### 1. **Directory Structure**
-
-```
-your_test_files/
-�� documents/
-   �� sample.pdf
-   �� presentation.pptx
-   �� data.xlsx
-�� web/
-   �� article.html
-   �� page.htm
-�� text/
-    �� readme.md
-    �� notes.txt
-```
-
-#### 2. **Supported Formats**
-
-- **PDF**: `.pdf` (including image-based PDFs)
-- **Office**: `.docx`, `.pptx`, `.xlsx`
-- **Web**: `.html`, `.htm`
-- **Text**: `.txt`, `.md`
-
-#### 3. **Running Custom Tests**
-
-```bash
-uv run benchmark run --test-files-dir your_test_files
-```
+- Good for small files
+- Performance degrades with file size
+- Lightweight and simple
 
 ## Contributing
 
-### Development Setup
-
-```bash
-# Install development dependencies
-uv sync --dev
-
-# Install pre-commit hooks
-uv run pre-commit install --hook-type commit-msg
-uv run pre-commit install
-
-# Run tests
-uv run pytest
-
-# Format code
-uv run ruff format
-uv run ruff check --fix
-```
-
-### Adding New Frameworks
-
-1. **Create Extractor Class**:
-
-```python
-# In python_text_extraction_benchmarks/extractors.py
-class NewFrameworkExtractor:
-    def extract_text(self, file_path: str) -> str:
-        # Implementation here
-        return extracted_text
-```
-
-1. **Update Framework Enum**:
-
-```python
-# In python_text_extraction_benchmarks/types.py
-class Framework(str, Enum):
-    NEW_FRAMEWORK = "new_framework"
-```
-
-1. **Register in Factory**:
-
-```python
-# In python_text_extraction_benchmarks/extractors.py
-def get_extractor(framework: str):
-    extractors = {
-        "new_framework": NewFrameworkExtractor,
-        # ...
-    }
-```
-
-### Commit Guidelines
-
-This project uses [Conventional Commits](https://www.conventionalcommits.org/):
-
-```bash
-# Feature additions
-git commit -m "feat: add support for new document format"
-
-# Bug fixes
-git commit -m "fix: handle timeout errors gracefully"
-
-# Performance improvements
-git commit -m "perf: optimize memory usage in profiler"
-
-# Documentation updates
-git commit -m "docs: update installation instructions"
-```
+1. Add new framework in `src/extractors.py`
+1. Update `Framework` enum in `src/types.py`
+1. Add to dependencies in `pyproject.toml`
+1. Submit PR - benchmarks run automatically
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- **Kreuzberg**: [@Goldziher](https://github.com/Goldziher) for the comprehensive text extraction library
-- **Docling**: IBM Research Deep Search team for advanced document processing
-- **MarkItDown**: Microsoft for the lightweight LLM-optimized converter
-- **Unstructured**: Unstructured.io team for enterprise-grade document processing
+MIT - See [LICENSE](LICENSE)
 
 ______________________________________________________________________
 
-*Benchmark results may vary based on document complexity, system specifications, and framework versions. These tests were conducted on macOS with CPU-only processing as of January 2025.*
+*Benchmarks run on GitHub Actions (Ubuntu) with CPU-only processing. Results update automatically when frameworks release new versions.*
