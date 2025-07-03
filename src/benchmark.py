@@ -169,6 +169,14 @@ class ComprehensiveBenchmarkRunner:
         category: DocumentCategory,
     ) -> BenchmarkResult | None:
         """Benchmark a single file with retry logic."""
+        # Clear kreuzberg cache before each benchmark to ensure fair comparison
+        if "kreuzberg" in framework.value:
+            import shutil
+
+            cache_dir = Path(".kreuzberg")
+            if cache_dir.exists():
+                shutil.rmtree(cache_dir)
+
         for attempt in range(self.config.max_retries):
             try:
                 # Run extraction with timeout

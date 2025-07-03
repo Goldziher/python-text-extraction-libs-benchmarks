@@ -70,7 +70,8 @@ class DoclingExtractor:
     def extract_text(self, file_path: str) -> str:
         """Extract text using Docling."""
         result = self.converter.convert(file_path)
-        return result.document.export_to_markdown()
+        # Use text export instead of markdown for better performance
+        return result.document.export_to_text()
 
 
 class MarkItDownExtractor:

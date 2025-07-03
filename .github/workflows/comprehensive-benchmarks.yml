@@ -178,7 +178,7 @@ jobs:
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
-            --timeout 600 \
+            --timeout 300 \
             --continue-on-error \
             --output-dir "$OUTPUT_DIR"
         env:
