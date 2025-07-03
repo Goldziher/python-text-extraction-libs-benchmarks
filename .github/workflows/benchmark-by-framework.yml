@@ -67,7 +67,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'kreuzberg_sync')
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix:
@@ -120,7 +120,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'kreuzberg_async')
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix:
@@ -173,7 +173,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'docling')
     runs-on: ubuntu-latest
-    timeout-minutes: 90  # Give docling more time
+    timeout-minutes: 240  # Give docling more time
     strategy:
       fail-fast: false
       matrix:
@@ -226,7 +226,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'markitdown')
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix:
@@ -279,7 +279,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'unstructured')
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix:
