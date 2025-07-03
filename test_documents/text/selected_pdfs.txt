@@ -1,0 +1,33 @@
+# Selected PDFs for Benchmarking
+
+## Small PDFs (< 100KB)
+1. Perfect Hash Functions - Slides.pdf (17KB) - Very small, likely simple layout
+2. The Hideous Name - 1985 (pike85hideous).pdf (32KB) - Academic paper from 1985
+3. Program Design in the UNIX Environment..pdf (26KB) - Technical document
+
+## Medium PDFs (100KB - 5MB)
+4. 5-Level Paging and 5-Level EPT - Intel - Revision 1.1 (May, 2017).pdf (183KB) - Intel technical document
+5. A Comparison of Programming Languages in Economics (16-Jun-2014).pdf (206KB) - Academic research paper
+6. A Brief Introduction to the Standard Annotation Language (SAL) - 2006.pdf (350KB) - Technical specification
+7. 100G Networking Technology Overview - Slides - Toronto (August 2016).pdf (1.4MB) - Presentation slides
+8. A comprehensive study of Convergent and Commutative Replicated Data Types.pdf (1.5MB) - Academic paper
+9. A Comprehensive Study of Main-Memory Partitioning and its Application to Large-Scale Comparison- and Radix-Sort (sigmod14I).pdf (1.8MB) - Research paper
+10. A Catalogue of Optimizing Transformations (1971-allen-catalog).pdf (2.2MB) - Classic CS paper
+11. A Course in Machine Learning (ciml-v0_9-all).pdf (2.5MB) - Textbook with mixed content
+
+## Large PDFs (5MB - 20MB)
+12. A Brief Introduction to Neural Networks (neuronalenetze-en-zeta2-2col-dkrieselcom).pdf (6.1MB) - Complex academic content
+13. Assembly Language for Beginners (AL4B-EN).pdf (8.6MB) - Programming textbook
+14. An Introduction To Statistical Learning with Applications in R (ISLR Sixth Printing).pdf (9.0MB) - Statistics textbook
+15. Algebra, Topology, Differential Calculus, and Optimization Theory For Computer Science and Machine Learning - 2019 (math-deep).pdf (20MB) - Mathematical content
+
+## Very Large PDFs (> 20MB)
+16. Bayesian Data Analysis - Third Edition (13th Feb 2020).pdf (34MB) - Statistical textbook
+17. Intel 64 and IA-32 Architectures Software Developer's Manual - Combined Volumes 1-4 - June 2021 (325462-sdm-vol-1-2abcd-3abcd).pdf (50MB) - Massive technical manual
+18. Proof of Concept or GTFO - v13 (October 18th, 2016).pdf (59MB) - Complex mixed content magazine
+
+## Summary
+- Total: 18 PDFs
+- Size range: 17KB to 59MB
+- Content types: Technical manuals, academic papers, textbooks, presentation slides, programming guides
+- Special characteristics: Various layouts, mathematical content, code snippets, mixed media

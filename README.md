@@ -32,141 +32,77 @@ This project provides systematic performance comparisons between leading Python 
 - **Features**: 35+ sources, 64+ file types, enterprise ETL capabilities
 - **Strength**: Broad format support with enterprise features
 
-## Benchmark Results Summary
-
-### Performance Comparison (Comprehensive Analysis)
-
-| Framework           | File Type | Time (s) | Memory (MB) | CPU (%) | Text Quality (chars) | Success Rate     |
-| ------------------- | --------- | -------- | ----------- | ------- | -------------------- | ---------------- |
-| **Kreuzberg Async** | HTML      | 0.0003   | 543.7       | 94.6    | 316                  | 100%             |
-| **Kreuzberg Async** | Markdown  | 0.0002   | 543.7       | 89.6    | 641                  | 100%             |
-| **Kreuzberg Async** | Text      | 0.0002   | 543.7       | 93.7    | 240                  | 100%             |
-| **Kreuzberg Sync**  | HTML      | 0.0055   | 543.7       | 81.0    | 316                  | 100%             |
-| **Kreuzberg Sync**  | Markdown  | 0.0006   | 543.7       | 71.2    | 641                  | 100%             |
-| **Kreuzberg Sync**  | Text      | 0.0006   | 543.7       | 69.0    | 240                  | 100%             |
-| **MarkItDown**      | HTML      | 0.0049   | 564.5       | 382.3   | 276                  | 100%             |
-| **MarkItDown**      | Markdown  | 0.0054   | 574.3       | 595.4   | 641                  | 100%             |
-| **MarkItDown**      | Text      | 0.0042   | 584.4       | 412.9   | 240                  | 100%             |
-| **Docling**         | HTML      | 0.0133   | 776.5       | 91.8    | 312                  | 100%             |
-| **Docling**         | Markdown  | 0.0172   | 776.8       | 99.3    | 667                  | 100%             |
-| **Docling**         | Text      | -        | -           | -       | -                    | 0% (unsupported) |
-| **Unstructured**    | HTML      | 0.6437   | 773.9       | 91.6    | 232                  | 100%             |
-| **Unstructured**    | Markdown  | 0.0201   | 774.4       | 91.4    | 485                  | 100%             |
-| **Unstructured**    | Text      | 0.0044   | 774.4       | 99.4    | 237                  | 100%             |
-
-### Performance Rankings
-
-#### 🏃 **Speed (Extraction Time)**
-
-1. **Kreuzberg Async**: 0.0002-0.0003s (20x faster than sync)
-1. **Kreuzberg Sync**: 0.0006-0.0055s
-1. **MarkItDown**: 0.0042-0.0054s
-1. **Docling**: 0.0133-0.0172s
-1. **Unstructured**: 0.0044-0.6437s (varies dramatically by format)
-
-#### 💾 **Memory Efficiency**
-
-1. **Kreuzberg**: 543.7 MB (most efficient)
-1. **MarkItDown**: 564.5-584.4 MB (+7% vs Kreuzberg)
-1. **Unstructured**: 773.9-774.4 MB (+42% vs Kreuzberg)
-1. **Docling**: 776.5-776.8 MB (+43% vs Kreuzberg)
-
-#### ⚡ **CPU Usage Patterns**
-
-- **Low CPU**: Kreuzberg Sync (69-81%)
-- **Moderate CPU**: Kreuzberg Async (90-95%), Docling (92-99%), Unstructured (91-99%)
-- **Very High CPU**: MarkItDown (382-595%)
-
-#### 📝 **Text Quality & Accuracy**
-
-- **Best HTML preservation**: Kreuzberg (316 chars) > Docling (312) > MarkItDown (276) > Unstructured (232)
-- **Best Markdown processing**: Docling (667 chars) > Kreuzberg/MarkItDown (641) > Unstructured (485)
-- **Consistent text extraction**: All frameworks extract identical 240 chars from plain text
-- **Format support**: Kreuzberg/MarkItDown/Unstructured support all formats; Docling excludes plain text
-
-#### 💾 **Installation Size Efficiency**
-
-1. **Kreuzberg**: 71.0 MB (20 deps) - Most lightweight
-1. **Unstructured**: 145.8 MB (54 deps) - Moderate footprint
-1. **MarkItDown**: 250.7 MB (25 deps) - ML inference overhead
-1. **Docling**: 1,031.9 MB (88 deps) - Full ML stack included
-
-### Key Performance Insights
-
-#### 🚀 **Speed Champion: Kreuzberg Async**
-
-- **Fastest extraction**: 0.0002-0.0003 seconds across all formats
-- **30x faster** than Kreuzberg Sync for HTML processing
-- **Optimal for**: High-throughput, real-time applications
-
-#### 💾 **Resource Efficiency: Kreuzberg**
-
-- **Lowest memory footprint**: ~536MB baseline
-- **Consistent performance**: Minimal variation across file types
-- **Optimal for**: Memory-constrained environments
-
-#### ⚖️ **Balanced Performance: MarkItDown**
-
-- **Good speed**: 0.00-0.01 seconds
-- **Moderate memory**: 556-575MB
-- **Optimal for**: LLM preprocessing pipelines
-
-#### 🏢 **Enterprise Features: Unstructured**
-
-- **Comprehensive support**: Handles complex document structures
-- **Higher resource usage**: 823MB memory baseline
-- **Slower on simple files**: 5.13s for HTML (initialization overhead)
-- **Optimal for**: Complex document processing workflows
-
-## Installation Size Analysis
-
-### Minimal Installation Footprint Comparison
-
-| Library          | Size (MB) | Dependencies | Size Efficiency    | Key Components                          |
-| ---------------- | --------- | ------------ | ------------------ | --------------------------------------- |
-| **Kreuzberg**    | 71.0      | 20           | **Most Efficient** | BeautifulSoup4, lxml, Pillow, pypdfium2 |
-| **Unstructured** | 145.8     | 54           | Good               | NLTK, pypdf, cryptography, pydantic     |
-| **MarkItDown**   | 250.7     | 25           | Moderate           | ONNX Runtime, numpy, magika             |
-| **Docling**      | 1,031.9   | 88           | **Largest**        | PyTorch, transformers, scikit-image     |
-
-### Installation Size Insights
-
-#### 🏆 **Lightweight Champion: Kreuzberg (71MB)**
-
-- **14.5x smaller** than Docling, **2x smaller** than Unstructured
-- Minimal dependencies (20 packages) with focused functionality
-- Core libraries: PDF processing, HTML parsing, image handling
-- **Optimal for**: Resource-constrained environments, edge deployments
-
-#### ⚖️ **Balanced Footprint: Unstructured (146MB)**
-
-- Moderate size with comprehensive format support
-- 54 dependencies including NLTK for natural language processing
-- Good balance of features vs installation overhead
-- **Optimal for**: General-purpose document processing
-
-#### 🔧 **ML-Enhanced: MarkItDown (251MB)**
-
-- Includes ONNX Runtime for machine learning inference
-- Microsoft's Magika for advanced file type detection
-- 25 dependencies but some are computationally heavy
-- **Optimal for**: AI workflows requiring file type intelligence
-
-#### 🧠 **Enterprise ML Stack: Docling (1,032MB)**
-
-- **Over 1GB** installation due to full ML model stack
-- PyTorch 2.7.1, transformers, computer vision libraries
-- 88 dependencies including complete ML ecosystem
-- **Optimal for**: Advanced document understanding, when storage is not a concern
-
-### Installation Recommendations by Use Case
-
-- **Minimal Footprint**: Choose **Kreuzberg** - smallest installation with comprehensive features
-- **ML-Powered Processing**: Choose **Docling** - accept large size for advanced document understanding
-- **Enterprise Flexibility**: Choose **Unstructured** - good balance of features and reasonable size
-- **LLM Integration**: Choose **MarkItDown** - optimized for AI workflows despite moderate size
-
 ## Methodology
+
+### Test Documents Collection
+
+Our benchmarks use a comprehensive collection of 94 test documents across multiple formats, languages, and complexity levels. This diverse dataset ensures realistic performance measurements that reflect real-world usage scenarios.
+
+#### Document Categories
+
+##### PDF Documents (24 files)
+
+- **Size range**: 17KB to 59MB
+- **Types**: Academic papers, technical manuals, presentations, scanned documents
+- **Special cases**: OCR test PDFs (rotated at 90°, 180°, 270°), copy-protected PDFs, PDFs with embedded images and tables
+- **Examples**: Intel Architecture Manual (50MB), Proof of Concept magazine (59MB), simple memos (13KB)
+
+##### HTML Documents (15 files)
+
+- **Languages**: English, Hebrew, German, Chinese
+- **Sources**: Wikipedia Good Articles of varying lengths
+- **Size range**: 70KB to 1.6MB
+- **Examples**: World War II article (1.1MB), consciousness philosophy article (715KB), shortest Good Article (70KB)
+
+##### Office Documents (35 files)
+
+- **DOCX** (14 files): Tables, equations, headers, formatting, text boxes, EMF graphics
+- **PPTX** (4 files): Standard presentations, image-heavy slides, malformed documents
+- **XLSX** (2 files): Spreadsheets with formulas and data
+- **XLS** (1 file): Legacy Excel format
+- **ODT** (2 files): OpenDocument text format
+- **EPUB** (2 files): E-book format including a 31.6MB book
+- **MSG** (3 files): Outlook message format with attachments
+- **EML** (1 file): Standard email format
+
+##### Markdown & Text Documents (9 files)
+
+- **Markdown**: README files, tables, converted Wikipedia articles
+- **Plain text**: Simple text, War and Peace excerpt, various encodings
+- **Markup formats**: reStructuredText, Org-mode
+
+##### Images (11 files)
+
+- **Formats**: JPEG, PNG, BMP
+- **Content**: OCR test images, multi-language text (Chinese, Japanese, Korean), document scans
+- **Special cases**: Vertical Japanese text, mixed English-Korean text
+
+##### Data Formats (4 files)
+
+- **CSV**: Simple data tables
+- **JSON**: Structured data
+- **YAML**: Configuration format
+- **XLSX**: Excel with CSV data
+
+#### Language Coverage
+
+- **Primary**: English
+- **International**: Hebrew (ישראל, תל אביב), German (Deutschland, Berlin), Chinese (中国, 北京市)
+- **OCR Languages**: Japanese, Korean, Chinese
+
+#### Document Characteristics
+
+- **Size range**: 91 bytes to 59MB
+- **Total collection size**: ~210MB
+- **Special features**:
+    - Mathematical equations and formulas
+    - Complex tables and layouts
+    - Rotated and skewed text
+    - Copy protection
+    - Multiple languages and scripts
+    - Embedded images and graphics
+    - Email attachments
+    - Various text encodings
 
 ### Test Environment
 
@@ -209,13 +145,14 @@ async with AsyncPerformanceProfiler() as metrics:
 - **Graceful Degradation**: Missing dependencies handled transparently
 - **Retry Logic**: No retries (single-shot measurements)
 
-### File Types Tested
+### Test Document Selection Criteria
 
-- **Text**: `.txt` - Plain text files
-- **HTML**: `.html/.htm` - Web documents with markup
-- **Markdown**: `.md` - Structured text documents
-- **PDF**: `.pdf` - Portable document format
-- **Office**: `.docx`, `.pptx`, `.xlsx` - Microsoft Office documents
+1. **Size Diversity**: Documents from 91 bytes to 59MB to test memory efficiency
+1. **Format Coverage**: All major document formats used in enterprise and academic settings
+1. **Language Variety**: Multiple languages and scripts to test Unicode handling
+1. **Complexity Levels**: From simple text to complex layouts with tables, images, and formulas
+1. **Real-World Examples**: Actual documents from Wikipedia, technical manuals, and open-source projects
+1. **Edge Cases**: Rotated text, copy protection, malformed documents, special encodings
 
 ### Statistical Approach
 
