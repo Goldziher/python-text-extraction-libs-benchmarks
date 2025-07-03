@@ -142,8 +142,6 @@ jobs:
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
             --timeout 300 \
-            --max-memory-mb 8192 \
-            --concurrent-files 1 \
             --continue-on-error \
             --output-dir "$OUTPUT_DIR"
         env:
