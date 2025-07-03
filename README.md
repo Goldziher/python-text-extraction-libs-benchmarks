@@ -208,99 +208,119 @@ brew install tesseract
 
 ```bash
 # Show supported frameworks
-uv run benchmark list-frameworks
+uv run python -m src.cli list-frameworks
+
+# Show supported document categories
+uv run python -m src.cli list-categories
 
 # Show supported file types
-uv run benchmark list-file-types
+uv run python -m src.cli list-file-types
 ```
 
 #### 2. **Basic Benchmark Run**
 
 ```bash
-# Test all frameworks on all file types
-uv run benchmark run --test-files-dir sample_documents
+# Test all frameworks on all categories
+uv run python -m src.cli benchmark
 
-# Test specific frameworks
-uv run benchmark run \
-  --test-files-dir sample_documents \
-  --frameworks kreuzberg_sync \
-  --frameworks kreuzberg_async \
-  --frameworks markitdown
+# Test specific framework and category
+uv run python -m src.cli benchmark \
+  --framework kreuzberg_sync \
+  --category tiny \
+  --iterations 3
 
-# Test specific file types
-uv run benchmark run \
-  --test-files-dir sample_documents \
-  --file-types pdf \
-  --file-types docx \
-  --file-types html
+# Test multiple frameworks
+uv run python -m src.cli benchmark \
+  --framework kreuzberg_sync,kreuzberg_async,markitdown \
+  --category small,medium \
+  --iterations 5
 ```
 
 #### 3. **Advanced Configuration**
 
 ```bash
 # Custom output directory and timeout
-uv run benchmark run \
-  --test-files-dir /path/to/documents \
+uv run python -m src.cli benchmark \
+  --framework docling \
+  --category large \
   --output-dir custom_results \
-  --timeout 600 \
-  --no-charts
+  --timeout 900 \
+  --warmup-runs 2
 
-# Performance optimization
-uv run benchmark run \
-  --test-files-dir sample_documents \
-  --frameworks kreuzberg_async \
-  --timeout 60
+# Full comprehensive benchmark
+uv run python -m src.cli benchmark \
+  --framework all \
+  --category all \
+  --iterations 3 \
+  --continue-on-error
 ```
 
 ### Analyzing Results
 
 #### 1. **Console Output**
 
-Results are displayed in rich tables during execution:
+Results are displayed in rich progress bars and summaries during execution:
 
 ```
-Selected frameworks: ['kreuzberg_sync', 'markitdown']
-Selected file types: ['pdf', 'html']
-Test files directory: sample_documents
-Output directory: results
-
-┌──────────────┬───────────┬──────────┬─────────┬─────────┐
-│ Framework    │ File Type │ Avg Time │ Memory  │ Success │
-│              │           │   (s)    │  (MB)   │  Rate   │
-├──────────────┼───────────┼──────────┼─────────┼─────────┤
-│ kreuzberg_sy │ html      │   0.01   │  535.6  │ 100.0%  │
-│ markitdown   │ html      │   0.01   │  556.3  │ 100.0%  │
-└──────────────┴───────────┴──────────┴─────────┴─────────┘
+[10:05:53] Starting comprehensive benchmark run...
+[10:05:54] Running kreuzberg_sync on tiny documents (3 iterations)
+Progress: ████████████ 100% | 15/15 files | 0:02:15 elapsed
+✓ Completed 15 benchmarks for kreuzberg_sync on tiny documents
 ```
 
-#### 2. **File Exports**
+#### 2. **File Structure**
 
-Results are automatically saved in multiple formats:
+Results are automatically saved in comprehensive formats:
 
 ```
-results/
-�� detailed_results.csv     # Per-file extraction details
-�� summary_results.csv      # Aggregated statistics
-�� results.json            # Raw results (msgspec format)
-�� summaries.json          # Summary statistics (msgspec format)
-�� charts/                 # Performance visualizations
-    �� extraction_time_comparison.png
-    �� memory_usage_comparison.png
-    �� success_rate_comparison.png
-    �� performance_heatmap.png
+results-framework-category/
+├─ benchmark_results.json           # Individual benchmark results
+├─ profiling_data.json             # Resource usage metrics
+└─ package_sizes.md                # Package installation sizes
+
+# After aggregation:
+aggregated-results/
+├─ aggregated_results.json         # Combined cross-framework results
+└─ summary_statistics.json         # Performance summaries
+
+# After report generation:
+reports/
+├─ benchmark_report.md             # Comprehensive markdown report
+├─ benchmark_report.html           # Interactive HTML report
+└─ benchmark_metrics.json          # Machine-readable metrics
+
+# After visualization generation:
+visualizations/
+├─ interactive_dashboard.html      # Plotly interactive dashboard
+├─ performance_comparison.png      # Framework performance charts
+├─ throughput_comparison.png       # Files per second analysis
+├─ success_rate_comparison.png     # Success rate by framework
+├─ memory_usage.png               # Peak memory consumption
+├─ performance_heatmap.png        # Framework vs category heatmap
+└─ category_analysis.png          # Document category difficulty
 ```
 
-#### 3. **Generate Reports from Existing Data**
+#### 3. **Generate Reports from Results**
 
 ```bash
-# Regenerate console table
-uv run benchmark report --results-dir results --output-format table
+# Aggregate multiple benchmark runs
+uv run python -m src.cli aggregate results-*/ --output-dir combined-results
 
-# Export to CSV
-uv run benchmark report --results-dir results --output-format csv
+# Generate comprehensive reports
+uv run python -m src.cli report \
+  --aggregated-file combined-results/aggregated_results.json \
+  --output-dir final-reports \
+  --format markdown --format html --format json
 
-# Generate charts only
-uv run benchmark report --results-dir results --output-format charts
+# Create visualizations
+uv run python -m src.cli visualize \
+  --aggregated-file combined-results/aggregated_results.json \
+  --output-dir final-charts
+
+# Run quality assessment
+uv run python -m src.cli quality-assess \
+  --results-file results-framework-category/benchmark_results.json \
+  --output-file enhanced_results.json
 ```
 
 ### Custom Test Documents
