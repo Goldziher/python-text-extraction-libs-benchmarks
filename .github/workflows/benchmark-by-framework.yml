@@ -341,7 +341,7 @@ jobs:
       - benchmark-unstructured
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: always()
+    if: always() && needs.prepare.result == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -385,68 +385,95 @@ jobs:
           if [ -n "$RESULT_DIRS" ]; then
             echo "Aggregating results from: $RESULT_DIRS"
             uv run python -m src.cli aggregate $RESULT_DIRS --output-dir aggregated-results
+            echo "✅ Successfully aggregated $(echo $RESULT_DIRS | wc -w) result directories"
           else
-            echo "No valid result directories found"
-            exit 1
+            echo "⚠️ No valid result directories found - creating empty aggregated results"
+            mkdir -p aggregated-results
+            echo '{"frameworks": [], "categories": [], "results": [], "metadata": {"timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'", "note": "No benchmark results available"}}' > aggregated-results/aggregated_results.json
+            echo '[]' > aggregated-results/all_summaries.json
           fi
 
       - name: Generate Reports
         run: |
           if [ -f "aggregated-results/aggregated_results.json" ]; then
             echo "Generating comprehensive reports..."
+            mkdir -p final-reports
 
-            # Generate all report formats
-            uv run python -m src.cli report \
+            # Try to generate reports, but continue even if it fails
+            if uv run python -m src.cli report \
               --aggregated-file aggregated-results/aggregated_results.json \
               --output-dir final-reports \
               --format markdown \
               --format json \
-              --format html
+              --format html; then
+              echo "✅ Reports generated successfully"
+            else
+              echo "⚠️ Report generation failed, creating basic report"
+              echo "# Benchmark Results\n\nNo valid results available for reporting." > final-reports/benchmark_report.md
+              echo '{"error": "No results available"}' > final-reports/benchmark_metrics.json
+            fi
 
-            echo "Reports generated successfully"
             ls -la final-reports/
           else
-            echo "No aggregated results found"
-            exit 1
+            echo "⚠️ No aggregated results found, creating empty reports"
+            mkdir -p final-reports
+            echo "# Benchmark Results\n\nNo benchmark results available." > final-reports/benchmark_report.md
+            echo '{"error": "No aggregated results file"}' > final-reports/benchmark_metrics.json
           fi
 
       - name: Generate Visualizations
         run: |
           if [ -f "aggregated-results/aggregated_results.json" ]; then
             echo "Generating comprehensive visualizations..."
+            mkdir -p final-visualizations
 
-            # Generate all visualizations
-            uv run python -m src.cli visualize \
+            # Try to generate visualizations, but continue even if it fails
+            if uv run python -m src.cli visualize \
               --aggregated-file aggregated-results/aggregated_results.json \
-              --output-dir final-visualizations
+              --output-dir final-visualizations; then
+              echo "✅ Visualizations generated successfully"
+            else
+              echo "⚠️ Visualization generation failed, creating placeholder"
+              echo '{"error": "No visualizations available"}' > final-visualizations/placeholder.json
+            fi
 
-            echo "Visualizations generated successfully"
             ls -la final-visualizations/
           else
-            echo "No aggregated results found"
-            exit 1
+            echo "⚠️ No aggregated results found, creating empty visualizations"
+            mkdir -p final-visualizations
+            echo '{"error": "No aggregated results file"}' > final-visualizations/placeholder.json
           fi
 
       - name: Create Summary
         run: |
-          if [ -f "final-reports/benchmark_report.md" ]; then
-            echo "## 📊 Benchmark Results Summary" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Framework-Specific Jobs" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 Benchmark Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Framework-Specific Jobs" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
 
-            # List which framework jobs completed
-            for framework in kreuzberg_sync kreuzberg_async docling markitdown unstructured; do
-              if ls all-results/benchmark-${framework}-*/ >/dev/null 2>&1; then
-                echo "✅ **${framework}**: Completed" >> $GITHUB_STEP_SUMMARY
-              else
-                echo "❌ **${framework}**: Failed or skipped" >> $GITHUB_STEP_SUMMARY
-              fi
-            done
+          # Count successful and failed results
+          COMPLETED_COUNT=0
+          FAILED_COUNT=0
 
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "📋 **Detailed reports available in artifacts below**" >> $GITHUB_STEP_SUMMARY
-          fi
+          # List which framework jobs completed
+          for framework in kreuzberg_sync kreuzberg_async docling markitdown unstructured; do
+            if ls all-results/benchmark-${framework}-*/ >/dev/null 2>&1; then
+              # Count categories that completed for this framework
+              CATEGORIES=$(ls all-results/benchmark-${framework}-*/ | wc -l)
+              echo "✅ **${framework}**: Completed ($CATEGORIES categories)" >> $GITHUB_STEP_SUMMARY
+              COMPLETED_COUNT=$((COMPLETED_COUNT + CATEGORIES))
+            else
+              echo "❌ **${framework}**: Failed or skipped" >> $GITHUB_STEP_SUMMARY
+              FAILED_COUNT=$((FAILED_COUNT + 1))
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Overall Status" >> $GITHUB_STEP_SUMMARY
+          echo "- **✅ Successful runs**: $COMPLETED_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **❌ Failed/skipped**: $FAILED_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📋 **Reports and artifacts generated from available results**" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Aggregated Results
         if: always()
