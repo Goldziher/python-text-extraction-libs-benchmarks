@@ -223,8 +223,8 @@ class AggregatedResults(msgspec.Struct, kw_only=True):
     # Results by category
     category_summaries: dict[DocumentCategory, list[BenchmarkSummary]]
 
-    # Cross-tabulation
-    framework_category_matrix: dict[tuple[Framework, DocumentCategory], BenchmarkSummary]
+    # Cross-tabulation (framework_category as string key)
+    framework_category_matrix: dict[str, BenchmarkSummary]
 
     # Failure analysis
     failure_patterns: dict[str, int]  # error_type -> count

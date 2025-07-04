@@ -114,9 +114,7 @@ class ResultAggregator:
 
         return dict(grouped)
 
-    def _create_matrix(
-        self, results: list[BenchmarkResult]
-    ) -> dict[tuple[Framework, DocumentCategory], BenchmarkSummary]:
+    def _create_matrix(self, results: list[BenchmarkResult]) -> dict[str, BenchmarkSummary]:
         """Create framework/category cross-tabulation matrix."""
         matrix = {}
 
@@ -125,7 +123,9 @@ class ResultAggregator:
                 cell_results = [r for r in results if r.framework == framework and r.category == category]
                 if cell_results:
                     summary = self._create_summary(framework, category, cell_results)
-                    matrix[(framework, category)] = summary
+                    # Use string key format: "framework_category"
+                    key = f"{framework.value}_{category.value}"
+                    matrix[key] = summary
 
         return matrix
 
