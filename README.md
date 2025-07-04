@@ -1,117 +1,56 @@
 # Python Text Extraction Libraries Benchmarks 2025
 
-Automated performance benchmarking of Python text extraction frameworks, updated whenever new framework versions are released.
+> **🎯 [📊 VIEW LIVE BENCHMARK RESULTS →](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)**
 
-## 📊 [View Live Results](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)
+Automated performance benchmarking of Python text extraction frameworks with real-time updates.
 
-## 🏆 Latest Performance Results
+## 🏆 What You'll Find in the Results
 
-| Framework     | Speed (files/sec) | Success Rate | Avg Time (s) | Notes                                       |
-| ------------- | ----------------- | ------------ | ------------ | ------------------------------------------- |
-| **Kreuzberg** | **19.5**          | 79.1%        | **0.12**     | 🚀 Lightning fast - 100x faster than others |
-| Unstructured  | 1.5               | 90.1%        | 11.70        | Best success rate                           |
-| MarkItDown    | 10.5              | 74.4%        | 14.36        | Struggles with medium files                 |
-| Docling       | 0.14              | 82.8%        | 12.28        | ⚠️ Extremely slow on PDFs                   |
+- **⚡ Performance Comparison** - Speed, memory usage, and success rates across all frameworks
+- **📊 Interactive Charts** - Visual breakdowns by file type, size category, and framework
+- **🔍 Detailed Metrics** - Per-file results, error analysis, and resource utilization
+- **📱 Live Dashboard** - Real-time updates when new framework versions are released
 
-*Results from 94 test documents (210MB) across multiple formats and languages*
+*Benchmarks run on 94 documents (210MB) across PDF, DOCX, HTML, images and 6 languages*
 
-## 🔄 Automated Update Pipeline
+## 🧪 Tested Frameworks
 
-```mermaid
-graph LR
-    A[Daily Check] -->|New Version Found| B[Update Frameworks]
-    B --> C[Run Tests]
-    C --> D[Create Release]
-    D --> E[Run Benchmarks]
-    E --> F[Deploy Results]
-    F --> G[GitHub Pages]
+- **[Kreuzberg](https://github.com/Goldziher/kreuzberg)** - Ultra-fast async/sync extraction with OCR backends (Tesseract, EasyOCR, PaddleOCR)
+- **[Docling](https://github.com/docling-project/docling)** - IBM's deep learning document processor with advanced ML features
+- **[MarkItDown](https://github.com/microsoft/markitdown)** - Microsoft's LLM-optimized converter with ONNX runtime
+- **[Unstructured](https://github.com/Unstructured-IO/unstructured)** - Enterprise ETL solution supporting 64+ file types
 
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style G fill:#9f9,stroke:#333,stroke-width:2px
-```
-
-## Tested Frameworks
-
-- **[Kreuzberg](https://github.com/Goldziher/kreuzberg)** - Fast async/sync text extraction
-    - Default (sync/async)
-    - With Tesseract OCR (default configuration)
-    - With EasyOCR backend (sync/async)
-    - With PaddleOCR backend (sync/async)
-- **[Docling](https://github.com/docling-project/docling)** - IBM's deep learning document processor
-- **[MarkItDown](https://github.com/microsoft/markitdown)** - Microsoft's LLM-optimized converter
-- **[Unstructured](https://github.com/Unstructured-IO/unstructured)** - Enterprise ETL solution
-
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
-# Clone and install
 git clone https://github.com/Goldziher/python-text-extraction-libs-benchmarks
 cd python-text-extraction-libs-benchmarks
 uv sync --dev
 
-# Run benchmarks
+# Run all benchmarks
 uv run python -m src.cli benchmark
 
-# Run specific framework
+# Test specific framework
 uv run python -m src.cli benchmark --framework kreuzberg_sync --category small
-
-# Run with OCR backends (install optional dependencies first)
-uv sync --extra ocr
-uv run python -m src.cli benchmark --framework kreuzberg_easyocr --category images
 ```
 
-## Test Dataset
+## 📋 Benchmark Details
 
-- **94 documents** across PDF, DOCX, HTML, images, and more
-- **Multiple languages**: English, Hebrew, German, Chinese, Japanese, Korean
-- **Size categories**: Tiny (\<100KB), Small (100KB-1MB), Medium (1MB-10MB), Large (10MB-50MB)
-- **Special cases**: OCR, rotated text, tables, formulas, encrypted PDFs
+**Test Dataset:** 94 documents (210MB) - PDF, DOCX, HTML, images across 6 languages
+**Categories:** Tiny (\<100KB), Small (100KB-1MB), Medium (1MB-10MB), Large (10MB-50MB)
+**Methodology:** Isolated CI jobs, 3 iterations, comprehensive metrics, timeout protection
 
-## Methodology
+**What Makes This Unique:**
 
-1. **Framework Isolation**: Each framework runs in its own CI job
-1. **Fair Comparison**: Caches cleared, 3 iterations per test
-1. **Comprehensive Metrics**: Speed, memory, CPU, success rate
-1. **Timeout Protection**: 5min per file, 2.5h per job
-1. **Automatic Updates**: New framework versions trigger fresh benchmarks
+- 🔄 **Auto-updating** - New framework versions trigger fresh benchmarks
+- 🏃 **Fault-tolerant** - Fast frameworks aren't blocked by slow ones
+- 📊 **Comprehensive** - Speed, memory, success rates, error analysis
+- 🌍 **Real-world** - Multi-language, varied formats, edge cases
 
-## Key Findings
+## 🤝 Contributing
 
-### 🚀 Kreuzberg
-
-- **100x faster** than other frameworks
-- Processes ~20 files/second
-- Best for high-volume extraction
-
-### ⚠️ Docling
-
-- Advanced ML features but **extremely slow** (40+ seconds/MB)
-- Often timeouts on medium PDFs
-- Best for complex document understanding when speed isn't critical
-
-### 📊 Unstructured
-
-- **Highest success rate** (90%)
-- Balanced performance
-- Best for diverse document types
-
-### 🟢 MarkItDown
-
-- Good for small files
-- Performance degrades with file size
-- Lightweight and simple
-
-## Contributing
-
-1. Add new framework in `src/extractors.py`
-1. Update `Framework` enum in `src/types.py`
-1. Add to dependencies in `pyproject.toml`
-1. Submit PR - benchmarks run automatically
-
-## License
-
-MIT - See [LICENSE](LICENSE)
+Want to add a new framework? Just update `src/extractors.py` and `src/types.py`, then submit a PR!
 
 ______________________________________________________________________
 
-*Benchmarks run on GitHub Actions (Ubuntu) with CPU-only processing. Results update automatically when frameworks release new versions.*
+**MIT License** | *Auto-updating benchmarks on GitHub Actions (Ubuntu, CPU-only)*
