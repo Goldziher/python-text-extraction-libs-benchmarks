@@ -122,11 +122,7 @@ jobs:
               echo "✅ HTML report generated"
             else
               echo "⚠️ HTML report failed, creating basic page"
-              cat > public/index.html << 'EOF'
-<!DOCTYPE html>
-<html><head><title>Benchmark Results</title></head>
-<body><h1>📊 Benchmark Results</h1><p>⚠️ No valid benchmark data available for reporting.</p></body></html>
-EOF
+              echo '<!DOCTYPE html><html><head><title>Benchmark Results</title></head><body><h1>📊 Benchmark Results</h1><p>⚠️ No valid benchmark data available for reporting.</p></body></html>' > public/index.html
             fi
 
             if uv run python -m src.cli report \
@@ -150,11 +146,7 @@ EOF
             fi
           else
             echo "⚠️ No aggregated results found, creating basic page"
-            cat > public/index.html << 'EOF'
-<!DOCTYPE html>
-<html><head><title>Benchmark Results</title></head>
-<body><h1>📊 Benchmark Results</h1><p>⚠️ No benchmark data available. Check back later.</p></body></html>
-EOF
+            echo '<!DOCTYPE html><html><head><title>Benchmark Results</title></head><body><h1>📊 Benchmark Results</h1><p>⚠️ No benchmark data available. Check back later.</p></body></html>' > public/index.html
             echo '{"error": "No aggregated results"}' > public/benchmark_metrics.json
             echo '{"error": "No visualizations available"}' > public/charts/placeholder.json
           fi
