@@ -6,6 +6,11 @@ on:
     types:
       - completed
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
 
 permissions:
   contents: read
@@ -18,7 +23,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -53,20 +58,31 @@ jobs:
           pattern: benchmark-*
           path: downloaded-results/
 
-      - name: Download Latest Release Artifacts
-        if: github.event_name == 'workflow_dispatch'
+      - name: Download Latest Benchmark Artifacts
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
         run: |
-          # Get the latest release benchmark run
+          # Get the latest successful benchmark run
           LATEST_RUN=$(gh api repos/${{ github.repository }}/actions/runs \
-            --jq '.workflow_runs[] | select(.event == "release") | select(.name == "Benchmark by Framework") | select(.conclusion == "success") | .id' \
+            --jq '.workflow_runs[] | select(.name == "Benchmark by Framework") | select(.conclusion == "success") | .id' \
             | head -1)
 
           if [ -n "$LATEST_RUN" ]; then
             echo "Downloading artifacts from run: $LATEST_RUN"
             gh run download "$LATEST_RUN" --pattern "benchmark-*" --dir downloaded-results/
           else
-            echo "No successful release benchmark found"
-            exit 1
+            echo "No successful benchmark found, checking for aggregated results..."
+            # Try comprehensive benchmarks as fallback
+            COMP_RUN=$(gh api repos/${{ github.repository }}/actions/runs \
+              --jq '.workflow_runs[] | select(.name == "Comprehensive Benchmarks") | select(.conclusion == "success") | .id' \
+              | head -1)
+
+            if [ -n "$COMP_RUN" ]; then
+              echo "Downloading artifacts from comprehensive benchmark run: $COMP_RUN"
+              gh run download "$COMP_RUN" --pattern "*benchmark*" --dir downloaded-results/
+            else
+              echo "No successful benchmark runs found"
+              exit 1
+            fi
           fi
         env:
           GH_TOKEN: ${{ github.token }}
@@ -91,31 +107,33 @@ jobs:
 
       - name: Generate Reports
         run: |
-          # Generate enhanced HTML report
-          uv run python -c "
-from pathlib import Path
-import msgspec
-from src.enhanced_report import EnhancedHTMLReporter
-from src.report import ReportGenerator
-from src.types import AggregatedResults
+          # Generate reports using existing CLI
+          if [ -f "aggregated-results/aggregated_results.json" ]; then
+            echo "Generating HTML and JSON reports..."
+            mkdir -p public
 
-# Load aggregated results using msgspec with proper type
-with open('aggregated-results/aggregated_results.json', 'rb') as f:
-    aggregated = msgspec.json.decode(f.read(), type=AggregatedResults)
+            # Generate reports using the CLI
+            uv run python -m src.cli report \
+              --aggregated-file aggregated-results/aggregated_results.json \
+              --output-format html \
+              --output-dir public
 
-# Generate enhanced HTML report
-reporter = EnhancedHTMLReporter()
-output_dir = Path('public')
-output_dir.mkdir(exist_ok=True)
+            uv run python -m src.cli report \
+              --aggregated-file aggregated-results/aggregated_results.json \
+              --output-format json \
+              --output-dir public
 
-reporter.generate_html_report(aggregated, output_dir / 'index.html')
+            # Generate visualizations
+            uv run python -m src.cli visualize \
+              --aggregated-file aggregated-results/aggregated_results.json \
+              --output-dir public/charts
 
-# Also generate JSON metrics
-generator = ReportGenerator()
-generator.generate_json_metrics(aggregated, output_dir / 'benchmark_metrics.json')
-
-print('Reports generated successfully')
-"
+            echo "Reports generated successfully"
+            ls -la public/
+          else
+            echo "No aggregated results found"
+            exit 1
+          fi
 
       - name: Create 404 Page
         run: |
