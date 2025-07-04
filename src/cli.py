@@ -141,18 +141,19 @@ def benchmark(
     try:
         results = asyncio.run(runner.run_benchmark_suite())
         console.print(f"[green]✓ Completed {len(results)} benchmarks[/green]")
-        
+
         # Automatically run quality assessment if enabled
         if enable_quality_assessment:
             console.print("[bold blue]Running quality assessment...[/bold blue]")
             results_file = output_dir / "benchmark_results.json"
             if results_file.exists():
                 from .quality_assessment import enhance_benchmark_results_with_quality
+
                 enhanced_file = enhance_benchmark_results_with_quality(results_file)
                 console.print(f"[green]✓ Quality assessment completed: {enhanced_file}[/green]")
             else:
                 console.print("[yellow]Warning: Could not find results file for quality assessment[/yellow]")
-        
+
     except KeyboardInterrupt:
         console.print("\n[yellow]Benchmark interrupted by user[/yellow]")
         sys.exit(1)
@@ -241,16 +242,20 @@ def report(aggregated_file: Path | None, output_dir: Path, output_formats: tuple
         if aggregated_file:
             import msgspec
 
+            from .types import AggregatedResults
+
             with open(aggregated_file, "rb") as f:
-                aggregated = msgspec.json.decode(f.read())
+                aggregated = msgspec.json.decode(f.read(), type=AggregatedResults)
         else:
             # Default to looking for aggregated results in current directory
             default_file = Path("aggregated-results/aggregated_results.json")
             if default_file.exists():
                 import msgspec
 
+                from .types import AggregatedResults
+
                 with open(default_file, "rb") as f:
-                    aggregated = msgspec.json.decode(f.read())
+                    aggregated = msgspec.json.decode(f.read(), type=AggregatedResults)
             else:
                 console.print("[red]No aggregated results found. Use --aggregated-file or run aggregate first.[/red]")
                 sys.exit(1)

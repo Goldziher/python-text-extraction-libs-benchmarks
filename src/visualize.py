@@ -30,9 +30,7 @@ class BenchmarkVisualizer:
         """Generate all visualizations from aggregated results."""
         # Load data
         with open(aggregated_file, "rb") as f:
-            data = msgspec.json.decode(f.read())
-
-        aggregated = AggregatedResults(**data) if isinstance(data, dict) else data
+            aggregated = msgspec.json.decode(f.read(), type=AggregatedResults)
 
         generated_files = []
 
@@ -415,9 +413,7 @@ class BenchmarkVisualizer:
     def generate_summary_metrics(self, aggregated_file: Path) -> dict[str, Any]:
         """Generate summary metrics for README."""
         with open(aggregated_file, "rb") as f:
-            data = msgspec.json.decode(f.read())
-
-        aggregated = AggregatedResults(**data) if isinstance(data, dict) else data
+            aggregated = msgspec.json.decode(f.read(), type=AggregatedResults)
 
         # Calculate key metrics
         total_files = aggregated.total_files_processed

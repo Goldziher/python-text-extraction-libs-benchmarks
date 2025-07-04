@@ -97,16 +97,11 @@ from pathlib import Path
 import msgspec
 from src.enhanced_report import EnhancedHTMLReporter
 from src.report import ReportGenerator
+from src.types import AggregatedResults
 
-# Load aggregated results
+# Load aggregated results using msgspec with proper type
 with open('aggregated-results/aggregated_results.json', 'rb') as f:
-    # Need to handle the msgspec loading properly
-    import json
-    data = json.load(f)
-
-    # Convert to proper types
-    from src.types import AggregatedResults
-    aggregated = AggregatedResults(**data)
+    aggregated = msgspec.json.decode(f.read(), type=AggregatedResults)
 
 # Generate enhanced HTML report
 reporter = EnhancedHTMLReporter()

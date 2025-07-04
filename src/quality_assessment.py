@@ -77,7 +77,9 @@ class TextQualityAssessor:
             "sentence_count": len([s for s in sentences if s.strip()]),
             "paragraph_count": len([p for p in paragraphs if p.strip()]),
             "avg_word_length": float(np.mean([len(word) for word in words])) if words else 0.0,
-            "avg_sentence_length": float(np.mean([len(s.split()) for s in sentences if s.strip()])) if sentences else 0.0,
+            "avg_sentence_length": float(np.mean([len(s.split()) for s in sentences if s.strip()]))
+            if sentences
+            else 0.0,
         }
 
     def _content_quality_metrics(self, text: str) -> dict[str, Any]:
@@ -321,15 +323,10 @@ def enhance_benchmark_results_with_quality(results_file: Path, reference_texts_d
     """Enhance existing benchmark results with quality metrics."""
     # Load existing results
     with open(results_file, "rb") as f:
-        results_data = msgspec.json.decode(f.read())
+        results_data = msgspec.json.decode(f.read(), type=list[BenchmarkResult])
 
-    # Convert to BenchmarkResult objects if needed
-    results = []
-    for item in results_data:
-        if isinstance(item, dict):
-            results.append(BenchmarkResult(**item))
-        else:
-            results.append(item)
+    # Results are already BenchmarkResult objects
+    results = results_data
 
     # Initialize quality assessor
     assessor = TextQualityAssessor()

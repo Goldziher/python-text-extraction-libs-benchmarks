@@ -40,9 +40,7 @@ class ResultAggregator:
             return []
 
         with open(results_file, "rb") as f:
-            data = msgspec.json.decode(f.read())
-            # Convert dicts to BenchmarkResult objects
-            return [BenchmarkResult(**r) if isinstance(r, dict) else r for r in data]
+            return msgspec.json.decode(f.read(), type=list[BenchmarkResult])
 
     def _calculate_aggregated_metrics(self, results: list[BenchmarkResult]) -> AggregatedResults:
         """Calculate aggregated metrics from all results."""
