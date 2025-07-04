@@ -13,7 +13,7 @@ kreuzberg_optimizations:
     use_cases:
       - "Modern PDFs and standard documents"
       - "Optimal speed and quality balance"
-  
+
   accuracy_configuration:
     description: "Enhanced configuration for degraded or historical documents"
     settings:

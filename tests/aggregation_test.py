@@ -94,7 +94,7 @@ def sample_results() -> list[BenchmarkResult]:
 
 
 @pytest.fixture
-def temp_results_dirs(sample_results: list[BenchmarkResult]) -> "Generator[list[Path], None, None]":
+def temp_results_dirs(sample_results: list[BenchmarkResult]) -> "Generator[list[Path]]":
     """Create temporary directories with benchmark results."""
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
@@ -118,7 +118,9 @@ def temp_results_dirs(sample_results: list[BenchmarkResult]) -> "Generator[list[
 class TestResultAggregator:
     """Test the ResultAggregator class."""
 
-    def test_aggregate_results_basic(self, temp_results_dirs: list[Path], sample_results: list[BenchmarkResult]) -> None:
+    def test_aggregate_results_basic(
+        self, temp_results_dirs: list[Path], sample_results: list[BenchmarkResult]
+    ) -> None:
         """Test basic aggregation functionality."""
         aggregator = ResultAggregator()
 
