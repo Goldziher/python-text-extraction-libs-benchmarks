@@ -47,15 +47,15 @@ python-text-extraction-libraries-benchmarks-2025/
 
 ## Tested Frameworks
 
-1. **Kreuzberg** (v3.3.0+)
+1. **Kreuzberg** (v3.5.0+)
 
     - Both synchronous and asynchronous APIs
     - Multiple OCR backend configurations:
         - Default: Uses system Tesseract with auto language detection
         - Tesseract Optimized: Ngram disabled, dict correction disabled for 30x+ speedup
         - Tesseract Default: All quality features enabled for comparison
-        - EasyOCR: Deep learning OCR with multi-language support
-        - PaddleOCR: Specialized for Asian languages
+        - EasyOCR: Deep learning OCR with multi-language support (now supports both sync and async)
+        - PaddleOCR: Specialized for Asian languages (now supports both sync and async)
     - Comprehensive format support with OCR capabilities
     - Smallest installation footprint (71MB base, more with OCR backends)
 

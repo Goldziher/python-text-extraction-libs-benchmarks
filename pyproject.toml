@@ -31,7 +31,7 @@ dependencies = [
   "anyio>=4.9.0",
   "click>=8.2.1",
   "docling>=2.15.0",
-  "kreuzberg",
+  "kreuzberg>=3.5.0",
   "markitdown>=0.0.1a2",
   "matplotlib>=3.8.0",
   "msgspec>=0.18.0",
@@ -50,9 +50,6 @@ optional-dependencies.ocr = [
   "kreuzberg[easyocr]",
   "kreuzberg[paddleocr]",
 ]
-
-[dependency-sources]
-kreuzberg = { path = "..", editable = true }
 
 scripts.benchmark = "src.cli:main"
 
