@@ -164,18 +164,22 @@ cython_debug/
 # UV
 .uv/
 
-# Benchmark results (but allow published reports)
+# Benchmark results and temporary files
 results/
 *.csv
+local-results/
+aggregated-local/
+final_comparison/
+kreuzberg_comparison/
+ocr_comparison/
+test-reports/
+test_output/
+test_aggregated.json
+installation_sizes.json
+
 # Allow published reports and pages
 !pages/
 !pages/**
-!reports/
-!reports/**
-!visualizations/
-!visualizations/**
-!aggregated-results/
-!aggregated-results/**
 
 # Test files
 test_files/
