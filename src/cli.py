@@ -128,7 +128,7 @@ def benchmark(
         frameworks=frameworks,
         categories=categories,
         iterations=iterations,
-        output_dir=Path(output_dir),
+        output_dir=output_dir,
         warmup_runs=warmup_runs,
         timeout_seconds=timeout,
         continue_on_error=continue_on_error,
@@ -154,11 +154,34 @@ def benchmark(
             else:
                 console.print("[yellow]Warning: Could not find results file for quality assessment[/yellow]")
 
+        # Run installation size check after benchmarks
+        console.print("[bold blue]Collecting installation size information...[/bold blue]")
+        try:
+            from .check_installation_sizes import main as check_sizes
+
+            check_sizes()
+
+            # Move installation_sizes.json to output directory
+            import shutil
+            from pathlib import Path
+
+            generated_file = Path("installation_sizes.json")
+            if generated_file.exists():
+                target_file = output_dir / "installation_sizes.json"
+                shutil.move(str(generated_file), str(target_file))
+                console.print(f"[green]✓ Installation sizes saved to {target_file}[/green]")
+
+        except Exception as e:
+            console.print(f"[yellow]Warning: Could not collect installation sizes: {e}[/yellow]")
+
     except KeyboardInterrupt:
         console.print("\n[yellow]Benchmark interrupted by user[/yellow]")
         sys.exit(1)
     except Exception as e:
         console.print(f"[red]✗ Benchmark failed: {e}[/red]")
+        import traceback
+
+        console.print(f"[dim]{traceback.format_exc()}[/dim]")
         sys.exit(1)
 
 
@@ -331,6 +354,15 @@ def visualize(aggregated_file: Path | None, output_dir: Path) -> None:
             json.dump(summary, f, indent=2)
         console.print(f"[green]✓ Generated summary metrics: {summary_file}[/green]")
 
+        # Generate installation size chart if data exists
+        installation_sizes_file = Path("installation_sizes.json")
+        if installation_sizes_file.exists():
+            try:
+                visualizer.generate_installation_size_chart(installation_sizes_file)
+                console.print("[green]✓ Generated installation size chart[/green]")
+            except Exception as e:
+                console.print(f"[yellow]Warning: Could not generate installation size chart: {e}[/yellow]")
+
     except Exception as e:
         console.print(f"[red]✗ Visualization generation failed: {e}[/red]")
         sys.exit(1)
@@ -444,18 +476,34 @@ def list_file_types() -> None:
 @click.option("--include-charts", is_flag=True, help="Generate visualization charts")
 def installation_sizes(output_file: str | None, include_charts: bool) -> None:
     """Check installation sizes of all frameworks."""
+    import shutil
+    from pathlib import Path
+
     from .check_installation_sizes import main as check_sizes
 
     console.print("[bold blue]Checking framework installation sizes...[/bold blue]")
 
     # Run the size check
-    check_sizes()
+    try:
+        check_sizes()
 
-    if output_file:
-        console.print(f"[yellow]Results will be saved to {output_file} (feature coming soon!)[/yellow]")
+        # If output file specified, copy the generated file
+        if output_file:
+            generated_file = Path("installation_sizes.json")
+            if generated_file.exists():
+                output_path = Path(output_file)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(generated_file, output_path)
+                console.print(f"[green]✓ Results saved to {output_path}[/green]")
+            else:
+                console.print("[yellow]Warning: Generated file not found[/yellow]")
 
-    if include_charts:
-        console.print("[yellow]Chart generation for installation sizes coming soon![/yellow]")
+        if include_charts:
+            console.print("[yellow]Chart generation for installation sizes coming soon![/yellow]")
+
+    except Exception as e:
+        console.print(f"[red]✗ Installation size check failed: {e}[/red]")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

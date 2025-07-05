@@ -107,6 +107,20 @@ class EnhancedResourceMonitor:
         # Initialize CPU measurement
         self.process.cpu_percent(interval=None)
 
+        # Collect initial baseline sample
+        try:
+            baseline_metric = ResourceMetrics(
+                timestamp=time.time(),
+                cpu_percent=0.0,  # First CPU sample is always 0
+                memory_rss=self.process.memory_info().rss,
+                memory_vms=self.process.memory_info().vms,
+                num_threads=self.process.num_threads(),
+                open_files=self._get_open_files_count(),
+            )
+            self.metrics_buffer.append(baseline_metric)
+        except Exception:
+            pass  # Continue if baseline fails
+
         # Start monitoring task
         self._monitor_task = asyncio.create_task(self._monitor_loop())
 
@@ -122,35 +136,52 @@ class EnhancedResourceMonitor:
     def _calculate_metrics(self) -> PerformanceMetrics:
         """Calculate aggregate metrics from samples."""
         if not self.metrics_buffer:
-            return PerformanceMetrics(
-                extraction_time=0,
-                peak_memory_mb=0,
-                avg_memory_mb=0,
-                peak_cpu_percent=0,
-                avg_cpu_percent=0,
-            )
+            # Fallback: collect one emergency sample
+            try:
+                mem_info = self.process.memory_info()
+                emergency_sample = ResourceMetrics(
+                    timestamp=time.time(),
+                    cpu_percent=0.0,
+                    memory_rss=mem_info.rss,
+                    memory_vms=mem_info.vms,
+                    num_threads=self.process.num_threads(),
+                    open_files=self._get_open_files_count(),
+                )
+                self.metrics_buffer.append(emergency_sample)
+            except Exception:
+                pass
+
+            if not self.metrics_buffer:
+                return PerformanceMetrics(
+                    extraction_time=0,
+                    peak_memory_mb=1.0,  # Default 1MB
+                    avg_memory_mb=1.0,
+                    peak_cpu_percent=0,
+                    avg_cpu_percent=0,
+                    samples=[],
+                )
 
         # Calculate time
         start_time = self.metrics_buffer[0].timestamp
         end_time = self.metrics_buffer[-1].timestamp
-        extraction_time = end_time - start_time
+        extraction_time = max(end_time - start_time, 0.001)  # Minimum 1ms
 
         # Memory metrics (convert to MB)
         memory_samples = [m.memory_rss / (1024 * 1024) for m in self.metrics_buffer]
         peak_memory_mb = max(memory_samples)
         avg_memory_mb = sum(memory_samples) / len(memory_samples)
 
-        # CPU metrics
-        cpu_samples = [m.cpu_percent for m in self.metrics_buffer if m.cpu_percent > 0]
+        # CPU metrics - include all samples even if 0
+        cpu_samples = [m.cpu_percent for m in self.metrics_buffer]
         peak_cpu_percent = max(cpu_samples) if cpu_samples else 0
         avg_cpu_percent = sum(cpu_samples) / len(cpu_samples) if cpu_samples else 0
 
         # I/O metrics
         total_io_read_mb = None
         total_io_write_mb = None
-        if self.metrics_buffer[-1].io_read_bytes is not None:
+        if self.metrics_buffer and self.metrics_buffer[-1].io_read_bytes is not None:
             total_io_read_mb = self.metrics_buffer[-1].io_read_bytes / (1024 * 1024)
-        if self.metrics_buffer[-1].io_write_bytes is not None:
+        if self.metrics_buffer and self.metrics_buffer[-1].io_write_bytes is not None:
             total_io_write_mb = self.metrics_buffer[-1].io_write_bytes / (1024 * 1024)
 
         return PerformanceMetrics(
@@ -223,13 +254,14 @@ def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceM
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             return None
 
-    # Placeholder for metrics
+    # Create metrics object that will be updated
     metrics = PerformanceMetrics(
         extraction_time=0,
         peak_memory_mb=0,
         avg_memory_mb=0,
         peak_cpu_percent=0,
         avg_cpu_percent=0,
+        samples=samples,  # Share the samples list
     )
 
     # Collect baseline sample
@@ -243,14 +275,17 @@ def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceM
         if final_sample := collect_sample():
             samples.append(final_sample)
 
-        # For very fast operations, ensure we have at least baseline memory
-        if not samples and (emergency_sample := collect_sample()):
-            samples.append(emergency_sample)
+        # For very fast operations, collect additional samples during execution
+        if len(samples) < 3:
+            for _ in range(3):
+                if sample := collect_sample():
+                    samples.append(sample)
+                time.sleep(0.01)  # Small delay between samples
 
     finally:
         end_time = time.time()
 
-        # Calculate metrics
+        # Calculate metrics and update the shared object
         if samples:
             memory_samples = [s.memory_rss / (1024 * 1024) for s in samples]
             cpu_samples = [s.cpu_percent for s in samples if s.cpu_percent > 0]
@@ -260,18 +295,27 @@ def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceM
             metrics.avg_memory_mb = sum(memory_samples) / len(memory_samples)
             metrics.peak_cpu_percent = max(cpu_samples) if cpu_samples else 0
             metrics.avg_cpu_percent = sum(cpu_samples) / len(cpu_samples) if cpu_samples else 0
-            metrics.samples = samples
 
-            if samples[-1].io_read_bytes is not None:
+            if samples and samples[-1].io_read_bytes is not None:
                 metrics.total_io_read_mb = samples[-1].io_read_bytes / (1024 * 1024)
-            if samples[-1].io_write_bytes is not None:
+            if samples and samples[-1].io_write_bytes is not None:
                 metrics.total_io_write_mb = samples[-1].io_write_bytes / (1024 * 1024)
         else:
             # Fallback to basic metrics
-            final_memory = process.memory_info().rss
-            metrics.extraction_time = end_time - start_time
-            metrics.peak_memory_mb = final_memory / (1024 * 1024)
-            metrics.avg_memory_mb = (baseline_memory + final_memory) / 2 / (1024 * 1024)
+            try:
+                final_memory = process.memory_info().rss
+                metrics.extraction_time = end_time - start_time
+                metrics.peak_memory_mb = final_memory / (1024 * 1024)
+                metrics.avg_memory_mb = (baseline_memory + final_memory) / 2 / (1024 * 1024)
+                # Create fallback sample
+                fallback_sample = collect_sample()
+                if fallback_sample:
+                    samples.append(fallback_sample)
+            except Exception:
+                # Ultimate fallback
+                metrics.extraction_time = end_time - start_time
+                metrics.peak_memory_mb = 1.0  # Default 1MB
+                metrics.avg_memory_mb = 1.0
 
 
 class AsyncPerformanceProfiler:
@@ -290,13 +334,14 @@ class AsyncPerformanceProfiler:
         self._start_time = time.time()
         await self.monitor.start()
 
-        # Return placeholder that will be updated on exit
+        # Return metrics object that will be updated on exit
         self.metrics = PerformanceMetrics(
             extraction_time=0,
             peak_memory_mb=0,
             avg_memory_mb=0,
             peak_cpu_percent=0,
             avg_cpu_percent=0,
+            samples=[],  # Initialize with empty list that will be populated
         )
         return self.metrics
 
@@ -306,12 +351,12 @@ class AsyncPerformanceProfiler:
 
         # Update the metrics object that was returned
         if self.metrics:
-            self.metrics.extraction_time = time.time() - (self._start_time or 0)
+            self.metrics.extraction_time = result.extraction_time
             self.metrics.peak_memory_mb = result.peak_memory_mb
             self.metrics.avg_memory_mb = result.avg_memory_mb
             self.metrics.peak_cpu_percent = result.peak_cpu_percent
             self.metrics.avg_cpu_percent = result.avg_cpu_percent
             self.metrics.total_io_read_mb = result.total_io_read_mb
             self.metrics.total_io_write_mb = result.total_io_write_mb
-            self.metrics.samples = result.samples
+            self.metrics.samples = result.samples.copy()  # Copy the samples
             self.metrics.startup_time = result.startup_time

@@ -16,11 +16,11 @@ from src.types import AggregatedResults
 
 # Consistent color scheme for frameworks
 FRAMEWORK_COLORS = {
-    "kreuzberg_sync": "#2E86AB",     # Blue
-    "kreuzberg_async": "#A23B72",    # Purple  
-    "docling": "#F18F01",            # Orange
-    "markitdown": "#C73E1D",         # Red
-    "unstructured": "#5B9A8B",       # Green
+    "kreuzberg_sync": "#2E86AB",  # Blue
+    "kreuzberg_async": "#A23B72",  # Purple
+    "docling": "#F18F01",  # Orange
+    "markitdown": "#C73E1D",  # Red
+    "unstructured": "#5B9A8B",  # Green
 }
 
 
@@ -33,7 +33,7 @@ class BenchmarkVisualizer:
 
         # Set style for matplotlib/seaborn
         plt.style.use("default")
-        
+
         # Set consistent color palette for frameworks
         framework_colors = list(FRAMEWORK_COLORS.values())
         sns.set_palette(framework_colors)
@@ -52,8 +52,11 @@ class BenchmarkVisualizer:
         # Success rate analysis
         generated_files.extend(self._generate_success_rate_charts(aggregated))
 
-        # Resource utilization charts
+        # Memory and CPU usage charts  
         generated_files.extend(self._generate_resource_charts(aggregated))
+        
+        # Data throughput charts
+        generated_files.extend(self._generate_throughput_charts(aggregated))
 
         # Framework comparison heatmaps
         generated_files.extend(self._generate_heatmaps(aggregated))
@@ -94,19 +97,19 @@ class BenchmarkVisualizer:
 
         df = pd.DataFrame(perf_data)
 
-        # 1. Performance comparison bar chart  
+        # 1. Performance comparison bar chart
         fig = plt.figure(figsize=(12, 8))
         df_pivot = df.pivot(index="Framework", columns="Category", values="Avg Time (s)")
-        
+
         # Use consistent colors for frameworks
         colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
         ax = df_pivot.plot(kind="bar", ax=plt.gca(), color=colors)
-        plt.title("Average Extraction Time by Framework and Category", fontsize=16, fontweight='bold')
+        plt.title("Average Extraction Time by Framework and Category", fontsize=16, fontweight="bold")
         plt.ylabel("Time (seconds)", fontsize=12)
         plt.xlabel("Framework", fontsize=12)
         plt.xticks(rotation=45)
         plt.legend(title="Document Category", title_fontsize=12)
-        plt.grid(axis='y', alpha=0.3)
+        plt.grid(axis="y", alpha=0.3)
         plt.tight_layout()
 
         perf_chart = self.output_dir / "performance_comparison.png"
@@ -117,16 +120,16 @@ class BenchmarkVisualizer:
         # 2. Throughput comparison
         fig = plt.figure(figsize=(12, 8))
         df_pivot = df.pivot(index="Framework", columns="Category", values="Files per Second")
-        
+
         # Use consistent colors for frameworks
         colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
         ax = df_pivot.plot(kind="bar", ax=plt.gca(), color=colors)
-        plt.title("Throughput Comparison by Framework and Category", fontsize=16, fontweight='bold')
+        plt.title("Throughput Comparison by Framework and Category", fontsize=16, fontweight="bold")
         plt.ylabel("Files per Second", fontsize=12)
         plt.xlabel("Framework", fontsize=12)
         plt.xticks(rotation=45)
         plt.legend(title="Document Category", title_fontsize=12)
-        plt.grid(axis='y', alpha=0.3)
+        plt.grid(axis="y", alpha=0.3)
         plt.tight_layout()
 
         throughput_chart = self.output_dir / "throughput_comparison.png"
@@ -185,28 +188,78 @@ class BenchmarkVisualizer:
         return files
 
     def _generate_resource_charts(self, aggregated: AggregatedResults) -> list[Path]:
-        """Generate resource utilization charts."""
+        """Generate memory and CPU usage charts."""
         files = []
 
-        # Prepare resource data
-        resource_data = [
+        # Memory usage data
+        memory_data = [
             {
                 "Framework": framework.value,
                 "Category": summary.category.value,
-                "Peak Memory (MB)": summary.avg_peak_memory_mb,
-                "CPU Usage (%)": summary.avg_cpu_percent or 0,
+                "Peak Memory (MB)": summary.avg_peak_memory_mb or 0,
+                "Avg CPU (%)": summary.avg_cpu_percent or 0,
             }
             for framework, summaries in aggregated.framework_summaries.items()
             for summary in summaries
             if summary.avg_peak_memory_mb is not None
         ]
 
-        if not resource_data:
-            return files
+        if memory_data:
+            df_memory = pd.DataFrame(memory_data)
+            
+            # Check if we have meaningful memory data (not all zeros)
+            has_memory_data = df_memory["Peak Memory (MB)"].sum() > 0
+            
+            if has_memory_data:
+                # Create memory usage chart
+                fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
+                
+                # Memory usage by framework and category
+                df_pivot = df_memory.pivot(index="Framework", columns="Category", values="Peak Memory (MB)")
+                colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
+                df_pivot.plot(kind="bar", ax=ax1, color=colors)
+                ax1.set_title("Peak Memory Usage by Framework and Category", fontsize=14, fontweight="bold")
+                ax1.set_ylabel("Peak Memory (MB)", fontsize=12)
+                ax1.set_xlabel("Framework", fontsize=12)
+                ax1.tick_params(axis='x', rotation=45)
+                ax1.legend(title="Document Category", title_fontsize=10)
+                ax1.grid(axis="y", alpha=0.3)
+                
+                # CPU usage chart
+                df_pivot_cpu = df_memory.pivot(index="Framework", columns="Category", values="Avg CPU (%)")
+                df_pivot_cpu.plot(kind="bar", ax=ax2, color=colors)
+                ax2.set_title("Average CPU Usage by Framework and Category", fontsize=14, fontweight="bold")
+                ax2.set_ylabel("Average CPU (%)", fontsize=12)
+                ax2.set_xlabel("Framework", fontsize=12)
+                ax2.tick_params(axis='x', rotation=45)
+                ax2.legend(title="Document Category", title_fontsize=10)
+                ax2.grid(axis="y", alpha=0.3)
+                
+                plt.tight_layout()
+                memory_chart = self.output_dir / "memory_usage.png"
+                plt.savefig(memory_chart, dpi=300, bbox_inches="tight")
+                plt.close()
+                files.append(memory_chart)
+            else:
+                # Create placeholder chart indicating no memory data
+                fig = plt.figure(figsize=(12, 8))
+                plt.text(0.5, 0.5, "Memory profiling data not available\n(All values are 0.0)", 
+                        fontsize=16, ha='center', va='center', transform=plt.gca().transAxes,
+                        bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray"))
+                plt.title("Memory Usage Analysis", fontsize=16, fontweight="bold")
+                plt.axis('off')
+                memory_chart = self.output_dir / "memory_usage.png"
+                plt.savefig(memory_chart, dpi=300, bbox_inches="tight")
+                plt.close()
+                files.append(memory_chart)
 
-        df = pd.DataFrame(resource_data)
+        return files
 
-        # Data throughput chart (replacing memory since all values are 0.0)
+    def _generate_throughput_charts(self, aggregated: AggregatedResults) -> list[Path]:
+        """Generate data throughput charts."""
+        files = []
+
+        # Data throughput chart
         throughput_data = [
             {
                 "Framework": framework.value,
@@ -217,27 +270,27 @@ class BenchmarkVisualizer:
             for summary in summaries
             if summary.mb_per_second is not None
         ]
-        
+
         if throughput_data:
             df_throughput = pd.DataFrame(throughput_data)
             fig = plt.figure(figsize=(12, 8))
             df_pivot = df_throughput.pivot(index="Framework", columns="Category", values="Throughput (MB/s)")
-            
+
             # Use consistent colors
             colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
             ax = df_pivot.plot(kind="bar", ax=plt.gca(), color=colors)
-            plt.title("Data Throughput by Framework and Category", fontsize=16, fontweight='bold')
+            plt.title("Data Throughput by Framework and Category", fontsize=16, fontweight="bold")
             plt.ylabel("Throughput (MB/s)", fontsize=12)
             plt.xlabel("Framework", fontsize=12)
             plt.xticks(rotation=45)
             plt.legend(title="Document Category", title_fontsize=12)
-            plt.grid(axis='y', alpha=0.3)
+            plt.grid(axis="y", alpha=0.3)
             plt.tight_layout()
 
-            memory_chart = self.output_dir / "memory_usage.png"  # Keep same filename for compatibility
-            plt.savefig(memory_chart, dpi=300, bbox_inches="tight")
+            throughput_chart = self.output_dir / "data_throughput.png"
+            plt.savefig(throughput_chart, dpi=300, bbox_inches="tight")
             plt.close()
-            files.append(memory_chart)
+            files.append(throughput_chart)
 
         return files
 
@@ -314,22 +367,22 @@ class BenchmarkVisualizer:
 
         # Category analysis by framework
         fig = plt.figure(figsize=(14, 8))
-        
+
         # Group by category and framework for proper visualization
         df_grouped = df.groupby(["Category", "Framework"])["Avg Time (s)"].mean().unstack()
-        
+
         # Use consistent colors for frameworks
         framework_colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_grouped.columns]
         ax = df_grouped.plot(kind="bar", ax=plt.gca(), color=framework_colors, width=0.8)
-        
-        plt.title("Average Processing Time by Category and Framework", fontsize=16, fontweight='bold')
+
+        plt.title("Average Processing Time by Category and Framework", fontsize=16, fontweight="bold")
         plt.ylabel("Average Time (seconds)", fontsize=12)
         plt.xlabel("Document Category", fontsize=12)
         plt.xticks(rotation=45)
-        plt.legend(title="Framework", title_fontsize=12, bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.grid(axis='y', alpha=0.3)
+        plt.legend(title="Framework", title_fontsize=12, bbox_to_anchor=(1.05, 1), loc="upper left")
+        plt.grid(axis="y", alpha=0.3)
         plt.tight_layout()
-        
+
         category_chart = self.output_dir / "category_analysis.png"
         plt.savefig(category_chart, dpi=300, bbox_inches="tight")
         plt.close()
@@ -495,3 +548,104 @@ class BenchmarkVisualizer:
             "framework_stats": framework_stats,
             "timestamp": aggregated_file.stat().st_mtime,
         }
+
+    def generate_installation_size_chart(self, installation_sizes_file: Path) -> Path:
+        """Generate installation size comparison chart."""
+        import json
+
+        # Load installation size data
+        with open(installation_sizes_file) as f:
+            size_data = json.load(f)
+
+        # Filter out failed installations
+        successful_data = {name: data for name, data in size_data.items() if "error" not in data}
+
+        if not successful_data:
+            raise ValueError("No successful installation size data available")
+
+        # Create DataFrame
+        df_data = []
+        for framework, data in successful_data.items():
+            df_data.append(
+                {
+                    "Framework": framework.replace("_", " ").title(),
+                    "Size (MB)": data["size_mb"],
+                    "Dependencies": data["package_count"],
+                    "Description": data["description"],
+                }
+            )
+
+        df = pd.DataFrame(df_data)
+        df = df.sort_values("Size (MB)")
+
+        # Create visualization with 3 subplots
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(24, 8))
+
+        # Size comparison bar chart
+        colors = [FRAMEWORK_COLORS.get(fw.lower().replace(" ", "_"), "#1f77b4") for fw in df["Framework"]]
+
+        bars1 = ax1.bar(df["Framework"], df["Size (MB)"], color=colors, alpha=0.8)
+        ax1.set_title("Installation Size Comparison", fontsize=16, fontweight="bold")
+        ax1.set_xlabel("Framework", fontsize=12)
+        ax1.set_ylabel("Installation Size (MB)", fontsize=12)
+        ax1.tick_params(axis="x", rotation=45)
+
+        # Add value labels on bars
+        for bar, value in zip(bars1, df["Size (MB)"], strict=False):
+            height = bar.get_height()
+            ax1.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                height + height * 0.01,
+                f"{value:.1f} MB",
+                ha="center",
+                va="bottom",
+                fontweight="bold",
+            )
+
+        # Dependencies comparison
+        bars2 = ax2.bar(df["Framework"], df["Dependencies"], color=colors, alpha=0.8)
+        ax2.set_title("Dependency Count Comparison", fontsize=16, fontweight="bold")
+        ax2.set_xlabel("Framework", fontsize=12)
+        ax2.set_ylabel("Number of Dependencies", fontsize=12)
+        ax2.tick_params(axis="x", rotation=45)
+
+        # Add value labels on bars
+        for bar, value in zip(bars2, df["Dependencies"], strict=False):
+            height = bar.get_height()
+            ax2.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                height + height * 0.01,
+                f"{value}",
+                ha="center",
+                va="bottom",
+                fontweight="bold",
+            )
+
+        # Memory efficiency (Storage per dependency)
+        df["MB per Dependency"] = df["Size (MB)"] / df["Dependencies"]
+        bars3 = ax3.bar(df["Framework"], df["MB per Dependency"], color=colors, alpha=0.8)
+        ax3.set_title("Storage Efficiency\n(MB per Dependency)", fontsize=16, fontweight="bold")
+        ax3.set_xlabel("Framework", fontsize=12)
+        ax3.set_ylabel("MB per Dependency", fontsize=12)
+        ax3.tick_params(axis="x", rotation=45)
+
+        # Add value labels on bars
+        for bar, value in zip(bars3, df["MB per Dependency"], strict=False):
+            height = bar.get_height()
+            ax3.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                height + height * 0.01,
+                f"{value:.2f}",
+                ha="center",
+                va="bottom",
+                fontweight="bold",
+            )
+
+        plt.tight_layout()
+
+        # Save chart
+        output_file = self.output_dir / "installation_sizes.png"
+        plt.savefig(output_file, dpi=300, bbox_inches="tight")
+        plt.close()
+
+        return output_file
