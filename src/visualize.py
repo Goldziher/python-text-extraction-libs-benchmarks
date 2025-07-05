@@ -14,6 +14,15 @@ from plotly.subplots import make_subplots
 
 from src.types import AggregatedResults
 
+# Consistent color scheme for frameworks
+FRAMEWORK_COLORS = {
+    "kreuzberg_sync": "#2E86AB",     # Blue
+    "kreuzberg_async": "#A23B72",    # Purple  
+    "docling": "#F18F01",            # Orange
+    "markitdown": "#C73E1D",         # Red
+    "unstructured": "#5B9A8B",       # Green
+}
+
 
 class BenchmarkVisualizer:
     """Generate comprehensive visualizations from benchmark results."""
@@ -24,7 +33,10 @@ class BenchmarkVisualizer:
 
         # Set style for matplotlib/seaborn
         plt.style.use("default")
-        sns.set_palette("husl")
+        
+        # Set consistent color palette for frameworks
+        framework_colors = list(FRAMEWORK_COLORS.values())
+        sns.set_palette(framework_colors)
 
     def generate_all_visualizations(self, aggregated_file: Path) -> list[Path]:
         """Generate all visualizations from aggregated results."""
@@ -82,15 +94,19 @@ class BenchmarkVisualizer:
 
         df = pd.DataFrame(perf_data)
 
-        # 1. Performance comparison bar chart
+        # 1. Performance comparison bar chart  
         fig = plt.figure(figsize=(12, 8))
         df_pivot = df.pivot(index="Framework", columns="Category", values="Avg Time (s)")
-        ax = df_pivot.plot(kind="bar", ax=plt.gca())
-        plt.title("Average Extraction Time by Framework and Category")
-        plt.ylabel("Time (seconds)")
-        plt.xlabel("Framework")
+        
+        # Use consistent colors for frameworks
+        colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
+        ax = df_pivot.plot(kind="bar", ax=plt.gca(), color=colors)
+        plt.title("Average Extraction Time by Framework and Category", fontsize=16, fontweight='bold')
+        plt.ylabel("Time (seconds)", fontsize=12)
+        plt.xlabel("Framework", fontsize=12)
         plt.xticks(rotation=45)
-        plt.legend(title="Document Category")
+        plt.legend(title="Document Category", title_fontsize=12)
+        plt.grid(axis='y', alpha=0.3)
         plt.tight_layout()
 
         perf_chart = self.output_dir / "performance_comparison.png"
@@ -101,12 +117,16 @@ class BenchmarkVisualizer:
         # 2. Throughput comparison
         fig = plt.figure(figsize=(12, 8))
         df_pivot = df.pivot(index="Framework", columns="Category", values="Files per Second")
-        ax = df_pivot.plot(kind="bar", ax=plt.gca())
-        plt.title("Throughput by Framework and Category")
-        plt.ylabel("Files per Second")
-        plt.xlabel("Framework")
+        
+        # Use consistent colors for frameworks
+        colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
+        ax = df_pivot.plot(kind="bar", ax=plt.gca(), color=colors)
+        plt.title("Throughput Comparison by Framework and Category", fontsize=16, fontweight='bold')
+        plt.ylabel("Files per Second", fontsize=12)
+        plt.xlabel("Framework", fontsize=12)
         plt.xticks(rotation=45)
-        plt.legend(title="Document Category")
+        plt.legend(title="Document Category", title_fontsize=12)
+        plt.grid(axis='y', alpha=0.3)
         plt.tight_layout()
 
         throughput_chart = self.output_dir / "throughput_comparison.png"
@@ -186,21 +206,38 @@ class BenchmarkVisualizer:
 
         df = pd.DataFrame(resource_data)
 
-        # Memory usage chart
-        fig = plt.figure(figsize=(12, 8))
-        df_pivot = df.pivot(index="Framework", columns="Category", values="Peak Memory (MB)")
-        ax = df_pivot.plot(kind="bar", ax=plt.gca())
-        plt.title("Peak Memory Usage by Framework and Category")
-        plt.ylabel("Memory (MB)")
-        plt.xlabel("Framework")
-        plt.xticks(rotation=45)
-        plt.legend(title="Document Category")
-        plt.tight_layout()
+        # Data throughput chart (replacing memory since all values are 0.0)
+        throughput_data = [
+            {
+                "Framework": framework.value,
+                "Category": summary.category.value,
+                "Throughput (MB/s)": summary.mb_per_second or 0,
+            }
+            for framework, summaries in aggregated.framework_summaries.items()
+            for summary in summaries
+            if summary.mb_per_second is not None
+        ]
+        
+        if throughput_data:
+            df_throughput = pd.DataFrame(throughput_data)
+            fig = plt.figure(figsize=(12, 8))
+            df_pivot = df_throughput.pivot(index="Framework", columns="Category", values="Throughput (MB/s)")
+            
+            # Use consistent colors
+            colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
+            ax = df_pivot.plot(kind="bar", ax=plt.gca(), color=colors)
+            plt.title("Data Throughput by Framework and Category", fontsize=16, fontweight='bold')
+            plt.ylabel("Throughput (MB/s)", fontsize=12)
+            plt.xlabel("Framework", fontsize=12)
+            plt.xticks(rotation=45)
+            plt.legend(title="Document Category", title_fontsize=12)
+            plt.grid(axis='y', alpha=0.3)
+            plt.tight_layout()
 
-        memory_chart = self.output_dir / "memory_usage.png"
-        plt.savefig(memory_chart, dpi=300, bbox_inches="tight")
-        plt.close()
-        files.append(memory_chart)
+            memory_chart = self.output_dir / "memory_usage.png"  # Keep same filename for compatibility
+            plt.savefig(memory_chart, dpi=300, bbox_inches="tight")
+            plt.close()
+            files.append(memory_chart)
 
         return files
 
@@ -275,21 +312,24 @@ class BenchmarkVisualizer:
 
         df = pd.DataFrame(category_data)
 
-        # Category difficulty analysis
-        fig = plt.figure(figsize=(12, 8))
-        category_avg = df.groupby("Category")["Avg Time (s)"].mean().sort_values(ascending=False)
-        bars = plt.bar(category_avg.index, category_avg.values)
-        plt.title("Average Processing Time by Document Category")
-        plt.ylabel("Average Time (seconds)")
-        plt.xlabel("Document Category")
+        # Category analysis by framework
+        fig = plt.figure(figsize=(14, 8))
+        
+        # Group by category and framework for proper visualization
+        df_grouped = df.groupby(["Category", "Framework"])["Avg Time (s)"].mean().unstack()
+        
+        # Use consistent colors for frameworks
+        framework_colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_grouped.columns]
+        ax = df_grouped.plot(kind="bar", ax=plt.gca(), color=framework_colors, width=0.8)
+        
+        plt.title("Average Processing Time by Category and Framework", fontsize=16, fontweight='bold')
+        plt.ylabel("Average Time (seconds)", fontsize=12)
+        plt.xlabel("Document Category", fontsize=12)
         plt.xticks(rotation=45)
-
-        # Add value labels
-        for bar in bars:
-            height = bar.get_height()
-            plt.text(bar.get_x() + bar.get_width() / 2.0, height + 0.01, f"{height:.2f}s", ha="center", va="bottom")
-
+        plt.legend(title="Framework", title_fontsize=12, bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.grid(axis='y', alpha=0.3)
         plt.tight_layout()
+        
         category_chart = self.output_dir / "category_analysis.png"
         plt.savefig(category_chart, dpi=300, bbox_inches="tight")
         plt.close()

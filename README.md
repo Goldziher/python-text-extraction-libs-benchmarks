@@ -1,54 +1,5 @@
 # Python Text Extraction Libraries Benchmarks 2025
 
-## 📊 Latest Benchmark Results
-
-*Last updated: 2025-07-04 18:04:05 UTC*
-*Run ID: 16077011603*
-
-### Summary
-
-- **Total Files Processed:** 1,026
-- **Total Processing Time:** 5573.8 seconds
-- **Frameworks Tested:** 5
-- **Document Categories:** 3
-- **Best Performing Framework:** unstructured
-
-### Framework Performance
-
-| Framework       | Success Rate | Avg Time | Total Files | Status |
-| --------------- | ------------ | -------- | ----------- | ------ |
-| kreuzberg_sync  | 67.1%        | 0.11s    | 210         | 🔴     |
-| kreuzberg_async | 67.1%        | 0.11s    | 210         | 🔴     |
-| docling         | 77.4%        | 12.30s   | 186         | 🟡     |
-| markitdown      | 71.4%        | 14.23s   | 210         | 🟡     |
-| unstructured    | 87.1%        | 11.56s   | 210         | 🟡     |
-
-### Visualizations
-
-📊 **[Interactive Dashboard](visualizations/interactive_dashboard.html)** - Comprehensive interactive analysis
-
-#### Performance Charts
-
-- ![Performance Comparison](visualizations/performance_comparison.png)
-- ![Throughput Comparison](visualizations/throughput_comparison.png)
-
-#### Analysis
-
-- ![Success Rate Comparison](visualizations/success_rate_comparison.png)
-- ![Performance Heatmap](visualizations/performance_heatmap.png)
-- ![Memory Usage](visualizations/memory_usage.png)
-- ![Category Analysis](visualizations/category_analysis.png)
-
-### Download Reports
-
-For detailed analysis, download the comprehensive reports:
-
-- 📋 [Markdown Report](reports/benchmark_report.md)
-- 📊 [JSON Metrics](reports/benchmark_metrics.json)
-- 🌐 [HTML Report](reports/benchmark_report.html)
-
-______________________________________________________________________
-
 > **🎯 [📊 VIEW LIVE BENCHMARK RESULTS →](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)**
 
 Automated performance benchmarking of Python text extraction frameworks with real-time updates.
@@ -58,48 +9,117 @@ Automated performance benchmarking of Python text extraction frameworks with rea
 - **⚡ Performance Comparison** - Speed, memory usage, and success rates across all frameworks
 - **📊 Interactive Charts** - Visual breakdowns by file type, size category, and framework
 - **🔍 Detailed Metrics** - Per-file results, error analysis, and resource utilization
-- **📱 Live Dashboard** - Real-time updates when new framework versions are released
+- **📈 Trend Analysis** - Performance changes over iterations and time
+- **🎯 Framework Recommendations** - Guidance for choosing the right tool
 
-*Benchmarks run on 94 documents (210MB) across PDF, DOCX, HTML, images and 6 languages*
+## 🔬 Tested Frameworks
 
-## 🧪 Tested Frameworks
+### Speed Champions
+- **Kreuzberg** (sync/async) - Lightning fast with OCR capabilities
+- **MarkItDown** - Microsoft's lightweight converter
 
-- **[Kreuzberg](https://github.com/Goldziher/kreuzberg)** - Ultra-fast async/sync extraction with OCR backends (Tesseract, EasyOCR, PaddleOCR)
-- **[Docling](https://github.com/docling-project/docling)** - IBM's deep learning document processor with advanced ML features
-- **[MarkItDown](https://github.com/microsoft/markitdown)** - Microsoft's LLM-optimized converter with ONNX runtime
-- **[Unstructured](https://github.com/Unstructured-IO/unstructured)** - Enterprise ETL solution supporting 64+ file types
+### Quality Leaders  
+- **Unstructured** - Enterprise-grade reliability
+- **Docling** - IBM's research-backed solution
+
+## 📊 Test Coverage
+
+- **1,000+ Documents** - PDFs, Word docs, HTML, images, and more
+- **Real-world Files** - From tiny text files to 59MB academic papers
+- **Multi-language** - English, Hebrew, German, Chinese, Japanese, Korean
+- **CPU-only Processing** - No GPU acceleration for fair comparison
 
 ## 🚀 Quick Start
 
 ```bash
-git clone https://github.com/Goldziher/python-text-extraction-libs-benchmarks
+# Clone the repository
+git clone https://github.com/Goldziher/python-text-extraction-libs-benchmarks.git
 cd python-text-extraction-libs-benchmarks
-uv sync --dev
 
-# Run all benchmarks
-uv run python -m src.cli benchmark
+# Install dependencies
+uv sync --all-extras
 
-# Test specific framework
+# Run benchmarks (specific framework and category)
 uv run python -m src.cli benchmark --framework kreuzberg_sync --category small
+
+# Generate reports
+uv run python -m src.cli report --output-format html
 ```
 
-## 📋 Benchmark Details
+## 📖 Documentation
 
-**Test Dataset:** 94 documents (210MB) - PDF, DOCX, HTML, images across 6 languages
-**Categories:** Tiny (\<100KB), Small (100KB-1MB), Medium (1MB-10MB), Large (10MB-50MB)
-**Methodology:** Isolated CI jobs, 3 iterations, comprehensive metrics, timeout protection
+### Core Commands
 
-**What Makes This Unique:**
+```bash
+# List available frameworks
+uv run python -m src.cli list-frameworks
 
-- 🔄 **Auto-updating** - New framework versions trigger fresh benchmarks
-- 🏃 **Fault-tolerant** - Fast frameworks aren't blocked by slow ones
-- 📊 **Comprehensive** - Speed, memory, success rates, error analysis
-- 🌍 **Real-world** - Multi-language, varied formats, edge cases
+# Run comprehensive benchmarks
+uv run python -m src.cli benchmark --framework all --category tiny,small
+
+# Aggregate multiple benchmark runs
+uv run python -m src.cli aggregate results/ --output-dir aggregated/
+
+# Generate visualizations
+uv run python -m src.cli visualize --aggregated-file results.json
+```
+
+### Configuration
+
+The benchmark suite automatically detects document languages and configures frameworks accordingly. See `CLAUDE.md` for detailed configuration options and framework-specific settings.
 
 ## 🤝 Contributing
 
-Want to add a new framework? Just update `src/extractors.py` and `src/types.py`, then submit a PR!
+1. **Add New Frameworks** - Implement the extractor interface in `src/extractors.py`
+2. **Improve Tests** - Add test documents to `test_documents/`
+3. **Enhance Visualizations** - Modify `src/visualize.py` for new chart types
+4. **Report Issues** - Use GitHub Issues for bugs and feature requests
 
-______________________________________________________________________
+## 📋 Project Structure
 
-**MIT License** | *Auto-updating benchmarks on GitHub Actions (Ubuntu, CPU-only)*
+```
+python-text-extraction-libs-benchmarks-2025/
+├── src/                    # Main source code
+│   ├── benchmark.py        # Core benchmarking engine
+│   ├── extractors.py       # Framework implementations
+│   ├── visualize.py        # Chart generation
+│   └── cli.py             # Command-line interface
+├── test_documents/         # 1000+ test files
+├── .github/workflows/      # CI/CD automation
+└── CLAUDE.md              # Detailed technical documentation
+```
+
+## 🔧 Technical Details
+
+- **Python 3.13+** with modern async/await patterns
+- **msgspec** for fast JSON serialization
+- **plotly/matplotlib** for comprehensive visualizations
+- **GitHub Actions** for automated benchmarking
+- **uv** for fast dependency management
+
+## 📊 Performance Highlights
+
+Based on our latest benchmarks:
+
+- **Fastest**: Kreuzberg (35+ files/second)
+- **Most Reliable**: Unstructured (88%+ success rate)
+- **Best Balance**: Framework choice depends on your specific use case
+
+See the [live results](https://goldziher.github.io/python-text-extraction-libs-benchmarks/) for detailed comparisons.
+
+## 📜 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+## 🙏 Acknowledgments
+
+- Framework maintainers for building excellent tools
+- Contributors who added test documents and improvements
+- The Python community for feedback and suggestions
+
+---
+
+**🔗 Links:**
+- [📊 Live Results Dashboard](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)
+- [⚙️ GitHub Actions](https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions)
+- [📖 Technical Documentation](CLAUDE.md)
