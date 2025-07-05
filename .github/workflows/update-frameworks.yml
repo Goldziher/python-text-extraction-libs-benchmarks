@@ -139,38 +139,40 @@ jobs:
 
           # Also run a quick extraction test
           echo -e "\nTesting basic extraction..."
-          uv run python << 'EOF'
-import sys
-from pathlib import Path
+          cat << 'EOF' > test_extraction.py
+          import sys
+          from pathlib import Path
 
-# Create a simple test file
-test_file = Path('test.txt')
-test_file.write_text('Hello, World!')
+          # Create a simple test file
+          test_file = Path('test.txt')
+          test_file.write_text('Hello, World!')
 
-try:
-    from src.extractors import get_extractor
+          try:
+              from src.extractors import get_extractor
 
-    # Test each framework with a simple text file
-    for framework in ['kreuzberg_sync', 'markitdown', 'unstructured']:
-        try:
-            print(f'Testing {framework}...')
-            extractor = get_extractor(framework)
-            text = extractor.extract_text(str(test_file))
-            if 'Hello' in text:
-                print(f'  ✓ {framework} extraction successful')
-            else:
-                print(f'  ✗ {framework} extraction failed: unexpected output')
-        except Exception as e:
-            print(f'  ✗ {framework} failed: {e}')
+              # Test each framework with a simple text file
+              for framework in ['kreuzberg_sync', 'markitdown', 'unstructured']:
+                  try:
+                      print(f'Testing {framework}...')
+                      extractor = get_extractor(framework)
+                      text = extractor.extract_text(str(test_file))
+                      if 'Hello' in text:
+                          print(f'  ✓ {framework} extraction successful')
+                      else:
+                          print(f'  ✗ {framework} extraction failed: unexpected output')
+                  except Exception as e:
+                      print(f'  ✗ {framework} failed: {e}')
 
-    # Clean up
-    test_file.unlink()
-    print('\nBasic extraction tests completed!')
+              # Clean up
+              test_file.unlink()
+              print('\nBasic extraction tests completed!')
 
-except Exception as e:
-    print(f'Test setup failed: {e}')
-    sys.exit(1)
-EOF
+          except Exception as e:
+              print(f'Test setup failed: {e}')
+              sys.exit(1)
+          EOF
+          uv run python test_extraction.py
+          rm test_extraction.py
 
       - name: Configure Git
         run: |
@@ -191,9 +193,9 @@ EOF
             # Commit with update message
             git commit -m "chore: update frameworks to latest versions
 
-${{ needs.update-check.outputs.update_message }}
+            ${{ needs.update-check.outputs.update_message }}
 
-Auto-updated by GitHub Actions"
+            Auto-updated by GitHub Actions"
 
             # Push to main
             git push origin main
@@ -231,23 +233,29 @@ Auto-updated by GitHub Actions"
 
       - name: Create Release
         run: |
+          cat << 'EOF' > release_notes.md
+          ## 🔄 Automated Framework Updates
+
+          ${{ needs.update-check.outputs.update_message }}
+
+          ### Changes
+          - Updated framework dependencies to latest versions
+          - Synchronized all dependencies
+          - Verified framework imports
+          - Pre-commit hooks applied
+
+          ### Benchmarks
+          Comprehensive benchmarks are now running automatically and will be published to [GitHub Pages](https://goldziher.github.io/python-text-extraction-libs-benchmarks/) when complete.
+
+          ---
+          *This release was automatically created by the framework update workflow.*
+          EOF
+
           gh release create ${{ steps.version.outputs.version }} \
             --title "${{ steps.version.outputs.version }} - Framework Updates" \
-            --notes "## 🔄 Automated Framework Updates
-
-${{ needs.update-check.outputs.update_message }}
-
-### Changes
-- Updated framework dependencies to latest versions
-- Synchronized all dependencies
-- Verified framework imports
-- Pre-commit hooks applied
-
-### Benchmarks
-Comprehensive benchmarks are now running automatically and will be published to [GitHub Pages](https://goldziher.github.io/python-text-extraction-libs-benchmarks/) when complete.
-
----
-*This release was automatically created by the framework update workflow.*" \
+            --notes-file release_notes.md \
             --latest
+
+          rm release_notes.md
         env:
           GH_TOKEN: ${{ github.token }}
