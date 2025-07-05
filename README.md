@@ -14,39 +14,48 @@ Automated performance benchmarking of Python text extraction frameworks with rea
 
 ## 🔬 Framework Assessment
 
-### ⚡ **Kreuzberg** (71MB install)
-**Best for: Production workloads, high-volume processing**
-- Fastest extraction speeds (35+ files/second)
-- Both sync and async APIs with OCR support
-- Handles all document types reliably
-- Smallest installation footprint
+### ⚡ **Kreuzberg** (71MB, 20 deps)
 
-### 🏢 **Unstructured** (146MB install) 
+**Best for: Production workloads, edge computing, cloud functions**
+
+- Fastest extraction speeds (35+ files/second)
+- Both sync and async APIs with OCR support  
+- **Lightweight**: Perfect for AWS Lambda, edge functions, serverless
+- **Smallest footprint**: 71MB with only 20 dependencies
+- Handles all document types reliably
+
+### 🏢 **Unstructured** (146MB, 54 deps)
+
 **Best for: Enterprise applications, mixed document types**
+
 - Most reliable overall (88%+ success rate)
 - Handles complex layouts well
 - Moderate speed, good for batch processing
-- Enterprise features and support
+- **Moderate footprint**: 146MB installation with 54 dependencies
 
-### 📝 **MarkItDown** (251MB install)
+### 📝 **MarkItDown** (251MB, 25 deps)
+
 **Best for: Simple documents, LLM preprocessing**
+
 - Good for basic PDF and Office documents
 - **Limitation**: Struggles with large/complex files (>10MB)
-- Moderate processing speed
+- **ONNX Runtime included**: 251MB (includes ML inference models)
 - Optimized for Markdown output
 
-### 🔬 **Docling** (1GB+ install)
-**Best for: Research environments, ML workflows**  
+### 🔬 **Docling** (1,032MB, 88 deps)
+
+**Best for: Research environments, ML workflows**
+
 - Advanced document understanding with ML models
 - **Major limitation**: Extremely slow (often 60+ minutes per file)
 - **Frequent failures** on medium-sized documents due to timeouts
-- Heavy resource requirements (1GB+ installation)
+- **Heaviest install**: 1GB+ with PyTorch, transformers, vision models
 
 ## 📊 Test Coverage
 
 - **94 Documents** - PDFs, Word docs, HTML, images, and more (~210MB total)
 - **Real-world Files** - From tiny text files to 59MB academic papers
-- **5 Size Categories** - Tiny (<100KB), Small (100KB-1MB), Medium (1-10MB), Large (10-50MB), Huge (>50MB)
+- **5 Size Categories** - Tiny (\<100KB), Small (100KB-1MB), Medium (1-10MB), Large (10-50MB), Huge (>50MB)
 - **Multi-language** - English, Hebrew, German, Chinese, Japanese, Korean
 - **CPU-only Processing** - No GPU acceleration for fair comparison
 - **Comprehensive Metrics** - Speed, memory usage, success rates, installation sizes
@@ -93,9 +102,9 @@ The benchmark suite automatically detects document languages and configures fram
 ## 🤝 Contributing
 
 1. **Add New Frameworks** - Implement the extractor interface in `src/extractors.py`
-2. **Improve Tests** - Add test documents to `test_documents/`
-3. **Enhance Visualizations** - Modify `src/visualize.py` for new chart types
-4. **Report Issues** - Use GitHub Issues for bugs and feature requests
+1. **Improve Tests** - Add test documents to `test_documents/`
+1. **Enhance Visualizations** - Modify `src/visualize.py` for new chart types
+1. **Report Issues** - Use GitHub Issues for bugs and feature requests
 
 ## 📋 Project Structure
 
@@ -106,7 +115,7 @@ python-text-extraction-libs-benchmarks-2025/
 │   ├── extractors.py       # Framework implementations
 │   ├── visualize.py        # Chart generation
 │   └── cli.py             # Command-line interface
-├── test_documents/         # 1000+ test files
+├── test_documents/         # 94 test files (~210MB)
 ├── .github/workflows/      # CI/CD automation
 └── CLAUDE.md              # Detailed technical documentation
 ```
@@ -124,19 +133,22 @@ python-text-extraction-libs-benchmarks-2025/
 Based on our latest benchmarks:
 
 ### 🏆 **Winners by Category**
+
 - **Speed**: Kreuzberg (35+ files/second)
-- **Reliability**: Unstructured (88%+ success rate)  
-- **Installation Size**: Kreuzberg (71MB vs Docling's 1GB+)
+- **Reliability**: Unstructured (88%+ success rate)
+- **Installation Size**: Kreuzberg (71MB, 20 deps vs Docling's 1GB+, 88 deps)
 - **Enterprise Features**: Unstructured
 
 ### ⚠️ **Key Limitations**
+
 - **Docling**: Often fails/times out on medium files (>1MB)
 - **MarkItDown**: Struggles with large/complex documents (>10MB)
 - **All frameworks**: Performance varies significantly by document type
 
 ### 🎯 **Quick Recommendations**
-- **High-volume production**: Choose Kreuzberg
-- **Enterprise/mixed docs**: Choose Unstructured  
+
+- **High-volume production & edge computing**: Choose Kreuzberg
+- **Enterprise/mixed docs**: Choose Unstructured
 - **Simple docs for LLMs**: MarkItDown is sufficient
 - **Research/ML workflows**: Consider Docling despite performance issues
 
@@ -152,9 +164,10 @@ MIT License - see [LICENSE](LICENSE) for details.
 - Contributors who added test documents and improvements
 - The Python community for feedback and suggestions
 
----
+______________________________________________________________________
 
 **🔗 Links:**
+
 - [📊 Live Results Dashboard](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)
 - [⚙️ GitHub Actions](https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions)
 - [📖 Technical Documentation](CLAUDE.md)
