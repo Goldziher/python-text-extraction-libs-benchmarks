@@ -11,6 +11,7 @@ Automated performance benchmarking of Python text extraction frameworks with rea
 - **🔍 Detailed Metrics** - Per-file results, error analysis, and resource utilization
 - **📈 Trend Analysis** - Performance changes over iterations and time
 - **🎯 Framework Recommendations** - Guidance for choosing the right tool
+- **✨ Quality Assessment** - Extraction quality scores (0-1) measuring completeness, coherence, and accuracy
 
 ## 🔬 Framework Assessment
 
@@ -75,6 +76,106 @@ uv run python -m src.cli benchmark --framework kreuzberg_sync --category small
 
 # Generate reports
 uv run python -m src.cli report --output-format html
+```
+
+## 🔬 Benchmarking Methodology
+
+### Extraction Quality & Reliability Metrics
+
+This benchmark suite measures both **performance** and **extraction quality/reliability** to provide a comprehensive evaluation:
+
+#### 📊 **Quality Assessment Metrics** (0-1 scale)
+
+1. **Extraction Completeness** (25% weight)
+
+    - Estimates how much content was successfully extracted
+    - Detects missing sections, truncated text, or incomplete parsing
+    - Compares against expected document characteristics
+
+1. **Text Coherence** (20% weight)
+
+    - Measures logical flow and readability of extracted text
+    - Detects garbled text, encoding issues, or structural problems
+    - Evaluates sentence and paragraph structure preservation
+
+1. **Noise Ratio** (10% negative weight)
+
+    - Identifies extraction artifacts, repeated characters, or garbage text
+    - Detects OCR errors and encoding problems
+    - Lower noise = higher quality score
+
+1. **Format Preservation** (15% weight)
+
+    - Document-specific quality checks:
+        - **PDFs**: Proper text encoding, no OCR artifacts
+        - **Office docs**: Structure preservation, no metadata pollution
+        - **HTML**: Clean text without tags or script remnants
+    - Table and list structure integrity
+
+1. **Readability Metrics** (10% weight)
+
+    - Flesch Reading Ease score
+    - Gunning Fog Index
+    - Indicates if extracted text maintains original readability
+
+1. **Semantic Similarity** (20% weight, when reference available)
+
+    - Compares extracted text against known-good reference extractions
+    - Uses sentence transformers for meaning preservation
+    - TF-IDF and Jaccard similarity for content coverage
+
+#### 🎯 **Reliability Metrics**
+
+- **Success Rate**: Percentage of files extracted without errors
+- **Timeout Rate**: Files that exceed processing time limits
+- **Error Analysis**: Categorized failure reasons (parsing, memory, timeout)
+- **Consistency**: Variance across multiple extraction attempts
+
+### Performance Benchmarking
+
+Each framework is evaluated across:
+
+- **Speed**: Extraction time per file and throughput (files/second)
+- **Memory Usage**: Peak RSS and average consumption
+- **CPU Utilization**: Processing efficiency
+- **Scalability**: Performance across different file sizes (tiny to huge)
+
+### Test Methodology
+
+1. **Diverse Document Set**: 94 real-world documents (~210MB)
+
+    - Multiple formats: PDF, DOCX, HTML, images, etc.
+    - Various sizes: From 1KB to 59MB
+    - Multiple languages: English, Hebrew, German, Chinese, Japanese, Korean
+    - Special cases: OCR-required images, complex layouts, tables
+
+1. **Fair Comparison**:
+
+    - CPU-only processing (no GPU acceleration)
+    - Cold-start performance (no warmup runs)
+    - Cache cleared between framework runs
+    - Isolated CI jobs to prevent interference
+
+1. **Statistical Rigor**:
+
+    - Multiple iterations per document (default: 3)
+    - Median values for performance metrics
+    - Standard deviation tracking
+    - Outlier detection and handling
+
+### Running Quality Assessment
+
+```bash
+# Add quality metrics to existing benchmark results
+uv run python -m src.cli quality-assess \
+  --results-file results/results.json \
+  --output-file results/enhanced_results.json
+
+# Compare against reference extractions
+uv run python -m src.cli quality-assess \
+  --results-file results/results.json \
+  --reference-dir reference_texts/ \
+  --output-file results/quality_enhanced.json
 ```
 
 ## 📖 Documentation
