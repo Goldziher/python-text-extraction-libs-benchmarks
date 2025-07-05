@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Benchmark Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1, h2, h3 { color: #333; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .metric { background-color: #e7f3ff; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { color: #28a745; }
+        .warning { color: #ffc107; }
+        .danger { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>Benchmark Report</h1>
+
+    <div class="metric">
+        <strong>Total Runs:</strong> 15<br>
+        <strong>Total Files Processed:</strong> 1026<br>
+        <strong>Total Time:</strong> 5573.8 seconds
+    </div>
+
+    <h2>Framework Performance Summary</h2>
+    <table>
+        <tr>
+            <th>Framework</th>
+            <th>Avg Success Rate</th>
+            <th>Avg Time (s)</th>
+            <th>Avg Memory (MB)</th>
+            <th>Files/sec</th>
+        </tr>
+
+        <tr>
+            <td>kreuzberg_sync</td>
+            <td class="warning">79.1%</td>
+            <td>0.11</td>
+            <td>0.0</td>
+            <td>35.75</td>
+        </tr>
+        <tr>
+            <td>kreuzberg_async</td>
+            <td class="warning">79.1%</td>
+            <td>0.11</td>
+            <td>0.0</td>
+            <td>24.46</td>
+        </tr>
+        <tr>
+            <td>docling</td>
+            <td class="warning">82.8%</td>
+            <td>12.30</td>
+            <td>0.0</td>
+            <td>0.14</td>
+        </tr>
+        <tr>
+            <td>markitdown</td>
+            <td class="warning">74.4%</td>
+            <td>14.23</td>
+            <td>0.0</td>
+            <td>10.62</td>
+        </tr>
+        <tr>
+            <td>unstructured</td>
+            <td class="warning">88.6%</td>
+            <td>11.56</td>
+            <td>0.0</td>
+            <td>2.22</td>
+        </tr>
+    </table>
+
+    <h2>Performance by Category</h2>
+
+    <h3>Tiny</h3>
+    <table>
+        <tr>
+            <th>Framework</th>
+            <th>Success Rate</th>
+            <th>Avg Time (s)</th>
+            <th>Memory (MB)</th>
+            <th>Throughput</th>
+        </tr>
+
+        <tr>
+            <td>kreuzberg_sync</td>
+            <td class="danger">57.4%</td>
+            <td>0.03</td>
+            <td>0.0</td>
+            <td>35.65</td>
+        </tr>
+        <tr>
+            <td>kreuzberg_async</td>
+            <td class="danger">57.4%</td>
+            <td>0.08</td>
+            <td>0.0</td>
+            <td>13.05</td>
+        </tr>
+        <tr>
+            <td>docling</td>
+            <td class="warning">72.3%</td>
+            <td>4.27</td>
+            <td>0.0</td>
+            <td>0.23</td>
+        </tr>
+        <tr>
+            <td>markitdown</td>
+            <td class="danger">68.1%</td>
+            <td>0.04</td>
+            <td>0.0</td>
+            <td>27.22</td>
+        </tr>
+        <tr>
+            <td>unstructured</td>
+            <td class="warning">85.1%</td>
+            <td>0.17</td>
+            <td>0.0</td>
+            <td>5.74</td>
+        </tr>
+    </table>
+
+    <h3>Small</h3>
+    <table>
+        <tr>
+            <th>Framework</th>
+            <th>Success Rate</th>
+            <th>Avg Time (s)</th>
+            <th>Memory (MB)</th>
+            <th>Throughput</th>
+        </tr>
+
+        <tr>
+            <td>kreuzberg_sync</td>
+            <td class="warning">80.0%</td>
+            <td>0.01</td>
+            <td>0.0</td>
+            <td>68.21</td>
+        </tr>
+        <tr>
+            <td>kreuzberg_async</td>
+            <td class="warning">80.0%</td>
+            <td>0.02</td>
+            <td>0.0</td>
+            <td>55.98</td>
+        </tr>
+        <tr>
+            <td>docling</td>
+            <td class="success">93.3%</td>
+            <td>20.34</td>
+            <td>0.0</td>
+            <td>0.05</td>
+        </tr>
+        <tr>
+            <td>markitdown</td>
+            <td class="warning">80.0%</td>
+            <td>0.22</td>
+            <td>0.0</td>
+            <td>4.62</td>
+        </tr>
+        <tr>
+            <td>unstructured</td>
+            <td class="success">93.3%</td>
+            <td>1.11</td>
+            <td>0.0</td>
+            <td>0.90</td>
+        </tr>
+    </table>
+
+    <h3>Medium</h3>
+    <table>
+        <tr>
+            <th>Framework</th>
+            <th>Success Rate</th>
+            <th>Avg Time (s)</th>
+            <th>Memory (MB)</th>
+            <th>Throughput</th>
+        </tr>
+
+        <tr>
+            <td>kreuzberg_sync</td>
+            <td class="success">100.0%</td>
+            <td>0.30</td>
+            <td>0.0</td>
+            <td>3.38</td>
+        </tr>
+        <tr>
+            <td>kreuzberg_async</td>
+            <td class="success">100.0%</td>
+            <td>0.23</td>
+            <td>0.0</td>
+            <td>4.35</td>
+        </tr>
+        <tr>
+            <td>markitdown</td>
+            <td class="warning">75.0%</td>
+            <td>42.43</td>
+            <td>0.0</td>
+            <td>0.02</td>
+        </tr>
+        <tr>
+            <td>unstructured</td>
+            <td class="warning">87.5%</td>
+            <td>33.39</td>
+            <td>0.0</td>
+            <td>0.03</td>
+        </tr>
+    </table>
+
+    <h2>Failure Analysis</h2>
+    <table>
+        <tr>
+            <th>Error Type</th>
+            <th>Count</th>
+        </tr>
+
+        <tr>
+            <td>MissingDependencyError</td>
+            <td>114</td>
+        </tr>
+        <tr>
+            <td>FileConversionException</td>
+            <td>45</td>
+        </tr>
+        <tr>
+            <td>ConversionError</td>
+            <td>36</td>
+        </tr>
+        <tr>
+            <td>ValidationError</td>
+            <td>24</td>
+        </tr>
+        <tr>
+            <td>OSError</td>
+            <td>15</td>
+        </tr>
+        <tr>
+            <td>UnsupportedFormatException</td>
+            <td>9</td>
+        </tr>
+        <tr>
+            <td>UnicodeDecodeError</td>
+            <td>6</td>
+        </tr>
+        <tr>
+            <td>TesseractError</td>
+            <td>6</td>
+        </tr>
+        <tr>
+            <td>TypeError</td>
+            <td>3</td>
+        </tr>
+    </table>
+
+</body>
+</html>

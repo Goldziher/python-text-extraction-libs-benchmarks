@@ -1,0 +1,77 @@
+[
+  {
+    "name": "kreuzberg_sync - Success Rate",
+    "unit": "percent",
+    "value": 79.14893617021276
+  },
+  {
+    "name": "kreuzberg_sync - Avg Time",
+    "unit": "seconds",
+    "value": 0.11271279167245936
+  },
+  {
+    "name": "kreuzberg_sync - Throughput",
+    "unit": "files/second",
+    "value": 35.74667186306829
+  },
+  {
+    "name": "kreuzberg_async - Success Rate",
+    "unit": "percent",
+    "value": 79.14893617021276
+  },
+  {
+    "name": "kreuzberg_async - Avg Time",
+    "unit": "seconds",
+    "value": 0.10815520161463892
+  },
+  {
+    "name": "kreuzberg_async - Throughput",
+    "unit": "files/second",
+    "value": 24.45946095769581
+  },
+  {
+    "name": "docling - Success Rate",
+    "unit": "percent",
+    "value": 82.83687943262412
+  },
+  {
+    "name": "docling - Avg Time",
+    "unit": "seconds",
+    "value": 12.303312948271007
+  },
+  {
+    "name": "docling - Throughput",
+    "unit": "files/second",
+    "value": 0.14171665623369673
+  },
+  {
+    "name": "markitdown - Success Rate",
+    "unit": "percent",
+    "value": 74.36170212765957
+  },
+  {
+    "name": "markitdown - Avg Time",
+    "unit": "seconds",
+    "value": 14.226815317240026
+  },
+  {
+    "name": "markitdown - Throughput",
+    "unit": "files/second",
+    "value": 10.620739223460026
+  },
+  {
+    "name": "unstructured - Success Rate",
+    "unit": "percent",
+    "value": 88.64657210401892
+  },
+  {
+    "name": "unstructured - Avg Time",
+    "unit": "seconds",
+    "value": 11.55795924918992
+  },
+  {
+    "name": "unstructured - Throughput",
+    "unit": "files/second",
+    "value": 2.224297896309022
+  }
+]

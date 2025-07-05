@@ -164,13 +164,18 @@ cython_debug/
 # UV
 .uv/
 
-# Benchmark results
+# Benchmark results (but allow published reports)
 results/
-*.json
 *.csv
-*.png
-*.svg
-*.html
+# Allow published reports and pages
+!pages/
+!pages/**
+!reports/
+!reports/**
+!visualizations/
+!visualizations/**
+!aggregated-results/
+!aggregated-results/**
 
 # Test files
 test_files/

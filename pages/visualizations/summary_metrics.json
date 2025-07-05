@@ -1,0 +1,40 @@
+{
+  "total_files": 1026,
+  "total_time": 5573.797263622284,
+  "frameworks_tested": 5,
+  "categories_tested": 3,
+  "best_framework": "unstructured",
+  "framework_stats": {
+    "kreuzberg_sync": {
+      "success_rate": 67.14285714285714,
+      "avg_time": 0.11271279167245936,
+      "total_files": 210,
+      "successful_files": 141
+    },
+    "kreuzberg_async": {
+      "success_rate": 67.14285714285714,
+      "avg_time": 0.10815520161463892,
+      "total_files": 210,
+      "successful_files": 141
+    },
+    "docling": {
+      "success_rate": 77.41935483870968,
+      "avg_time": 12.303312948271007,
+      "total_files": 186,
+      "successful_files": 144
+    },
+    "markitdown": {
+      "success_rate": 71.42857142857143,
+      "avg_time": 14.226815317240026,
+      "total_files": 210,
+      "successful_files": 150
+    },
+    "unstructured": {
+      "success_rate": 87.14285714285714,
+      "avg_time": 11.55795924918992,
+      "total_files": 210,
+      "successful_files": 183
+    }
+  },
+  "timestamp": 1751652245.3563516
+}
