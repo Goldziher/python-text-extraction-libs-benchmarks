@@ -22,7 +22,7 @@ Automated performance benchmarking of Python text extraction frameworks with rea
 - Both sync and async APIs with OCR support
 - **Lightweight**: Perfect for AWS Lambda, edge functions, serverless
 - **Smallest footprint**: 71MB with only 20 dependencies
-- Handles all document types reliably
+- Handles all document types reliably and very fast
 
 ### 🏢 **Unstructured** (146MB, 54 deps)
 
@@ -40,7 +40,7 @@ Automated performance benchmarking of Python text extraction frameworks with rea
 - Good for basic PDF and Office documents
 - **Limitation**: Struggles with large/complex files (>10MB)
 - **ONNX Runtime included**: 251MB (includes ML inference models)
-- Optimized for Markdown output
+- Optimized for Markdown output but slower than Kreuzberg and has lower quality markdown outputs
 
 ### 🔬 **Docling** (1,032MB, 88 deps)
 
@@ -136,18 +136,19 @@ Based on our latest benchmarks:
 
 - **Speed**: Kreuzberg (35+ files/second)
 - **Reliability**: Unstructured (88%+ success rate)
+- **Memory Footprint**: Kreuzberg (~530MB on average)
 - **Installation Size**: Kreuzberg (71MB, 20 deps vs Docling's 1GB+, 88 deps)
 - **Enterprise Features**: Unstructured
 
 ### ⚠️ **Key Limitations**
 
-- **Docling**: Often fails/times out on medium files (>1MB)
+- **Docling**: Often fails/times out on medium files (>1MB), is slow for smaller files as well.
 - **MarkItDown**: Struggles with large/complex documents (>10MB)
 - **All frameworks**: Performance varies significantly by document type
 
 ### 🎯 **Quick Recommendations**
 
-- **High-volume production & edge computing**: Choose Kreuzberg
+- **High-volume production or edge computing**: Choose Kreuzberg
 - **Enterprise/mixed docs**: Choose Unstructured
 - **Simple docs for LLMs**: Choose Kreuzberg
 - **Research/ML workflows**: Choose Kreuzberg with fallback to Unstructured
