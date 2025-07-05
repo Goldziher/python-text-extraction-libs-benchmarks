@@ -439,5 +439,24 @@ def list_file_types() -> None:
         console.print(f"  - {file_type.value}")
 
 
+@main.command(name="installation-sizes")
+@click.option("--output-file", "-o", type=click.Path(), help="Save results to JSON file")
+@click.option("--include-charts", is_flag=True, help="Generate visualization charts")
+def installation_sizes(output_file: str | None, include_charts: bool) -> None:
+    """Check installation sizes of all frameworks."""
+    from .check_installation_sizes import main as check_sizes
+
+    console.print("[bold blue]Checking framework installation sizes...[/bold blue]")
+
+    # Run the size check
+    check_sizes()
+
+    if output_file:
+        console.print(f"[yellow]Results will be saved to {output_file} (feature coming soon!)[/yellow]")
+
+    if include_charts:
+        console.print("[yellow]Chart generation for installation sizes coming soon![/yellow]")
+
+
 if __name__ == "__main__":
     main()

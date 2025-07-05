@@ -187,7 +187,7 @@ def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceM
     # Collect samples during execution
     samples = []
 
-    # Create a simple sampling function
+    # Always collect at least one baseline sample before execution
     def collect_sample() -> ResourceMetrics | None:
         try:
             cpu = process.cpu_percent(interval=None)
@@ -232,12 +232,20 @@ def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceM
         avg_cpu_percent=0,
     )
 
+    # Collect baseline sample
+    if baseline_sample := collect_sample():
+        samples.append(baseline_sample)
+
     try:
         yield metrics
 
         # Collect final sample
         if final_sample := collect_sample():
             samples.append(final_sample)
+
+        # For very fast operations, ensure we have at least baseline memory
+        if not samples and (emergency_sample := collect_sample()):
+            samples.append(emergency_sample)
 
     finally:
         end_time = time.time()
