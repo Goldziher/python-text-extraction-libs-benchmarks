@@ -19,7 +19,7 @@ Automated performance benchmarking of Python text extraction frameworks with rea
 **Best for: Production workloads, edge computing, cloud functions**
 
 - Fastest extraction speeds (35+ files/second)
-- Both sync and async APIs with OCR support  
+- Both sync and async APIs with OCR support
 - **Lightweight**: Perfect for AWS Lambda, edge functions, serverless
 - **Smallest footprint**: 71MB with only 20 dependencies
 - Handles all document types reliably

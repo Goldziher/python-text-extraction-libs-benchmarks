@@ -139,7 +139,7 @@ jobs:
 
           # Also run a quick extraction test
           echo -e "\nTesting basic extraction..."
-          uv run python -c "
+          uv run python << 'EOF'
 import sys
 from pathlib import Path
 
@@ -165,12 +165,12 @@ try:
 
     # Clean up
     test_file.unlink()
-    print('\\nBasic extraction tests completed!')
+    print('\nBasic extraction tests completed!')
 
 except Exception as e:
     print(f'Test setup failed: {e}')
     sys.exit(1)
-"
+EOF
 
       - name: Configure Git
         run: |
