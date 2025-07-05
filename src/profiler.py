@@ -197,7 +197,7 @@ class EnhancedResourceMonitor:
 
 
 @contextmanager
-def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceMetrics]:  # noqa: ARG001, PLR0915
+def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceMetrics]:  # noqa: ARG001, PLR0915, C901
     """Context manager for synchronous performance profiling."""
     # Force garbage collection before profiling
     gc.collect()

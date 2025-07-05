@@ -84,7 +84,7 @@ def main() -> None:
     default=False,
     help="Enable quality assessment by saving extracted text for analysis",
 )
-def benchmark(
+def benchmark(  # noqa: PLR0915
     framework: str,
     category: str,
     iterations: int,

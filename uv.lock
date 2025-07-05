@@ -242,15 +242,15 @@ wheels = [
 
 [[package]]
 name = "cmudict"
-version = "1.0.32"
+version = "1.0.33"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "importlib-metadata" },
     { name = "importlib-resources" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1b/d1/c32478997451c1c7cbf07b663845972812ca9ce678d228f4cd2bac5d2e32/cmudict-1.0.32.tar.gz", hash = "sha256:e84a587bb610b3a837a93f07494e874860cf205ea7f23db652b871093a699f38", size = 935959, upload-time = "2024-12-21T21:19:45.193Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/34/32/68e3162cb1d6b1678811893bd26c9d46ae0a3f6ada8737868c70b1d30785/cmudict-1.0.33.tar.gz", hash = "sha256:f4c463c8406a2414f9f9058d60e45a7ce69081892ce27102dc91dc1bc6f92115", size = 935502, upload-time = "2025-07-04T20:35:01.648Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/ff/617bdeab02c2ce0384e64a5bb00ec479322dbf019491def68af6a860733d/cmudict-1.0.32-py3-none-any.whl", hash = "sha256:b9323664d49d128193c480ec97a3270ab2162469289bb26e950d13b2ef661c41", size = 939412, upload-time = "2024-12-21T21:19:42.287Z" },
+    { url = "https://files.pythonhosted.org/packages/ec/b7/2b227c35949f33a0986a18a0e4830751254e7338062b5b1f10255bca9e21/cmudict-1.0.33-py3-none-any.whl", hash = "sha256:a9e9e7067caaa71a10dd10f3a4821223840529f00961d65163c9041c76759953", size = 939425, upload-time = "2025-07-04T20:35:00.131Z" },
 ]
 
 [[package]]
@@ -497,7 +497,7 @@ wheels = [
 
 [[package]]
 name = "docling"
-version = "2.39.0"
+version = "2.40.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -526,9 +526,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9f/d1/318dde475e4bf804e838a19d2960d2c8c6b86553127ae0596fd5a7491f66/docling-2.39.0.tar.gz", hash = "sha256:eef2d767e56714a0b80e1e326503d2a1cd4ff9f1b6406f93818cec02db98936d", size = 164205, upload-time = "2025-06-27T16:07:30.303Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b6/27/be2f2fa46891a7e0d1bbc1b92aacc20cf00a3bf6f9b7dc3f1f08fb31f1e2/docling-2.40.0.tar.gz", hash = "sha256:0bf01f314880dcc80d3ec3ecdf60d5efa04e6464985d80c4a6e9d86b192b2032", size = 164777, upload-time = "2025-07-04T15:32:42.244Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/10/ee/752454731d37d768e4d30968e54b43b6ee8ab9ab7b1d546d39f5a7e91f9a/docling-2.39.0-py3-none-any.whl", hash = "sha256:73adee8e859f1eb4c7148a16acee6541110c529d90b4f3626e2403cee90dee1f", size = 185492, upload-time = "2025-06-27T16:07:28.626Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/94/d805111494f8a7def585447e11c3362036dbc80ff8319c594979d5b145a3/docling-2.40.0-py3-none-any.whl", hash = "sha256:16550b30d39ff79db8de67dcef6c7ae83a054158fe0b70b3862e5834170e693b", size = 186026, upload-time = "2025-07-04T15:32:40.669Z" },
 ]
 
 [[package]]
@@ -560,7 +560,7 @@ chunking = [
 
 [[package]]
 name = "docling-ibm-models"
-version = "3.6.0"
+version = "3.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "docling-core" },
@@ -577,9 +577,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "transformers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/dc/67/df762264044b91036da27bce2304d78035a38b9060e1a0cef46a98a510c7/docling_ibm_models-3.6.0.tar.gz", hash = "sha256:1ff8ef143d6a41f3d9ae22a2fed297524c3fe45235368e1919962a903b65d9d3", size = 85129, upload-time = "2025-06-20T09:19:30.194Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b2/69/016c9116f8730983350f3c83160089f07d1b9e355bd413d640756b41520f/docling_ibm_models-3.7.0.tar.gz", hash = "sha256:cba4700246942a22be5ed5844fa8b1c4ee7e68fc7c9bac218197e4bcffcfffd4", size = 85757, upload-time = "2025-07-04T14:43:33.363Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f4/d7/e7ea203d57e4f3eed7d4ccbbdc62e7828ee2ebcf2a9b7f61097537b5c88c/docling_ibm_models-3.6.0-py3-none-any.whl", hash = "sha256:f61a1ca278b55a9dc2570d4c69d62281a1dc9a1e6e08bbab57940b612cab383d", size = 84779, upload-time = "2025-06-20T09:19:28.923Z" },
+    { url = "https://files.pythonhosted.org/packages/d0/73/fd559e16ce196dfaf68365445b38d6a23a66049e3bb3261dd8417dd69902/docling_ibm_models-3.7.0-py3-none-any.whl", hash = "sha256:24324ebc76b0b30bd3ebd3bf73890e1d2586a5e092e645de83cc9f5dbf1bd2bb", size = 85445, upload-time = "2025-07-04T14:43:31.882Z" },
 ]
 
 [[package]]
@@ -1251,7 +1251,7 @@ wheels = [
 
 [[package]]
 name = "kreuzberg"
-version = "3.5.0"
+version = "3.6.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1264,9 +1264,9 @@ dependencies = [
     { name = "python-calamine" },
     { name = "python-pptx" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7b/8f/2ac9c16cab19c60400d3254ad7c241f258185a59c604515c8a32fefe029f/kreuzberg-3.5.0.tar.gz", hash = "sha256:39f39d6e31f24a35523356058a52cb90804568bff4f4daaac08b9b833c9b80d8", size = 9371218, upload-time = "2025-07-04T06:41:06.456Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e9/ea/151981f4b312460b071320dadd592f4cee7768c68667f6f5d82cf9767b5c/kreuzberg-3.6.1.tar.gz", hash = "sha256:9bb0a57f6be4a0bc03dec96f3f89cb4695075f40dc96189ebad4edf5e475a051", size = 9389047, upload-time = "2025-07-04T16:52:45.118Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0d/7d/76212ae37611524a1e1eb51a1b6576a5ad9f3ed99e4530ff9dd8e52b9b0f/kreuzberg-3.5.0-py3-none-any.whl", hash = "sha256:d214be8e9432bc19ce882a5ca8b9a54d8da24aa271fa0cd12f2ee54a667880d0", size = 91740, upload-time = "2025-07-04T06:41:04.809Z" },
+    { url = "https://files.pythonhosted.org/packages/b5/eb/ea228eb120dbc7f44ace4e54374ccd8b359dd6327fd8b5e2a6c6f8d7284d/kreuzberg-3.6.1-py3-none-any.whl", hash = "sha256:3b88056232d9494dc3dc2491f198c6a4c8a76fb2a963e0a4c428fb0c29a0528f", size = 94900, upload-time = "2025-07-04T16:52:43.44Z" },
 ]
 
 [package.optional-dependencies]
@@ -3157,8 +3157,8 @@ dev = [
 requires-dist = [
     { name = "anyio", specifier = ">=4.9.0" },
     { name = "click", specifier = ">=8.2.1" },
-    { name = "docling", specifier = ">=2.15.0" },
-    { name = "kreuzberg", specifier = ">=3.5.0" },
+    { name = "docling", specifier = ">=2.40.0" },
+    { name = "kreuzberg", specifier = ">=3.6.1" },
     { name = "kreuzberg", extras = ["easyocr"], marker = "extra == 'ocr'" },
     { name = "kreuzberg", extras = ["paddleocr"], marker = "extra == 'ocr'" },
     { name = "markitdown", specifier = ">=0.0.1a2" },
@@ -3914,7 +3914,7 @@ wheels = [
 
 [[package]]
 name = "transformers"
-version = "4.53.0"
+version = "4.53.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "filelock" },
@@ -3928,9 +3928,9 @@ dependencies = [
     { name = "tokenizers" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e8/40/f2d2c3bcf5c6135027cab0fd7db52f6149a1c23acc4e45f914c43d362386/transformers-4.53.0.tar.gz", hash = "sha256:f89520011b4a73066fdc7aabfa158317c3934a22e3cd652d7ffbc512c4063841", size = 9177265, upload-time = "2025-06-26T16:10:54.729Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9f/2c/68a0024c311db41bb92d4ec17d22e90b7406a4d28aa18d87662f2bbebcd9/transformers-4.53.1.tar.gz", hash = "sha256:da5a9f66ad480bc2a7f75bc32eaf735fd20ac56af4325ca4ce994021ceb37710", size = 9192189, upload-time = "2025-07-04T08:28:40.571Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5e/0c/68d03a38f6ab2ba2b2829eb11b334610dd236e7926787f7656001b68e1f2/transformers-4.53.0-py3-none-any.whl", hash = "sha256:7d8039ff032c01a2d7f8a8fe0066620367003275f023815a966e62203f9f5dd7", size = 10821970, upload-time = "2025-06-26T16:10:51.505Z" },
+    { url = "https://files.pythonhosted.org/packages/8d/10/8cef2288810a3210659eb3a20711e8387cc35a881a7762ae387806e2d651/transformers-4.53.1-py3-none-any.whl", hash = "sha256:c84f3c3e41c71fdf2c60c8a893e1cd31191b0cb463385f4c276302d2052d837b", size = 10825681, upload-time = "2025-07-04T08:28:37.318Z" },
 ]
 
 [[package]]
@@ -3980,11 +3980,11 @@ wheels = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.14.0"
+version = "4.14.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d1/bc/51647cd02527e87d05cb083ccc402f93e441606ff1f01739a62c8ad09ba5/typing_extensions-4.14.0.tar.gz", hash = "sha256:8676b788e32f02ab42d9e7c61324048ae4c6d844a399eebace3d4979d75ceef4", size = 107423, upload-time = "2025-06-02T14:52:11.399Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/98/5a/da40306b885cc8c09109dc2e1abd358d5684b1425678151cdaed4731c822/typing_extensions-4.14.1.tar.gz", hash = "sha256:38b39f4aeeab64884ce9f74c94263ef78f3c22467c8724005483154c26648d36", size = 107673, upload-time = "2025-07-04T13:28:34.16Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/69/e0/552843e0d356fbb5256d21449fa957fa4eff3bbc135a74a691ee70c7c5da/typing_extensions-4.14.0-py3-none-any.whl", hash = "sha256:a1514509136dd0b477638fc68d6a91497af5076466ad0fa6c338e44e359944af", size = 43839, upload-time = "2025-06-02T14:52:10.026Z" },
+    { url = "https://files.pythonhosted.org/packages/b5/00/d631e67a838026495268c2f6884f3711a15a9a2a96cd244fdaea53b823fb/typing_extensions-4.14.1-py3-none-any.whl", hash = "sha256:d1e1e3b58374dc93031d6eda2420a48ea44a36c2b4766a4fdeb3710755731d76", size = 43906, upload-time = "2025-07-04T13:28:32.743Z" },
 ]
 
 [[package]]

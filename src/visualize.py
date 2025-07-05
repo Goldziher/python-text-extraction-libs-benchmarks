@@ -52,9 +52,9 @@ class BenchmarkVisualizer:
         # Success rate analysis
         generated_files.extend(self._generate_success_rate_charts(aggregated))
 
-        # Memory and CPU usage charts  
+        # Memory and CPU usage charts
         generated_files.extend(self._generate_resource_charts(aggregated))
-        
+
         # Data throughput charts
         generated_files.extend(self._generate_throughput_charts(aggregated))
 
@@ -206,14 +206,14 @@ class BenchmarkVisualizer:
 
         if memory_data:
             df_memory = pd.DataFrame(memory_data)
-            
+
             # Check if we have meaningful memory data (not all zeros)
             has_memory_data = df_memory["Peak Memory (MB)"].sum() > 0
-            
+
             if has_memory_data:
                 # Create memory usage chart
                 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
-                
+
                 # Memory usage by framework and category
                 df_pivot = df_memory.pivot(index="Framework", columns="Category", values="Peak Memory (MB)")
                 colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
@@ -221,20 +221,20 @@ class BenchmarkVisualizer:
                 ax1.set_title("Peak Memory Usage by Framework and Category", fontsize=14, fontweight="bold")
                 ax1.set_ylabel("Peak Memory (MB)", fontsize=12)
                 ax1.set_xlabel("Framework", fontsize=12)
-                ax1.tick_params(axis='x', rotation=45)
+                ax1.tick_params(axis="x", rotation=45)
                 ax1.legend(title="Document Category", title_fontsize=10)
                 ax1.grid(axis="y", alpha=0.3)
-                
+
                 # CPU usage chart
                 df_pivot_cpu = df_memory.pivot(index="Framework", columns="Category", values="Avg CPU (%)")
                 df_pivot_cpu.plot(kind="bar", ax=ax2, color=colors)
                 ax2.set_title("Average CPU Usage by Framework and Category", fontsize=14, fontweight="bold")
                 ax2.set_ylabel("Average CPU (%)", fontsize=12)
                 ax2.set_xlabel("Framework", fontsize=12)
-                ax2.tick_params(axis='x', rotation=45)
+                ax2.tick_params(axis="x", rotation=45)
                 ax2.legend(title="Document Category", title_fontsize=10)
                 ax2.grid(axis="y", alpha=0.3)
-                
+
                 plt.tight_layout()
                 memory_chart = self.output_dir / "memory_usage.png"
                 plt.savefig(memory_chart, dpi=300, bbox_inches="tight")
@@ -243,11 +243,18 @@ class BenchmarkVisualizer:
             else:
                 # Create placeholder chart indicating no memory data
                 fig = plt.figure(figsize=(12, 8))
-                plt.text(0.5, 0.5, "Memory profiling data not available\n(All values are 0.0)", 
-                        fontsize=16, ha='center', va='center', transform=plt.gca().transAxes,
-                        bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray"))
+                plt.text(
+                    0.5,
+                    0.5,
+                    "Memory profiling data not available\n(All values are 0.0)",
+                    fontsize=16,
+                    ha="center",
+                    va="center",
+                    transform=plt.gca().transAxes,
+                    bbox={"boxstyle": "round,pad=0.5", "facecolor": "lightgray"},
+                )
                 plt.title("Memory Usage Analysis", fontsize=16, fontweight="bold")
-                plt.axis('off')
+                plt.axis("off")
                 memory_chart = self.output_dir / "memory_usage.png"
                 plt.savefig(memory_chart, dpi=300, bbox_inches="tight")
                 plt.close()
