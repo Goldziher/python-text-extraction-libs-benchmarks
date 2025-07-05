@@ -1,40 +1,40 @@
 {
-  "total_files": 1026,
-  "total_time": 5573.797263622284,
+  "total_files": 1284,
+  "total_time": 6407.526021718979,
   "frameworks_tested": 5,
   "categories_tested": 3,
   "best_framework": "unstructured",
   "framework_stats": {
     "kreuzberg_sync": {
-      "success_rate": 67.14285714285714,
-      "avg_time": 0.11271279167245936,
-      "total_files": 210,
-      "successful_files": 141
+      "success_rate": 72.72727272727273,
+      "avg_time": 0.18764548389999955,
+      "total_files": 264,
+      "successful_files": 192
     },
     "kreuzberg_async": {
-      "success_rate": 67.14285714285714,
-      "avg_time": 0.10815520161463892,
-      "total_files": 210,
-      "successful_files": 141
+      "success_rate": 72.72727272727273,
+      "avg_time": 0.1950084365234173,
+      "total_files": 264,
+      "successful_files": 192
     },
     "docling": {
-      "success_rate": 77.41935483870968,
-      "avg_time": 12.303312948271007,
-      "total_files": 186,
-      "successful_files": 144
+      "success_rate": 80.26315789473685,
+      "avg_time": 9.285323801713112,
+      "total_files": 228,
+      "successful_files": 183
     },
     "markitdown": {
-      "success_rate": 71.42857142857143,
-      "avg_time": 14.226815317240026,
-      "total_files": 210,
-      "successful_files": 150
+      "success_rate": 76.89393939393939,
+      "avg_time": 10.21086442041125,
+      "total_files": 264,
+      "successful_files": 203
     },
     "unstructured": {
-      "success_rate": 87.14285714285714,
-      "avg_time": 11.55795924918992,
-      "total_files": 210,
-      "successful_files": 183
+      "success_rate": 88.63636363636364,
+      "avg_time": 8.045058706725314,
+      "total_files": 264,
+      "successful_files": 234
     }
   },
-  "timestamp": 1751705090.656498
+  "timestamp": 1751720621.0756023
 }
