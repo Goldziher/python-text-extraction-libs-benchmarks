@@ -10,7 +10,7 @@ on:
       run_id:
         description: 'Benchmark run ID to publish'
         required: false
-        type: string
+        default: ''
 
 permissions:
   contents: write
