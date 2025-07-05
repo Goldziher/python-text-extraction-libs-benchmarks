@@ -149,8 +149,8 @@ Based on our latest benchmarks:
 
 - **High-volume production & edge computing**: Choose Kreuzberg
 - **Enterprise/mixed docs**: Choose Unstructured
-- **Simple docs for LLMs**: MarkItDown is sufficient
-- **Research/ML workflows**: Consider Docling despite performance issues
+- **Simple docs for LLMs**: Choose Kreuzberg
+- **Research/ML workflows**: Choose Kreuzberg with fallback to Unstructured
 
 See the [live results](https://goldziher.github.io/python-text-extraction-libs-benchmarks/) for detailed comparisons and failure analysis.
 
