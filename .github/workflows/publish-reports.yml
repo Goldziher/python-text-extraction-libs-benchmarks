@@ -2,7 +2,7 @@ name: Publish Benchmark Reports
 
 on:
   workflow_run:
-    workflows: ["Comprehensive Benchmarks"]
+    workflows: ["Benchmark by Framework"]
     types:
       - completed
   workflow_dispatch:
@@ -53,7 +53,7 @@ jobs:
             RUN_ID="${{ github.event.inputs.run_id }}"
           else
             # Get the most recent successful comprehensive benchmark run
-            RUN_ID=$(gh run list --workflow=comprehensive-benchmarks.yml --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+            RUN_ID=$(gh run list --workflow=benchmark-by-framework.yml --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
           fi
           echo "run-id=$RUN_ID" >> $GITHUB_OUTPUT
           echo "Using benchmark run ID: $RUN_ID"
