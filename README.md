@@ -1,9 +1,17 @@
 # Python Text Extraction Libraries Benchmarks 2025
 
+<p align="center">
+  <img src="docs/assets/logo.png" alt="Kreuzberg Logo" width="200">
+</p>
+
+<p align="center">
+  <strong>Powered by Kreuzberg</strong> • Comprehensive text extraction benchmarking
+</p>
+
 [![Benchmark Pipeline](https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions/workflows/benchmark-by-framework.yml/badge.svg)](https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions/workflows/benchmark-by-framework.yml)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Frameworks](https://img.shields.io/badge/frameworks-5-green.svg)](#-framework-assessment)
+[![Frameworks](https://img.shields.io/badge/frameworks-6-green.svg)](#-framework-assessment)
 [![Documents](https://img.shields.io/badge/test_documents-94-blue.svg)](#-test-coverage)
 
 > **🎯 [📊 VIEW LIVE BENCHMARK RESULTS →](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)**
@@ -12,7 +20,7 @@ Comprehensive automated benchmarking of text extraction frameworks with enhanced
 
 ## 🏆 What You'll Find in the Results
 
-- **⚡ Performance Comparison** - Speed, memory usage, and success rates across 5 frameworks
+- **⚡ Performance Comparison** - Speed, memory usage, and success rates across 6 frameworks
 - **📊 Interactive Charts** - Visual breakdowns by file type, size category, and framework
 - **🔍 Detailed Metrics** - Per-file results, error analysis, and resource utilization
 - **📈 Trend Analysis** - Performance changes over iterations and time
@@ -402,6 +410,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 - Framework maintainers for building excellent tools
 - Contributors who added test documents and improvements
 - The Python community for feedback and suggestions
+- [Kreuzberg](https://github.com/Kreuzberg) for powering this benchmarking initiative
 
 ______________________________________________________________________
 
