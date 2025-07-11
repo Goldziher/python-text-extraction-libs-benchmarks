@@ -86,7 +86,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'kreuzberg_sync')
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -173,7 +173,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'kreuzberg_async')
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -260,7 +260,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'kreuzberg_extractous_sync')
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -349,7 +349,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'kreuzberg_extractous_async')
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -438,7 +438,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'docling')
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -519,7 +519,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'markitdown')
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -600,7 +600,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'unstructured')
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -676,7 +676,7 @@ jobs:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'extractous')
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -766,7 +766,7 @@ jobs:
       - benchmark-unstructured
       - benchmark-extractous
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     if: always() && needs.prepare.result == 'success'
     steps:
       - name: Checkout
@@ -882,6 +882,74 @@ jobs:
             echo '{"error": "No aggregated results file"}' > final-visualizations/placeholder.json
           fi
 
+      - name: Run Metadata Analysis
+        run: |
+          echo "📊 Running metadata analysis..."
+          mkdir -p metadata-analysis
+
+          # Find the main results file for metadata analysis
+          RESULTS_FILE=""
+          if [ -f "aggregated-results/aggregated_results.json" ]; then
+            # Use aggregated results if available
+            RESULTS_FILE="aggregated-results/aggregated_results.json"
+          else
+            # Look for individual results files
+            for file in all-results/*/benchmark_results.json; do
+              if [ -f "$file" ]; then
+                RESULTS_FILE="$file"
+                break
+              fi
+            done
+          fi
+
+          if [ -n "$RESULTS_FILE" ]; then
+            echo "Using results file: $RESULTS_FILE"
+            if uv run python -m src.cli metadata-analysis \
+              --results-dir "$(dirname "$RESULTS_FILE")" \
+              --output-dir metadata-analysis; then
+              echo "✅ Metadata analysis completed successfully"
+            else
+              echo "⚠️ Metadata analysis failed, continuing with other analyses"
+            fi
+          else
+            echo "⚠️ No results file found for metadata analysis"
+            echo '{"error": "No results file available for metadata analysis"}' > metadata-analysis/placeholder.json
+          fi
+
+      - name: Run Table Analysis
+        run: |
+          echo "📊 Running table analysis..."
+          mkdir -p table-analysis
+
+          # Find the main results file for table analysis
+          RESULTS_FILE=""
+          if [ -f "aggregated-results/aggregated_results.json" ]; then
+            # Use aggregated results if available
+            RESULTS_FILE="aggregated-results/aggregated_results.json"
+          else
+            # Look for individual results files
+            for file in all-results/*/benchmark_results.json; do
+              if [ -f "$file" ]; then
+                RESULTS_FILE="$file"
+                break
+              fi
+            done
+          fi
+
+          if [ -n "$RESULTS_FILE" ]; then
+            echo "Using results file: $RESULTS_FILE"
+            if uv run python -m src.cli table-analysis \
+              --results-dir "$(dirname "$RESULTS_FILE")" \
+              --output-dir table-analysis; then
+              echo "✅ Table analysis completed successfully"
+            else
+              echo "⚠️ Table analysis failed, continuing with other analyses"
+            fi
+          else
+            echo "⚠️ No results file found for table analysis"
+            echo '{"error": "No results file available for table analysis"}' > table-analysis/placeholder.json
+          fi
+
       - name: Create Summary
         run: |
           echo "## 📊 Benchmark Results Summary" >> $GITHUB_STEP_SUMMARY
@@ -935,4 +1003,20 @@ jobs:
         with:
           name: benchmark-visualizations-${{ github.run_id }}
           path: final-visualizations/
+          retention-days: 90
+
+      - name: Upload Metadata Analysis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: metadata-analysis-${{ github.run_id }}
+          path: metadata-analysis/
+          retention-days: 90
+
+      - name: Upload Table Analysis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: table-analysis-${{ github.run_id }}
+          path: table-analysis/
           retention-days: 90
