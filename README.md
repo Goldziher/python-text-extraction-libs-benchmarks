@@ -122,13 +122,13 @@ These 4 additional formats work with most frameworks:
 
 ### 📊 Framework-Specific Capabilities
 
-| Framework        | Supported Formats             | Notable Exclusions    |
-| ---------------- | ----------------------------- | --------------------- |
-| **Extractous**   | 1000+ formats via Apache Tika | Some edge cases       |
-| **Unstructured** | 64+ formats including emails  | Few limitations       |
-| **MarkItDown**   | Common office & web formats   | `.docx`, `.md` issues |
-| **Kreuzberg**    | 14/20 tested formats          | No email/JSON/YAML    |
-| **Docling**      | 10/20 tested formats          | Limited coverage      |
+| Framework        | Supported Formats             | Notable Exclusions      |
+| ---------------- | ----------------------------- | ----------------------- |
+| **Extractous**   | 1000+ formats via Apache Tika | Some edge cases         |
+| **Unstructured** | 64+ formats including emails  | Few limitations         |
+| **MarkItDown**   | Common office & web formats   | `.docx`, `.md` issues   |
+| **Kreuzberg**    | 18/20 tested formats          | Email/data formats only |
+| **Docling**      | 10/20 tested formats          | Limited coverage        |
 
 ### 🔄 Tiered Benchmarking Options
 
