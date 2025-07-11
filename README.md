@@ -1,17 +1,24 @@
 # Python Text Extraction Libraries Benchmarks 2025
 
+[![Benchmark Pipeline](https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions/workflows/benchmark-by-framework.yml/badge.svg)](https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions/workflows/benchmark-by-framework.yml)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Frameworks](https://img.shields.io/badge/frameworks-5-green.svg)](#-framework-assessment)
+[![Documents](https://img.shields.io/badge/test_documents-94-blue.svg)](#-test-coverage)
+
 > **🎯 [📊 VIEW LIVE BENCHMARK RESULTS →](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)**
 
-Automated performance benchmarking of Python text extraction frameworks with real-time updates.
+Comprehensive automated benchmarking of text extraction frameworks with enhanced CI/CD pipeline and real-time performance monitoring.
 
 ## 🏆 What You'll Find in the Results
 
-- **⚡ Performance Comparison** - Speed, memory usage, and success rates across all frameworks
+- **⚡ Performance Comparison** - Speed, memory usage, and success rates across 5 frameworks
 - **📊 Interactive Charts** - Visual breakdowns by file type, size category, and framework
 - **🔍 Detailed Metrics** - Per-file results, error analysis, and resource utilization
 - **📈 Trend Analysis** - Performance changes over iterations and time
-- **🎯 Framework Recommendations** - Guidance for choosing the right tool
+- **🎯 Framework Recommendations** - Guidance for choosing the right tool for your use case
 - **✨ Quality Assessment** - Extraction quality scores (0-1) measuring completeness, coherence, and accuracy
+- **🚀 Latest Addition** - Extractous framework performance data (Rust-based, ultra-fast)
 
 ## 🔬 Framework Assessment
 
@@ -69,6 +76,8 @@ Automated performance benchmarking of Python text extraction frameworks with rea
 - **5 Size Categories** - Tiny (\<100KB), Small (100KB-1MB), Medium (1-10MB), Large (10-50MB), Huge (>50MB)
 - **Multi-language** - English, Hebrew, German, Chinese, Japanese, Korean
 - **CPU-only Processing** - No GPU acceleration for fair comparison
+- **5 Frameworks** - Kreuzberg, Extractous, Unstructured, MarkItDown, Docling
+- **Enhanced CI/CD** - 2-hour timeout handling with graceful failure management
 - **Comprehensive Metrics** - Speed, memory usage, success rates, installation sizes
 
 ## 🚀 Quick Start
@@ -78,17 +87,21 @@ Automated performance benchmarking of Python text extraction frameworks with rea
 git clone https://github.com/Goldziher/python-text-extraction-libs-benchmarks.git
 cd python-text-extraction-libs-benchmarks
 
-# Install dependencies
+# Install dependencies (fast with uv)
 uv sync --all-extras
 
-# Run benchmarks (specific framework and category)
+# List available frameworks
+uv run python -m src.cli list-frameworks
+
+# Run benchmarks - NEW: Extractous framework
 uv run python -m src.cli benchmark --framework extractous --category small
 
-# Test multiple frameworks
+# Compare multiple frameworks
 uv run python -m src.cli benchmark --framework kreuzberg_sync,extractous --category tiny,small
 
-# Generate reports
+# Generate comprehensive reports
 uv run python -m src.cli report --output-format html
+uv run python -m src.cli visualize --output-dir charts/
 ```
 
 ## 🔬 Benchmarking Methodology
@@ -226,11 +239,18 @@ The benchmark suite automatically detects document languages and configures fram
 python-text-extraction-libs-benchmarks-2025/
 ├── src/                    # Main source code
 │   ├── benchmark.py        # Core benchmarking engine
-│   ├── extractors.py       # Framework implementations
+│   ├── extractors.py       # Framework implementations (now with Extractous!)
+│   ├── profiler.py         # Performance profiling system
 │   ├── visualize.py        # Chart generation
+│   ├── reporting.py        # Results analysis
 │   └── cli.py             # Command-line interface
 ├── test_documents/         # 94 test files (~210MB)
-├── .github/workflows/      # CI/CD automation
+│   ├── pdfs/              # 24 PDF files (17KB - 59MB)
+│   ├── office/            # 35 Office documents
+│   ├── images/            # 11 image files for OCR
+│   └── ...                # HTML, markdown, text files
+├── .github/workflows/      # Enhanced CI/CD automation
+│   └── benchmark-by-framework.yml  # Improved timeout handling
 └── CLAUDE.md              # Detailed technical documentation
 ```
 
@@ -244,33 +264,57 @@ python-text-extraction-libs-benchmarks-2025/
 - **GitHub Actions** for automated benchmarking with isolated framework jobs
 - **uv** for fast dependency management
 
+## 🆕 Recent Improvements (v1.2.0)
+
+### 🚀 **New Framework Addition**
+
+- **Extractous Integration**: Added ultra-fast Rust-based framework
+- **Performance Boost**: 18x faster than traditional Python solutions
+- **Memory Efficiency**: 11x less memory usage
+- **OCR Support**: Built-in Tesseract integration with language detection
+
+### 🛠️ **Enhanced CI/CD Pipeline**
+
+- **Timeout Handling**: 2-hour timeouts with graceful failure management
+- **Robust Aggregation**: Runs even when some frameworks fail/timeout
+- **Failure Reporting**: Comprehensive timeout and error analysis
+- **Isolated Jobs**: Each framework runs independently for better reliability
+
+### 📊 **Improved Benchmarking**
+
+- **Memory Profiling**: Enhanced resource monitoring with 50ms sampling
+- **Quality Metrics**: Better extraction quality assessment
+- **Performance Tracking**: More accurate CPU and memory measurements
+
 ## 📊 Performance Highlights
 
 Based on our latest benchmarks:
 
 ### 🏆 **Winners by Category**
 
-- **Speed**: Extractous (18x faster than Python solutions) → Kreuzberg (35+ files/second)
-- **Reliability**: Unstructured (88%+ success rate)
-- **Memory Footprint**: Extractous (11x less memory) → Kreuzberg (~530MB on average)
-- **Installation Size**: Extractous (46MB, Rust-based) → Kreuzberg (71MB, 20 deps)
-- **Enterprise Features**: Unstructured
+- **🚀 Speed**: Extractous (18x faster than Python solutions) → Kreuzberg (35+ files/second)
+- **🛡️ Reliability**: Unstructured (88%+ success rate)
+- **💾 Memory Footprint**: Extractous (11x less memory) → Kreuzberg (~530MB on average)
+- **📦 Installation Size**: Extractous (46MB, Rust-based) → Kreuzberg (71MB, 20 deps)
+- **🏢 Enterprise Features**: Unstructured
 
 ### ⚠️ **Key Limitations**
 
-- **Docling**: Often fails/times out on medium files (>1MB), is slow for smaller files as well.
+- **Docling**: Often fails/times out on medium files (>1MB), slow for smaller files
 - **MarkItDown**: Struggles with large/complex documents (>10MB)
-- **All frameworks**: Performance varies significantly by document type
+- **Performance varies**: Significant differences by document type and complexity
 
 ### 🎯 **Quick Recommendations**
 
-- **Maximum performance**: Choose Extractous (new Rust-based framework)
-- **High-volume production or edge computing**: Choose Kreuzberg
-- **Enterprise/mixed docs**: Choose Unstructured
-- **Simple docs for LLMs**: Choose Extractous or Kreuzberg
-- **Research/ML workflows**: Choose Extractous with fallback to Kreuzberg/Unstructured
+- **🚀 Maximum performance**: Choose **Extractous** (new Rust-based framework)
+- **⚡ High-volume production**: Choose **Kreuzberg** (fast, lightweight)
+- **🏢 Enterprise/mixed docs**: Choose **Unstructured** (most reliable)
+- **🤖 LLM preprocessing**: Choose **Extractous** or **Kreuzberg**
+- **🔬 Research/ML workflows**: Choose **Extractous** with fallback to **Kreuzberg**
 
 See the [live results](https://goldziher.github.io/python-text-extraction-libs-benchmarks/) for detailed comparisons and failure analysis.
+
+> **📊 Active Benchmarking**: v1.2.0 benchmark pipeline is currently running with the new Extractous framework! Results will be available shortly at the live dashboard.
 
 ## 📜 License
 
