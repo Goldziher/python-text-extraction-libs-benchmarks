@@ -161,28 +161,22 @@ class BenchmarkVisualizer:
         success_data = []
         for framework, summaries in aggregated.framework_summaries.items():
             success_files = sum(s.successful_files for s in summaries)
+            total_files = sum(s.total_files for s in summaries)
+            failed_files = sum(s.failed_files for s in summaries)
+            timeout_files = sum(s.timeout_files for s in summaries)
 
-            # Check which categories this framework tested
-            tested_categories = {s.category for s in summaries}
-            all_categories = set(expected_files_per_category.keys())
-            missing_categories = all_categories - tested_categories
-
-            # Count missing category files as failures
-            missing_files = sum(expected_files_per_category[cat] for cat in missing_categories)
-
-            # Use total expected files for fair comparison
-            actual_failed_files = sum(s.failed_files + s.timeout_files for s in summaries)
-            total_failures = actual_failed_files + missing_files
+            # Calculate success rate based on files actually tested
+            success_rate = (success_files / total_files * 100) if total_files > 0 else 0
 
             success_data.append(
                 {
                     "Framework": framework.value,
-                    "Success Rate (%)": (success_files / total_expected_files * 100) if total_expected_files > 0 else 0,
-                    "Total Files": total_expected_files,
+                    "Success Rate (%)": success_rate,
+                    "Total Files": total_files,
                     "Successful": success_files,
-                    "Failed": total_failures,
-                    "Tested": sum(s.total_files for s in summaries),
-                    "Missing": missing_files,
+                    "Failed": failed_files,
+                    "Timeout": timeout_files,
+                    "Tested": total_files,
                 }
             )
 
@@ -207,10 +201,14 @@ class BenchmarkVisualizer:
             # Access by index since itertuples creates a namedtuple
             total_files = row[3]  # Total Files column
             successful = row[4]  # Successful column
-            missing = row[7]  # Missing column
-            if missing > 0:
-                label = f"{height:.1f}%\n({successful}/{total_files})\nMissed: {missing}"
-                color = "red"
+            failed = row[5]  # Failed column
+            timeout = row[6]  # Timeout column
+
+            if failed > 0 or timeout > 0:
+                label = f"{height:.1f}%\n({successful}/{total_files})"
+                if timeout > 0:
+                    label += f"\nTimeout: {timeout}"
+                color = "red" if height < 90 else "black"
             else:
                 label = f"{height:.1f}%\n({successful}/{total_files})"
                 color = "black"
@@ -224,13 +222,13 @@ class BenchmarkVisualizer:
                 color=color,
             )
 
-        # Add note about calculation method and format testing
+        # Add note about calculation method
         plt.text(
             0.02,
             0.98,
-            "Success rate calculated on all 94 files (tiny: 50, small: 27, medium: 12, large: 3, huge: 2)\nTesting ALL 20 formats - frameworks skip unsupported formats\nMissing categories counted as failures",
+            "Success rate calculated on files actually tested by each framework\nFrameworks tested different numbers of files based on their capabilities\nKreuzberg (both): tiny, small, medium categories\nDocling/MarkItDown: tiny, small categories only\nUnstructured/Extractous: tiny, small, medium categories",
             transform=plt.gca().transAxes,
-            fontsize=10,
+            fontsize=9,
             verticalalignment="top",
             bbox={"boxstyle": "round", "facecolor": "lightyellow", "alpha": 0.8},
         )
