@@ -1,9 +1,9 @@
 """Generate dynamic HTML index for GitHub Pages from aggregated results."""
 
+import tomllib
 from pathlib import Path
 
 import msgspec
-import toml
 
 from src.types import AggregatedResults
 
@@ -15,8 +15,8 @@ def get_framework_versions() -> dict[str, str]:
         pyproject_path = Path("../pyproject.toml")
 
     if pyproject_path.exists():
-        with open(pyproject_path) as f:
-            data = toml.load(f)
+        with open(pyproject_path, "rb") as f:
+            data = tomllib.load(f)
             deps = data.get("project", {}).get("dependencies", [])
 
             versions = {}

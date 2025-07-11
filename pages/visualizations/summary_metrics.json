@@ -1,40 +1,58 @@
 {
-  "total_files": 1284,
-  "total_time": 6407.526021718979,
-  "frameworks_tested": 5,
+  "total_files": 1548,
+  "total_time": 6616.639418363571,
+  "frameworks_tested": 6,
   "categories_tested": 3,
-  "best_framework": "unstructured",
+  "best_framework": "extractous",
   "framework_stats": {
     "kreuzberg_sync": {
       "success_rate": 72.72727272727273,
-      "avg_time": 0.18764548389999955,
+      "avg_time": 0.1370821492697196,
       "total_files": 264,
-      "successful_files": 192
+      "successful_files": 192,
+      "expected_files": 264,
+      "missing_files": 0
     },
     "kreuzberg_async": {
       "success_rate": 72.72727272727273,
-      "avg_time": 0.1950084365234173,
+      "avg_time": 0.14116859325656184,
       "total_files": 264,
-      "successful_files": 192
+      "successful_files": 192,
+      "expected_files": 264,
+      "missing_files": 0
     },
     "docling": {
-      "success_rate": 80.26315789473685,
-      "avg_time": 9.285323801713112,
+      "success_rate": 69.31818181818183,
+      "avg_time": 9.070799746749165,
       "total_files": 228,
-      "successful_files": 183
+      "successful_files": 183,
+      "expected_files": 264,
+      "missing_files": 36
     },
     "markitdown": {
-      "success_rate": 76.89393939393939,
-      "avg_time": 10.21086442041125,
+      "success_rate": 77.27272727272727,
+      "avg_time": 9.734233450941531,
       "total_files": 264,
-      "successful_files": 203
+      "successful_files": 204,
+      "expected_files": 264,
+      "missing_files": 0
     },
     "unstructured": {
       "success_rate": 88.63636363636364,
-      "avg_time": 8.045058706725314,
+      "avg_time": 7.652519974926448,
       "total_files": 264,
-      "successful_files": 234
+      "successful_files": 234,
+      "expected_files": 264,
+      "missing_files": 0
+    },
+    "extractous": {
+      "success_rate": 94.31818181818183,
+      "avg_time": 5.274728711933713,
+      "total_files": 264,
+      "successful_files": 249,
+      "expected_files": 264,
+      "missing_files": 0
     }
   },
-  "timestamp": 1751720621.0756023
+  "timestamp": 1752233993.3304982
 }
