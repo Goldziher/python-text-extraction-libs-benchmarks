@@ -14,6 +14,8 @@ class Framework(str, Enum):
 
     KREUZBERG_SYNC = "kreuzberg_sync"
     KREUZBERG_ASYNC = "kreuzberg_async"
+    KREUZBERG_EXTRACTOUS_SYNC = "kreuzberg_extractous_sync"
+    KREUZBERG_EXTRACTOUS_ASYNC = "kreuzberg_extractous_async"
     KREUZBERG_TESSERACT = "kreuzberg_tesseract"
     KREUZBERG_EASYOCR = "kreuzberg_easyocr"
     KREUZBERG_EASYOCR_SYNC = "kreuzberg_easyocr_sync"

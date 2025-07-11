@@ -126,6 +126,58 @@ class KreuzbergAsyncExtractor:
         return result.content, metadata
 
 
+class KreuzbergExtractousSyncExtractor:
+    """Synchronous Kreuzberg text extractor with extractous support."""
+
+    def extract_text(self, file_path: str) -> str:
+        """Extract text using Kreuzberg with extractous support synchronously."""
+        if kreuzberg is None:
+            msg = "Kreuzberg is not installed"
+            raise ImportError(msg)
+
+        # Kreuzberg v4 RC1 Enhanced automatically uses extractous when available
+        # No special configuration needed - it uses extractous as fallback optimization
+        result = kreuzberg.extract_file_sync(file_path)
+        return result.content
+
+    def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
+        """Extract text and metadata using Kreuzberg with extractous support synchronously."""
+        if kreuzberg is None:
+            msg = "Kreuzberg is not installed"
+            raise ImportError(msg)
+
+        result = kreuzberg.extract_file_sync(file_path)
+        # Convert metadata to dict if it's a TypedDict
+        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
+        return result.content, metadata
+
+
+class KreuzbergExtractousAsyncExtractor:
+    """Asynchronous Kreuzberg text extractor with extractous support."""
+
+    async def extract_text(self, file_path: str) -> str:
+        """Extract text using Kreuzberg with extractous support asynchronously."""
+        if kreuzberg is None:
+            msg = "Kreuzberg is not installed"
+            raise ImportError(msg)
+
+        # Kreuzberg v4 RC1 Enhanced automatically uses extractous when available
+        # No special configuration needed - it uses extractous as fallback optimization
+        result = await kreuzberg.extract_file(file_path)
+        return result.content
+
+    async def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
+        """Extract text and metadata using Kreuzberg with extractous support asynchronously."""
+        if kreuzberg is None:
+            msg = "Kreuzberg is not installed"
+            raise ImportError(msg)
+
+        result = await kreuzberg.extract_file(file_path)
+        # Convert metadata to dict if it's a TypedDict
+        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
+        return result.content, metadata
+
+
 class DoclingExtractor:
     """Docling text extractor."""
 
@@ -666,6 +718,8 @@ def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
     extractors = {
         "kreuzberg_sync": KreuzbergSyncExtractor,
         "kreuzberg_async": KreuzbergAsyncExtractor,
+        "kreuzberg_extractous_sync": KreuzbergExtractousSyncExtractor,
+        "kreuzberg_extractous_async": KreuzbergExtractousAsyncExtractor,
         "kreuzberg_tesseract": KreuzbergTesseractExtractor,
         "kreuzberg_easyocr": KreuzbergEasyOCRExtractor,
         "kreuzberg_easyocr_sync": KreuzbergEasyOCRSyncExtractor,
