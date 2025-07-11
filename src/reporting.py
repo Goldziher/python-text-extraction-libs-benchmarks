@@ -65,6 +65,55 @@ class BenchmarkReporter:
 
         console.print(table)
 
+        # Print format support information
+        self._print_format_support_info()
+
+    def _print_format_support_info(self) -> None:
+        """Print format support information."""
+        from .config import FRAMEWORK_EXCLUSIONS
+
+        console.print("\n[bold cyan]Format Support Information[/bold cyan]")
+        console.print("Testing ALL 18 formats. Frameworks skip unsupported formats:\n")
+
+        # Create format support table
+        support_table = Table(title="Framework Format Exclusions")
+        support_table.add_column("Framework", style="cyan", no_wrap=True)
+        support_table.add_column("Excluded Formats", style="red")
+        support_table.add_column("Supported", style="green", justify="right")
+
+        all_formats = {
+            ".pdf",
+            ".docx",
+            ".pptx",
+            ".xlsx",
+            ".xls",
+            ".html",
+            ".md",
+            ".txt",
+            ".csv",
+            ".json",
+            ".yaml",
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".bmp",
+            ".eml",
+            ".msg",
+            ".odt",
+            ".rst",
+            ".org",
+        }
+
+        for framework, exclusions in FRAMEWORK_EXCLUSIONS.items():
+            if framework in ["kreuzberg_sync", "docling", "markitdown", "unstructured", "extractous"]:
+                excluded = ", ".join(sorted(exclusions))
+                supported_count = len(all_formats - exclusions)
+                support_table.add_row(
+                    framework.replace("_", " ").title(), excluded if excluded else "None", f"{supported_count}/20"
+                )
+
+        console.print(support_table)
+
     def save_results_csv(self, output_path: str | Path) -> None:
         """Save detailed results to CSV file.
 

@@ -64,6 +64,9 @@ class BenchmarkVisualizer:
         # Detailed category analysis
         generated_files.extend(self._generate_category_analysis(aggregated))
 
+        # Format breakdown analysis
+        generated_files.extend(self._generate_format_breakdown(aggregated))
+
         # Interactive dashboard
         generated_files.extend(self._generate_interactive_dashboard(aggregated))
 
@@ -216,11 +219,11 @@ class BenchmarkVisualizer:
                 color=color,
             )
 
-        # Add note about calculation method
+        # Add note about calculation method and format testing
         plt.text(
             0.02,
             0.98,
-            "Success rate calculated on all 264 files (tiny: 147, small: 81, medium: 36)\nMissing categories counted as failures",
+            "Success rate calculated on all 264 files (tiny: 147, small: 81, medium: 36)\nTesting ALL 18 formats - frameworks skip unsupported formats\nMissing categories counted as failures",
             transform=plt.gca().transAxes,
             fontsize=10,
             verticalalignment="top",
@@ -721,3 +724,102 @@ class BenchmarkVisualizer:
         plt.close()
 
         return output_file
+
+    def _generate_format_breakdown(self, aggregated: AggregatedResults) -> list[Path]:
+        """Generate format breakdown visualization showing success by file type."""
+        files = []
+
+        # Collect data by file type across frameworks
+        format_data = {}
+
+        # Get all file types from the data
+        all_file_types = set()
+        for fw_summaries in aggregated.framework_summaries.values():
+            for summary in fw_summaries:
+                # Extract file type data from detailed results if available
+                all_file_types.add(summary.category.value)
+
+        # For now, let's create a placeholder that shows format support
+        # We'll need to enhance this with actual per-format results
+        from .config import FRAMEWORK_EXCLUSIONS
+
+        # Create format support matrix
+        formats = [
+            ".pdf",
+            ".docx",
+            ".pptx",
+            ".xlsx",
+            ".xls",
+            ".html",
+            ".md",
+            ".txt",
+            ".csv",
+            ".json",
+            ".yaml",
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".bmp",
+            ".eml",
+            ".msg",
+            ".odt",
+            ".rst",
+            ".org",
+        ]
+
+        frameworks = ["kreuzberg_sync", "docling", "markitdown", "unstructured", "extractous"]
+
+        # Create support matrix
+        support_matrix = []
+        for fw in frameworks:
+            fw_support = []
+            exclusions = FRAMEWORK_EXCLUSIONS.get(fw, set())
+            for fmt in formats:
+                if fmt in exclusions:
+                    fw_support.append(0)  # Not supported
+                else:
+                    fw_support.append(1)  # Supported
+            support_matrix.append(fw_support)
+
+        # Create heatmap
+        fig, ax = plt.subplots(figsize=(14, 8))
+
+        # Create the heatmap
+        im = ax.imshow(support_matrix, cmap="RdYlGn", aspect="auto", vmin=0, vmax=1)
+
+        # Set ticks and labels
+        ax.set_xticks(range(len(formats)))
+        ax.set_yticks(range(len(frameworks)))
+        ax.set_xticklabels(formats, rotation=45, ha="right")
+        ax.set_yticklabels([fw.replace("_", " ").title() for fw in frameworks])
+
+        # Add colorbar
+        cbar = plt.colorbar(im, ax=ax)
+        cbar.set_label("Format Support", rotation=270, labelpad=20)
+        cbar.set_ticks([0, 1])
+        cbar.set_ticklabels(["Not Supported", "Supported"])
+
+        # Add text annotations
+        for i in range(len(frameworks)):
+            for j in range(len(formats)):
+                text = ax.text(
+                    j,
+                    i,
+                    "✓" if support_matrix[i][j] else "✗",
+                    ha="center",
+                    va="center",
+                    color="white" if support_matrix[i][j] else "black",
+                    fontsize=10,
+                    fontweight="bold",
+                )
+
+        plt.title("File Format Support Matrix by Framework", fontsize=16, fontweight="bold", pad=20)
+        plt.tight_layout()
+
+        # Save chart
+        output_file = self.output_dir / "format_support_matrix.png"
+        plt.savefig(output_file, dpi=300, bbox_inches="tight")
+        plt.close()
+
+        files.append(output_file)
+        return files

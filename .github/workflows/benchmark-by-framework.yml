@@ -66,8 +66,8 @@ jobs:
 
           ITERATIONS="${{ github.event.inputs.iterations || '3' }}"
 
-          # Format tier - default to 'common' for releases, use input for manual runs
-          FORMAT_TIER="${{ github.event.inputs.format_tier || 'common' }}"
+          # Format tier - default to 'all' for releases to test complete capabilities
+          FORMAT_TIER="${{ github.event.inputs.format_tier || 'all' }}"
 
           echo "frameworks=$FRAMEWORKS" >> $GITHUB_OUTPUT
           echo "categories=$CATEGORIES" >> $GITHUB_OUTPUT
