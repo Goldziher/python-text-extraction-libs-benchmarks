@@ -89,15 +89,38 @@ Comprehensive automated benchmarking of text extraction frameworks with enhanced
 
 Our comprehensive testing revealed significant differences in format support across frameworks:
 
-### 🎯 Universal Format Support
+### 🎯 Format Support Tiers
 
-Only **5 formats** are reliably supported by ALL frameworks:
+#### **Tier 1: Universal Support** (5/5 frameworks)
+
+These 7 formats are supported by ALL frameworks:
 
 - `.pdf` - Portable Document Format
 - `.pptx` - PowerPoint presentations
 - `.xlsx` - Excel spreadsheets
 - `.png` - Portable Network Graphics
 - `.bmp` - Bitmap images
+- `.html` - Web pages
+- `.csv` - Comma-separated values
+
+#### **Tier 2: Common Support** (4/5 frameworks)
+
+These 4 additional formats work with most frameworks:
+
+- `.xls` - Legacy Excel (not Docling)
+- `.md` - Markdown (not MarkItDown, ironically)
+- `.jpeg` - JPEG images (not Unstructured)
+- `.txt` - Plain text (not Docling)
+
+#### **Tier 3: Partial Support** (3/5 frameworks)
+
+These 5 formats have more limited support:
+
+- `.jpg` - JPEG variant (Kreuzberg, Docling, MarkItDown)
+- `.eml` - Email files (MarkItDown, Unstructured, Extractous)
+- `.msg` - Outlook messages (MarkItDown, Unstructured, Extractous)
+- `.json` - JSON data (MarkItDown, Unstructured, Extractous)
+- `.yaml` - YAML data (MarkItDown, Unstructured, Extractous)
 
 ### 📊 Framework-Specific Capabilities
 
@@ -109,15 +132,22 @@ Only **5 formats** are reliably supported by ALL frameworks:
 | **Kreuzberg**    | 14/18 tested formats          | No email/JSON/YAML    |
 | **Docling**      | 10/18 tested formats          | Limited coverage      |
 
-### 🔄 Fair Benchmarking Mode
+### 🔄 Tiered Benchmarking Options
 
-To ensure fair comparison, use the `--common-formats-only` flag:
+Choose the appropriate tier based on your needs:
 
 ```bash
-# Test only formats that ALL frameworks support
-uv run python -m src.cli benchmark --framework all --common-formats-only
+# Tier 1: Test only universal formats (7 formats, 100% framework support)
+uv run python -m src.cli benchmark --framework all --format-tier universal
 
-# This tests only: PDF, PPTX, XLSX, PNG, BMP files
+# Tier 2: Test common formats (11 formats, 80%+ framework support)
+uv run python -m src.cli benchmark --framework all --format-tier common
+
+# Tier 3: Test partial support formats (16 formats, 60%+ support)
+uv run python -m src.cli benchmark --framework all --format-tier partial
+
+# Test all formats (default behavior)
+uv run python -m src.cli benchmark --framework all --format-tier all
 ```
 
 For detailed format compatibility, see [FRAMEWORK_FORMAT_SUPPORT.md](FRAMEWORK_FORMAT_SUPPORT.md)
@@ -142,7 +172,10 @@ uv run python -m src.cli benchmark --framework extractous --category small
 uv run python -m src.cli benchmark --framework kreuzberg_sync,extractous --category tiny,small
 
 # Fair comparison mode - test only universally supported formats
-uv run python -m src.cli benchmark --framework all --common-formats-only
+uv run python -m src.cli benchmark --framework all --format-tier universal
+
+# Real-world scenario - test commonly supported formats (recommended)
+uv run python -m src.cli benchmark --framework all --format-tier common
 
 # Generate comprehensive reports
 uv run python -m src.cli report --output-format html
@@ -313,8 +346,9 @@ python-text-extraction-libs-benchmarks-2025/
 
 ### 📋 **Format Support Analysis**
 
+- **Tiered Format Support**: Introduced 3-tier system (Universal, Common, Partial)
+- **Flexible Benchmarking**: Added `--format-tier` option with 4 choices
 - **Comprehensive Testing**: Analyzed format support across all 18 file types
-- **Fair Comparison Mode**: Added `--common-formats-only` flag for unbiased benchmarking
 - **Format Documentation**: Created detailed compatibility matrix in FRAMEWORK_FORMAT_SUPPORT.md
 - **Success Rate Correction**: Fixed misleading metrics when frameworks skip categories
 

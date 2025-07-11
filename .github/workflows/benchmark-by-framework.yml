@@ -20,6 +20,16 @@ on:
         required: false
         default: '3'
         type: string
+      format_tier:
+        description: 'Format tier to test (universal, common, partial, or all)'
+        required: false
+        default: 'common'
+        type: choice
+        options:
+          - all
+          - universal
+          - common
+          - partial
 
 jobs:
   prepare:
@@ -29,6 +39,7 @@ jobs:
       frameworks: ${{ steps.setup.outputs.frameworks }}
       categories: ${{ steps.setup.outputs.categories }}
       iterations: ${{ steps.setup.outputs.iterations }}
+      format_tier: ${{ steps.setup.outputs.format_tier }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,13 +67,18 @@ jobs:
 
           ITERATIONS="${{ github.event.inputs.iterations || '3' }}"
 
+          # Format tier - default to 'common' for releases, use input for manual runs
+          FORMAT_TIER="${{ github.event.inputs.format_tier || 'common' }}"
+
           echo "frameworks=$FRAMEWORKS" >> $GITHUB_OUTPUT
           echo "categories=$CATEGORIES" >> $GITHUB_OUTPUT
           echo "iterations=$ITERATIONS" >> $GITHUB_OUTPUT
+          echo "format_tier=$FORMAT_TIER" >> $GITHUB_OUTPUT
 
           echo "Frameworks: $FRAMEWORKS"
           echo "Categories: $CATEGORIES"
           echo "Iterations: $ITERATIONS"
+          echo "Format Tier: $FORMAT_TIER"
 
   # Separate job for each framework
   benchmark-kreuzberg-sync:
@@ -126,7 +142,7 @@ jobs:
             --warmup-runs 1 \
             --timeout 300 \
             --continue-on-error \
-            --common-formats-only \
+            --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --output-dir "results-kreuzberg_sync-${{ matrix.category }}"
         env:
           PYTHONUNBUFFERED: "1"
@@ -200,7 +216,7 @@ jobs:
             --warmup-runs 1 \
             --timeout 300 \
             --continue-on-error \
-            --common-formats-only \
+            --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --output-dir "results-kreuzberg_async-${{ matrix.category }}"
         env:
           PYTHONUNBUFFERED: "1"
@@ -275,7 +291,7 @@ jobs:
             --warmup-runs 1 \
             --timeout 300 \
             --continue-on-error \
-            --common-formats-only \
+            --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --output-dir "results-docling-${{ matrix.category }}" || {
             # If timeout or failure, create empty results directory with failure marker
             mkdir -p "results-docling-${{ matrix.category }}"
@@ -355,7 +371,7 @@ jobs:
             --warmup-runs 1 \
             --timeout 300 \
             --continue-on-error \
-            --common-formats-only \
+            --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --output-dir "results-markitdown-${{ matrix.category }}" || {
             # If timeout or failure, create empty results directory with failure marker
             mkdir -p "results-markitdown-${{ matrix.category }}"
@@ -434,7 +450,7 @@ jobs:
             --warmup-runs 1 \
             --timeout 300 \
             --continue-on-error \
-            --common-formats-only \
+            --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --output-dir "results-unstructured-${{ matrix.category }}"
         env:
           PYTHONUNBUFFERED: "1"
@@ -510,7 +526,7 @@ jobs:
             --warmup-runs 1 \
             --timeout 300 \
             --continue-on-error \
-            --common-formats-only \
+            --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --output-dir "results-extractous-${{ matrix.category }}" || {
             # If timeout or failure, create empty results directory with failure marker
             mkdir -p "results-extractous-${{ matrix.category }}"

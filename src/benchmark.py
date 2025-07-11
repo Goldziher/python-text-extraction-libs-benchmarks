@@ -153,12 +153,17 @@ class ComprehensiveBenchmarkRunner:
             files = [(path, meta) for path, meta in files if meta.get("file_type") in self.config.file_types]
 
         # Apply format filtering if enabled
-        if self.config.common_formats_only or framework:
+        if self.config.common_formats_only or self.config.format_tier or framework:
             from .config import should_test_file
+
+            # Determine format tier
+            format_tier = self.config.format_tier
+            if self.config.common_formats_only and not format_tier:
+                format_tier = "universal"  # Legacy support
 
             filtered_files = []
             for path, meta in files:
-                if should_test_file(str(path), framework.value if framework else "", self.config.common_formats_only):
+                if should_test_file(str(path), framework.value if framework else "", format_tier):
                     filtered_files.append((path, meta))
             files = filtered_files
 

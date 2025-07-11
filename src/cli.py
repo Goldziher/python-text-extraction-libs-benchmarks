@@ -88,9 +88,15 @@ def main() -> None:
     "--common-formats-only",
     is_flag=True,
     default=False,
-    help="Only test formats supported by ALL frameworks (pdf, pptx, xlsx, png, bmp)",
+    help="Only test formats supported by ALL frameworks (legacy, use --format-tier instead)",
 )
-def benchmark(  # noqa: PLR0915
+@click.option(
+    "--format-tier",
+    type=click.Choice(["universal", "common", "partial", "all"], case_sensitive=False),
+    default=None,
+    help="Format tier to test: universal (5/5), common (4/5), partial (3/5), or all",
+)
+def benchmark(  # noqa: PLR0915, C901, PLR0912
     framework: str,
     category: str,
     iterations: int,
@@ -100,6 +106,7 @@ def benchmark(  # noqa: PLR0915
     continue_on_error: bool,
     enable_quality_assessment: bool,
     common_formats_only: bool,
+    format_tier: str | None,
 ) -> None:
     """Run comprehensive benchmarks for text extraction frameworks."""
     console.print("[bold blue]Starting comprehensive benchmark run...[/bold blue]")
@@ -130,6 +137,23 @@ def benchmark(  # noqa: PLR0915
                 console.print(f"[red]Invalid category: {cat_name_clean}[/red]")
                 sys.exit(1)
 
+    # Show format tier info if specified
+    if format_tier or common_formats_only:
+        tier = format_tier or ("universal" if common_formats_only else None)
+        if tier:
+            from .config import TIER1_FORMATS, TIER2_FORMATS, TIER3_FORMATS
+
+            if tier == "universal":
+                console.print(
+                    f"[yellow]Testing only universal formats (5/5 frameworks): {sorted(TIER1_FORMATS)}[/yellow]"
+                )
+            elif tier == "common":
+                console.print(f"[yellow]Testing common formats (4/5 frameworks): {sorted(TIER2_FORMATS)}[/yellow]")
+            elif tier == "partial":
+                console.print(
+                    f"[yellow]Testing partial support formats (3/5 frameworks): {sorted(TIER3_FORMATS)}[/yellow]"
+                )
+
     # Create configuration
     config = BenchmarkConfig(
         frameworks=frameworks,
@@ -141,6 +165,7 @@ def benchmark(  # noqa: PLR0915
         continue_on_error=continue_on_error,
         save_extracted_text=enable_quality_assessment,
         common_formats_only=common_formats_only,
+        format_tier=format_tier if format_tier != "all" else None,
     )
 
     # Run benchmarks

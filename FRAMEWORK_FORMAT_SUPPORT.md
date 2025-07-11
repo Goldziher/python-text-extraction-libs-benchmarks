@@ -46,15 +46,38 @@ Based on benchmark results and failure analysis:
 
 \*Note: Failures may be due to missing system dependencies (e.g., Pandoc for .docx in Kreuzberg)
 
-## Common Format Subset (All Frameworks Support)
+## Format Support Tiers
 
-Only **5 formats** are reliably supported by ALL frameworks:
+### Tier 1: Universal Support (5/5 frameworks)
 
-- `.pdf`
-- `.pptx`
-- `.xlsx`
-- `.png`
-- `.bmp`
+These **7 formats** are reliably supported by ALL frameworks:
+
+- `.pdf` - Portable Document Format
+- `.pptx` - PowerPoint presentations
+- `.xlsx` - Excel spreadsheets
+- `.png` - Portable Network Graphics
+- `.bmp` - Bitmap images
+- `.html` - Web pages
+- `.csv` - Comma-separated values
+
+### Tier 2: Common Support (4/5 frameworks)
+
+These **4 additional formats** work with most frameworks:
+
+- `.xls` - Legacy Excel (not supported by Docling)
+- `.md` - Markdown (not supported by MarkItDown, ironically)
+- `.jpeg` - JPEG images (not supported by Unstructured)
+- `.txt` - Plain text (not supported by Docling)
+
+### Tier 3: Partial Support (3/5 frameworks)
+
+These **5 formats** have more limited support:
+
+- `.jpg` - JPEG variant (Kreuzberg, Docling, MarkItDown)
+- `.eml` - Email files (MarkItDown, Unstructured, Extractous)
+- `.msg` - Outlook messages (MarkItDown, Unstructured, Extractous)
+- `.json` - JSON data (MarkItDown, Unstructured, Extractous)
+- `.yaml` - YAML data (MarkItDown, Unstructured, Extractous)
 
 ## Framework-Specific Analysis
 
@@ -104,19 +127,31 @@ Only **5 formats** are reliably supported by ALL frameworks:
 
 ## Recommendations
 
-### For Maximum Compatibility Testing
+### Benchmarking Strategy
 
-Test only these 5 formats that all frameworks support:
+1. **For Fair Performance Comparison** (Tier 1)
 
-- `.pdf`, `.pptx`, `.xlsx`, `.png`, `.bmp`
+    - Use `--format-tier universal` to test only the 7 universally supported formats
+    - All frameworks will achieve near 100% success rates
+    - Best for comparing raw performance metrics
 
-### For Real-World Benchmarking
+1. **For Real-World Scenarios** (Tier 2)
 
-Include the most common business formats:
+    - Use `--format-tier common` to test 11 commonly supported formats
+    - Represents typical business document processing needs
+    - Balances fairness with practical coverage
 
-- `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.html`, `.png`
+1. **For Comprehensive Testing** (Tier 3)
 
-Note: Some frameworks may need additional system dependencies installed.
+    - Use `--format-tier partial` to include formats with partial support
+    - Shows framework strengths in specialized formats
+    - Good for evaluating email/data format capabilities
+
+1. **For Complete Coverage** (All formats)
+
+    - Use `--format-tier all` or omit the flag
+    - Tests all 18 format types
+    - Best for understanding full framework capabilities
 
 ### By Use Case
 
