@@ -142,6 +142,7 @@ jobs:
             --timeout 300 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
+            --enable-quality-assessment \
             --output-dir "results-kreuzberg_sync-${{ matrix.category }}"
         env:
           PYTHONUNBUFFERED: "1"
@@ -216,6 +217,7 @@ jobs:
             --timeout 300 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
+            --enable-quality-assessment \
             --output-dir "results-kreuzberg_async-${{ matrix.category }}"
         env:
           PYTHONUNBUFFERED: "1"
@@ -291,6 +293,7 @@ jobs:
             --timeout 300 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
+            --enable-quality-assessment \
             --output-dir "results-docling-${{ matrix.category }}" || {
             # If timeout or failure, create empty results directory with failure marker
             mkdir -p "results-docling-${{ matrix.category }}"
@@ -371,6 +374,7 @@ jobs:
             --timeout 300 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
+            --enable-quality-assessment \
             --output-dir "results-markitdown-${{ matrix.category }}" || {
             # If timeout or failure, create empty results directory with failure marker
             mkdir -p "results-markitdown-${{ matrix.category }}"
@@ -450,6 +454,7 @@ jobs:
             --timeout 300 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
+            --enable-quality-assessment \
             --output-dir "results-unstructured-${{ matrix.category }}"
         env:
           PYTHONUNBUFFERED: "1"
@@ -526,6 +531,7 @@ jobs:
             --timeout 300 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
+            --enable-quality-assessment \
             --output-dir "results-extractous-${{ matrix.category }}" || {
             # If timeout or failure, create empty results directory with failure marker
             mkdir -p "results-extractous-${{ matrix.category }}"
