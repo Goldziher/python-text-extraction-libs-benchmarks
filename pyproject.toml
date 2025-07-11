@@ -31,6 +31,7 @@ dependencies = [
   "anyio>=4.9.0",
   "click>=8.2.1",
   "docling>=2.41.0",
+  "extractous>=0.1.0",
   "kreuzberg>=3.6.2",
   "markitdown>=0.0.1a2",
   "matplotlib>=3.8.0",

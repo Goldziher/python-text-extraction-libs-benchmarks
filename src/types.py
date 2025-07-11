@@ -22,6 +22,7 @@ class Framework(str, Enum):
     DOCLING = "docling"
     MARKITDOWN = "markitdown"
     UNSTRUCTURED = "unstructured"
+    EXTRACTOUS = "extractous"
 
 
 class FileType(str, Enum):

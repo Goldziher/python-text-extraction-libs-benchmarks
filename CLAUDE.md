@@ -77,6 +77,14 @@ python-text-extraction-libraries-benchmarks-2025/
     - Supports 64+ file types
     - Moderate installation size (146MB)
 
+1. **Extractous** (v0.1.0+)
+
+    - Fast Rust-based extraction library with Python bindings
+    - Native performance without garbage collection overhead
+    - 18x faster than traditional Python solutions on some workloads
+    - Built-in OCR support via Tesseract integration
+    - Minimal memory footprint (11x less than Python alternatives)
+
 ## Key Components
 
 ### 1. Benchmark Engine (`benchmark.py`)

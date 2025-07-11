@@ -45,6 +45,12 @@ try:
 except ImportError:
     partition = None  # type: ignore[assignment]
 
+
+try:
+    from extractous import Extractor
+except ImportError:
+    Extractor = None  # type: ignore[assignment,misc]
+
 from .types import AsyncExtractorProtocol, ExtractorProtocol
 
 
@@ -345,6 +351,54 @@ class UnstructuredExtractor:
         return "\n".join(str(element) for element in elements)
 
 
+class ExtractousExtractor:
+    """Extractous text extractor."""
+
+    def __init__(self) -> None:
+        """Initialize Extractous extractor with optimal configuration."""
+        if Extractor is None:
+            msg = "Extractous is not installed. Install with: pip install extractous"
+            raise ImportError(msg)
+
+        # Configure with performance optimizations
+        self.extractor = Extractor()
+
+        # Set reasonable limits for text extraction
+        self.extractor.set_extract_string_max_length(1000000)  # 1MB max text
+
+    def extract_text(self, file_path: str) -> str:
+        """Extract text using Extractous."""
+        # Get language configuration for potential OCR
+        lang_code = get_language_config(file_path)
+
+        # Configure OCR if needed (for images and scanned documents)
+        try:
+            from extractous import TesseractOcrConfig
+
+            # Map language codes for Tesseract OCR
+            tesseract_langs = {
+                "eng": "eng",
+                "deu": "deu",
+                "heb": "heb",
+                "chi_sim": "chi_sim",
+                "jpn": "jpn",
+                "kor": "kor",
+            }
+
+            tesseract_lang = tesseract_langs.get(lang_code, "eng")
+
+            # Configure OCR for image-based documents
+            ocr_config = TesseractOcrConfig().set_language(tesseract_lang)
+            self.extractor.set_ocr_config(ocr_config)
+
+        except ImportError:
+            # OCR config not available, use without OCR
+            pass
+
+        # Extract text directly to string
+        return self.extractor.extract_file_to_string(file_path)
+
+
 def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
     """Get an extractor instance for the specified framework.
 
@@ -368,6 +422,7 @@ def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
         "docling": DoclingExtractor,
         "markitdown": MarkItDownExtractor,
         "unstructured": UnstructuredExtractor,
+        "extractous": ExtractousExtractor,
     }
 
     if framework not in extractors:
