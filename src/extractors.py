@@ -395,8 +395,9 @@ class ExtractousExtractor:
             # OCR config not available, use without OCR
             pass
 
-        # Extract text directly to string
-        return self.extractor.extract_file_to_string(file_path)
+        # Extract text directly to string (returns tuple of text and metadata)
+        result = self.extractor.extract_file_to_string(file_path)
+        return result[0] if isinstance(result, tuple) else result
 
 
 def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
