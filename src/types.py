@@ -97,6 +97,10 @@ class ExtractorProtocol(Protocol):
     def extract_text(self, file_path: str | Path) -> str:
         """Extract text from a file."""
         ...
+    
+    def extract_with_metadata(self, file_path: str | Path) -> tuple[str, dict[str, Any]]:
+        """Extract text and metadata from a file."""
+        ...
 
 
 class AsyncExtractorProtocol(Protocol):
@@ -104,6 +108,10 @@ class AsyncExtractorProtocol(Protocol):
 
     async def extract_text(self, file_path: str | Path) -> str:
         """Extract text from a file asynchronously."""
+        ...
+    
+    async def extract_with_metadata(self, file_path: str | Path) -> tuple[str, Any]:
+        """Extract text and metadata from a file asynchronously."""
         ...
 
 
@@ -137,6 +145,7 @@ class ExtractionResult(msgspec.Struct, kw_only=True):
     error_message: str | None = None
     attempt_number: int = 1
     resource_metrics: list[ResourceMetrics] = msgspec.field(default_factory=list)
+    extracted_metadata: dict[str, Any] | None = None
 
 
 class BenchmarkResult(msgspec.Struct, kw_only=True):
@@ -171,6 +180,10 @@ class BenchmarkResult(msgspec.Struct, kw_only=True):
     quality_metrics: dict[str, Any] | None = None
     overall_quality_score: float | None = None
     extracted_text: str | None = None
+    
+    # Extracted metadata
+    extracted_metadata: dict[str, Any] | None = None
+    metadata_field_count: int | None = None
 
     # Metadata
     attempts: int = 1

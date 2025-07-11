@@ -681,5 +681,55 @@ def _generate_interactive_dashboard(analyzer: "FileTypeAnalyzer", output_dir: Pa
         console.print("[yellow]Continuing with static analysis...[/yellow]")
 
 
+@main.command(name="metadata-analysis")
+@click.option(
+    "--results-dir",
+    type=click.Path(exists=True, path_type=Path),
+    default=Path("results"),
+    help="Directory containing benchmark results",
+)
+@click.option(
+    "--output-dir",
+    type=click.Path(path_type=Path),
+    default=Path("metadata_analysis"),
+    help="Output directory for metadata analysis",
+)
+@click.option(
+    "--exclude-kreuzberg",
+    is_flag=True,
+    default=True,
+    help="Exclude Kreuzberg results (while it's being updated)",
+)
+def metadata_analysis(results_dir: Path, output_dir: Path, exclude_kreuzberg: bool) -> None:
+    """Analyze metadata extraction capabilities across frameworks."""
+    console.print("[bold blue]🔍 Metadata Extraction Analysis[/bold blue]")
+
+    try:
+        # Find results file
+        results_file = results_dir / "results.json"
+        if not results_file.exists():
+            console.print(f"[red]✗ Results file not found: {results_file}[/red]")
+            sys.exit(1)
+
+        # Import and run metadata analysis
+        from .metadata_analysis import analyze_metadata_from_results
+
+        console.print(f"📊 Analyzing metadata from {results_file}...")
+        analyze_metadata_from_results(results_file, output_dir)
+        
+        console.print(f"\n[green]✅ Metadata analysis complete![/green]")
+        console.print(f"📁 Reports saved to: {output_dir}")
+        
+        # List generated files
+        console.print("\n[bold cyan]Generated files:[/bold cyan]")
+        for file in sorted(output_dir.glob("*")):
+            if file.is_file():
+                console.print(f"  • {file.name}")
+
+    except Exception as e:
+        console.print(f"[red]✗ Metadata analysis failed: {e}[/red]")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     main()

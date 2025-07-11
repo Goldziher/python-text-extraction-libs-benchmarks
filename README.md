@@ -293,6 +293,12 @@ uv run python -m src.cli aggregate results/ --output-dir aggregated/
 
 # Generate visualizations
 uv run python -m src.cli visualize --aggregated-file results.json
+
+# Analyze metadata extraction capabilities
+uv run python -m src.cli metadata-analysis --results-dir results --output-dir metadata_analysis
+
+# Analyze performance by file type
+uv run python -m src.cli file-type-analysis --results-dir results --output-dir file_type_analysis
 ```
 
 ### Configuration
@@ -337,9 +343,17 @@ python-text-extraction-libs-benchmarks-2025/
 - **GitHub Actions** for automated benchmarking with isolated framework jobs
 - **uv** for fast dependency management
 
-## 🆕 Recent Improvements (v1.3.0)
+## 🆕 Recent Improvements (v1.4.0)
 
-### 📋 **Format Support Analysis**
+### 🔍 **Metadata Extraction Analysis**
+
+- **Metadata Capture**: Now captures and analyzes metadata extracted by each framework
+- **Rich Comparison**: Compare metadata fields across frameworks (title, author, dates, etc.)
+- **Quality Metrics**: Measure metadata completeness and coverage
+- **Interactive Analysis**: New CLI commands for metadata and file-type analysis
+- **Detailed Reports**: Generate CSV, JSON, and markdown reports for metadata insights
+
+### 📋 **Format Support Analysis** (v1.3.0)
 
 - **Tiered Format Support**: Introduced 2-tier system (Universal, Common)
 - **Flexible Benchmarking**: Added `--format-tier` option (universal, common, all)
