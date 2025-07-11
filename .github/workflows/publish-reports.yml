@@ -135,14 +135,19 @@ jobs:
           cp -r reports/ pages/
           cp -r visualizations/ pages/
 
-          # Load summary metrics if available
-          SUMMARY_METRICS=""
-          if [ -f "visualizations/summary_metrics.json" ]; then
-            SUMMARY_METRICS=$(cat visualizations/summary_metrics.json)
+          # Copy assets if they exist
+          if [ -d "docs/assets" ]; then
+            cp -r docs/assets pages/
           fi
 
-          # Create index page with comprehensive information
-          cat > pages/index.html << 'EOF'
+          # Generate dynamic index.html from aggregated results
+          if [ -f "aggregated-results/aggregated_results.json" ]; then
+            echo "Generating dynamic index.html..."
+            uv run python src/generate_index.py aggregated-results/aggregated_results.json pages/index.html
+          else
+            echo "No aggregated results found, creating fallback index"
+            # Create minimal fallback index
+            cat > pages/index.html << 'EOF'
           <!DOCTYPE html>
           <html lang="en">
           <head>
@@ -645,6 +650,7 @@ jobs:
           </body>
           </html>
           EOF
+          fi
 
           echo "Pages structure created:"
           find pages/ -type f | head -20

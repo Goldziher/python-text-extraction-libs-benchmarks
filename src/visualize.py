@@ -733,8 +733,8 @@ class BenchmarkVisualizer:
         df = pd.DataFrame(df_data)
         df = df.sort_values("Size (MB)")
 
-        # Create visualization with 3 subplots
-        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(24, 8))
+        # Create visualization with 2 subplots
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
 
         # Size comparison bar chart
         colors = [FRAMEWORK_COLORS.get(fw.lower().replace(" ", "_"), "#1f77b4") for fw in df["Framework"]]
@@ -776,25 +776,18 @@ class BenchmarkVisualizer:
                 fontweight="bold",
             )
 
-        # Memory efficiency (Storage per dependency)
-        df["MB per Dependency"] = df["Size (MB)"] / df["Dependencies"]
-        bars3 = ax3.bar(df["Framework"], df["MB per Dependency"], color=colors, alpha=0.8)
-        ax3.set_title("Storage Efficiency\n(MB per Dependency)", fontsize=16, fontweight="bold")
-        ax3.set_xlabel("Framework", fontsize=12)
-        ax3.set_ylabel("MB per Dependency", fontsize=12)
-        ax3.tick_params(axis="x", rotation=45)
-
-        # Add value labels on bars
-        for bar, value in zip(bars3, df["MB per Dependency"], strict=False):
-            height = bar.get_height()
-            ax3.text(
-                bar.get_x() + bar.get_width() / 2.0,
-                height + height * 0.01,
-                f"{value:.2f}",
-                ha="center",
-                va="bottom",
-                fontweight="bold",
-            )
+        # Add annotation about size vs dependencies
+        ax2.text(
+            0.5,
+            -0.25,
+            "Note: Kreuzberg has the smallest footprint (71MB) with only 20 dependencies,\n"
+            "while Docling is 14x larger (1GB+) with extensive ML models.",
+            transform=ax2.transAxes,
+            ha="center",
+            fontsize=10,
+            style="italic",
+            bbox={"boxstyle": "round,pad=0.5", "facecolor": "lightyellow", "alpha": 0.8},
+        )
 
         plt.tight_layout()
 
