@@ -1,11 +1,10 @@
 """Generate dynamic HTML index for GitHub Pages from aggregated results."""
 
+# Import tomllib after msgspec to avoid circular import issues
 import tomllib
 from pathlib import Path
 
 import msgspec
-
-from src.types import AggregatedResults
 
 
 def get_framework_versions() -> dict[str, str]:
@@ -48,7 +47,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     """Generate index.html from aggregated results."""
     # Load aggregated results
     with open(aggregated_path, "rb") as f:
-        results = msgspec.json.decode(f.read(), type=AggregatedResults)
+        results = msgspec.json.decode(f.read())
 
     # Get framework versions
     versions = get_framework_versions()
@@ -56,26 +55,26 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     # Calculate metrics for the summary table
     framework_stats = {}
 
-    for framework, summaries in results.framework_summaries.items():
+    for framework, summaries in results["framework_summaries"].items():
         if not summaries:
             continue
 
         # Calculate overall metrics
-        total_files = sum(s.total_files for s in summaries)
-        successful_files = sum(s.successful_files for s in summaries)
+        total_files = sum(s["total_files"] for s in summaries)
+        successful_files = sum(s["successful_files"] for s in summaries)
 
         # Success rate on files actually tested
         success_rate = (successful_files / total_files * 100) if total_files > 0 else 0
 
         # Average speed (files per second)
-        speeds = [s.files_per_second for s in summaries if s.files_per_second]
+        speeds = [s["files_per_second"] for s in summaries if s.get("files_per_second")]
         avg_speed = sum(speeds) / len(speeds) if speeds else 0
 
         # Average memory usage
-        memories = [s.avg_peak_memory_mb for s in summaries if s.avg_peak_memory_mb]
+        memories = [s["avg_peak_memory_mb"] for s in summaries if s.get("avg_peak_memory_mb")]
         avg_memory = sum(memories) / len(memories) if memories else 0
 
-        framework_stats[framework.value] = {
+        framework_stats[framework] = {
             "success_rate": success_rate,
             "avg_speed": avg_speed,
             "avg_memory": avg_memory,
