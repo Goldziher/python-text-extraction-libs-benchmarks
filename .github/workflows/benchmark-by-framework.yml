@@ -103,9 +103,19 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install Dependencies
+      - name: Clone and install Kreuzberg v4 RC1 Enhanced
         run: |
+          # Clone Kreuzberg repository
+          git clone https://github.com/Goldziher/kreuzberg.git kreuzberg-source
+          cd kreuzberg-source
+          git checkout feature/enhanced-benchmarking
+
+          # Install our benchmark dependencies first
+          cd ..
           uv sync --all-packages --all-extras --dev
+
+          # Install Kreuzberg from source WITHOUT extractous support
+          uv add ./kreuzberg-source --extra gmft --extra cli
 
       - name: Install APT packages
         run: |
@@ -131,8 +141,10 @@ jobs:
           tesseract --version | head -1
           echo "Available Tesseract languages:"
           tesseract --list-langs | head -10
+          echo "Kreuzberg version:"
+          uv run python -c "import kreuzberg; print(kreuzberg.__version__)"
 
-      - name: Run Benchmark
+      - name: Run Benchmark (Kreuzberg v4 RC1 Enhanced without Extractous)
         run: |
           uv run python -m src.cli benchmark \
             --framework kreuzberg_sync \
@@ -178,9 +190,19 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install Dependencies
+      - name: Clone and install Kreuzberg v4 RC1 Enhanced
         run: |
+          # Clone Kreuzberg repository
+          git clone https://github.com/Goldziher/kreuzberg.git kreuzberg-source
+          cd kreuzberg-source
+          git checkout feature/enhanced-benchmarking
+
+          # Install our benchmark dependencies first
+          cd ..
           uv sync --all-packages --all-extras --dev
+
+          # Install Kreuzberg from source WITHOUT extractous support
+          uv add ./kreuzberg-source --extra gmft --extra cli
 
       - name: Install APT packages
         run: |
@@ -206,8 +228,10 @@ jobs:
           tesseract --version | head -1
           echo "Available Tesseract languages:"
           tesseract --list-langs | head -10
+          echo "Kreuzberg version:"
+          uv run python -c "import kreuzberg; print(kreuzberg.__version__)"
 
-      - name: Run Benchmark
+      - name: Run Benchmark (Kreuzberg v4 RC1 Enhanced without Extractous)
         run: |
           uv run python -m src.cli benchmark \
             --framework kreuzberg_async \
