@@ -143,20 +143,42 @@ class BenchmarkVisualizer:
         """Generate success rate analysis charts."""
         files = []
 
+        # Determine expected files per category from the data
+        expected_files_per_category = {}
+        for category, cat_summaries in aggregated.category_summaries.items():
+            # Get the maximum files tested in each category
+            max_files = max(s.total_files for s in cat_summaries)
+            expected_files_per_category[category] = max_files
+
+        # Total expected files across all categories
+        total_expected_files = sum(expected_files_per_category.values())
+
         # Prepare success rate data
         success_data = []
         for framework, summaries in aggregated.framework_summaries.items():
-            total_files = sum(s.total_files for s in summaries)
             success_files = sum(s.successful_files for s in summaries)
-            failed_files = sum(s.failed_files for s in summaries)
+
+            # Check which categories this framework tested
+            tested_categories = {s.category for s in summaries}
+            all_categories = set(expected_files_per_category.keys())
+            missing_categories = all_categories - tested_categories
+
+            # Count missing category files as failures
+            missing_files = sum(expected_files_per_category[cat] for cat in missing_categories)
+
+            # Use total expected files for fair comparison
+            actual_failed_files = sum(s.failed_files + s.timeout_files for s in summaries)
+            total_failures = actual_failed_files + missing_files
 
             success_data.append(
                 {
                     "Framework": framework.value,
-                    "Success Rate (%)": (success_files / total_files * 100) if total_files > 0 else 0,
-                    "Total Files": total_files,
+                    "Success Rate (%)": (success_files / total_expected_files * 100) if total_expected_files > 0 else 0,
+                    "Total Files": total_expected_files,
                     "Successful": success_files,
-                    "Failed": failed_files,
+                    "Failed": total_failures,
+                    "Tested": sum(s.total_files for s in summaries),
+                    "Missing": missing_files,
                 }
             )
 
@@ -166,18 +188,44 @@ class BenchmarkVisualizer:
         df = pd.DataFrame(success_data)
 
         # Success rate comparison
-        fig = plt.figure(figsize=(10, 6))
+        fig = plt.figure(figsize=(12, 7))
         bars = plt.bar(df["Framework"], df["Success Rate (%)"])
-        plt.title("Success Rate by Framework")
+        plt.title("Success Rate by Framework (All Categories)", fontsize=14, fontweight="bold")
         plt.ylabel("Success Rate (%)")
         plt.xlabel("Framework")
         plt.xticks(rotation=45)
-        plt.ylim(0, 100)
+        plt.ylim(0, 105)
 
-        # Add value labels on bars
-        for bar in bars:
+        # Add detailed value labels on bars
+        for _i, (bar, row) in enumerate(zip(bars, df.itertuples(), strict=False)):
             height = bar.get_height()
-            plt.text(bar.get_x() + bar.get_width() / 2.0, height + 1, f"{height:.1f}%", ha="center", va="bottom")
+            # Show success rate and breakdown
+            if row.Missing > 0:
+                label = f"{height:.1f}%\n({row.Successful}/{row.Total})\nMissed: {row.Missing}"
+                color = "red"
+            else:
+                label = f"{height:.1f}%\n({row.Successful}/{row.Total})"
+                color = "black"
+            plt.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                height + 1,
+                label,
+                ha="center",
+                va="bottom",
+                fontsize=9,
+                color=color,
+            )
+
+        # Add note about calculation method
+        plt.text(
+            0.02,
+            0.98,
+            "Success rate calculated on all 264 files (tiny: 147, small: 81, medium: 36)\nMissing categories counted as failures",
+            transform=plt.gca().transAxes,
+            fontsize=10,
+            verticalalignment="top",
+            bbox={"boxstyle": "round", "facecolor": "lightyellow", "alpha": 0.8},
+        )
 
         plt.tight_layout()
         success_chart = self.output_dir / "success_rate_comparison.png"
@@ -525,11 +573,26 @@ class BenchmarkVisualizer:
         best_framework = None
         best_avg_time = float("inf")
 
+        # Determine expected files per category from the data
+        expected_files_per_category = {}
+        for category, cat_summaries in aggregated.category_summaries.items():
+            max_files = max(s.total_files for s in cat_summaries)
+            expected_files_per_category[category] = max_files
+
+        total_expected_files = sum(expected_files_per_category.values())
+
         framework_stats = {}
         for framework, summaries in aggregated.framework_summaries.items():
-            total_fw_files = sum(s.total_files for s in summaries)
             success_fw_files = sum(s.successful_files for s in summaries)
-            success_rate = (success_fw_files / total_fw_files * 100) if total_fw_files > 0 else 0
+
+            # Check which categories this framework tested
+            tested_categories = {s.category for s in summaries}
+            all_categories = set(expected_files_per_category.keys())
+            missing_categories = all_categories - tested_categories
+            missing_files = sum(expected_files_per_category[cat] for cat in missing_categories)
+
+            # Calculate fair success rate using all expected files
+            success_rate = (success_fw_files / total_expected_files * 100) if total_expected_files > 0 else 0
 
             # Calculate average time across all categories
             times = [s.avg_extraction_time for s in summaries if s.avg_extraction_time is not None]
@@ -538,8 +601,10 @@ class BenchmarkVisualizer:
             framework_stats[framework.value] = {
                 "success_rate": success_rate,
                 "avg_time": avg_time,
-                "total_files": total_fw_files,
+                "total_files": sum(s.total_files for s in summaries),
                 "successful_files": success_fw_files,
+                "expected_files": total_expected_files,
+                "missing_files": missing_files,
             }
 
             if avg_time < best_avg_time and success_rate > 80:  # Only consider frameworks with good success rate
