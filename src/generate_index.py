@@ -40,7 +40,7 @@ def get_framework_versions() -> dict[str, str]:
 
     # Fallback versions
     return {
-        "kreuzberg": "3.7.0",
+        "kreuzberg": "4.0.0rc1",
         "docling": "2.41.0",
         "markitdown": "0.0.1a2",
         "unstructured": "0.18.5",
