@@ -467,11 +467,15 @@ class ComprehensiveBenchmarkRunner:
 
                 avg_chars = statistics.mean(char_counts) if char_counts else None
                 avg_words = statistics.mean(word_counts) if word_counts else None
+
+                # Quality statistics (if available)
+                quality_stats = self._calculate_quality_statistics(successful)
             else:
                 avg_time = median_time = min_time = max_time = std_time = None
                 avg_peak_memory = avg_cpu = None
                 files_per_second = mb_per_second = None
                 avg_chars = avg_words = None
+                quality_stats = None
 
             summary = BenchmarkSummary(
                 framework=framework,
@@ -493,8 +497,48 @@ class ComprehensiveBenchmarkRunner:
                 success_rate=len(successful) / len(results) if results else 0,
                 avg_character_count=int(avg_chars) if avg_chars else None,
                 avg_word_count=int(avg_words) if avg_words else None,
+                # Quality metrics
+                avg_quality_score=quality_stats["avg"] if quality_stats else None,
+                min_quality_score=quality_stats["min"] if quality_stats else None,
+                max_quality_score=quality_stats["max"] if quality_stats else None,
+                avg_completeness=quality_stats["completeness"] if quality_stats else None,
+                avg_coherence=quality_stats["coherence"] if quality_stats else None,
+                avg_readability=quality_stats["readability"] if quality_stats else None,
             )
 
             summaries.append(summary)
 
         return summaries
+
+    def _calculate_quality_statistics(self, successful_results: list[BenchmarkResult]) -> dict[str, float] | None:
+        """Calculate quality statistics from successful results."""
+        import statistics
+
+        quality_scores = [r.overall_quality_score for r in successful_results if r.overall_quality_score is not None]
+        if not quality_scores:
+            return None
+
+        # Extract specific quality metrics
+        completeness_scores = []
+        coherence_scores = []
+        readability_scores = []
+
+        for r in successful_results:
+            if r.quality_metrics:
+                if "extraction_completeness" in r.quality_metrics:
+                    completeness_scores.append(r.quality_metrics["extraction_completeness"])
+                if "text_coherence" in r.quality_metrics:
+                    coherence_scores.append(r.quality_metrics["text_coherence"])
+                if "flesch_reading_ease" in r.quality_metrics:
+                    # Normalize Flesch score to 0-1 range
+                    flesch = r.quality_metrics["flesch_reading_ease"]
+                    readability_scores.append(min(100, max(0, flesch)) / 100)
+
+        return {
+            "avg": statistics.mean(quality_scores),
+            "min": min(quality_scores),
+            "max": max(quality_scores),
+            "completeness": statistics.mean(completeness_scores) if completeness_scores else None,
+            "coherence": statistics.mean(coherence_scores) if coherence_scores else None,
+            "readability": statistics.mean(readability_scores) if readability_scores else None,
+        }

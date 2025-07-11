@@ -555,12 +555,89 @@ class BenchmarkVisualizer:
         """Generate quality assessment visualizations."""
         files = []
 
-        # Check if we have quality data
-        quality_data = []
+        # Check if we have quality data in the aggregated results
+        # Note: This requires benchmark runs with --enable-quality-assessment flag
         has_quality_data = False
+        quality_data = []
 
-        # This would need to be updated to use quality-enhanced results
-        # For now, return empty to avoid breaking existing functionality
+        # Check if any framework summaries contain quality metrics
+        for framework, summaries in aggregated.framework_summaries.items():
+            for summary in summaries:
+                # Check if summary has quality-related fields
+                if hasattr(summary, "avg_quality_score") and summary.avg_quality_score is not None:
+                    has_quality_data = True
+                    quality_data.append(
+                        {
+                            "Framework": framework.value,
+                            "Category": summary.category.value,
+                            "Avg Quality Score": summary.avg_quality_score,
+                            "Total Files": summary.total_files,
+                        }
+                    )
+
+        if not has_quality_data:
+            # Create informational chart about quality assessment
+            fig = plt.figure(figsize=(12, 8))
+            plt.text(
+                0.5,
+                0.5,
+                "Quality Assessment Not Available\n\n"
+                "To enable quality metrics, run benchmarks with:\n"
+                "uv run python -m src.cli benchmark --enable-quality-assessment\n\n"
+                "Quality metrics include:\n"
+                "• Text completeness and coherence\n"
+                "• Readability scores (Flesch, Gunning Fog)\n"
+                "• Format-specific extraction quality\n"
+                "• Noise and gibberish detection\n"
+                "• Structural preservation metrics",
+                fontsize=14,
+                ha="center",
+                va="center",
+                transform=plt.gca().transAxes,
+                bbox={"boxstyle": "round,pad=0.5", "facecolor": "lightblue", "alpha": 0.7},
+            )
+            plt.title("Text Extraction Quality Assessment", fontsize=16, fontweight="bold")
+            plt.axis("off")
+            quality_chart = self.output_dir / "quality_assessment.png"
+            plt.savefig(quality_chart, dpi=300, bbox_inches="tight")
+            plt.close()
+            files.append(quality_chart)
+            return files
+
+        # If we have quality data, create visualizations
+        df = pd.DataFrame(quality_data)
+
+        # 1. Average quality score by framework
+        fig = plt.figure(figsize=(12, 8))
+        df_pivot = df.pivot(index="Framework", columns="Category", values="Avg Quality Score")
+
+        # Use consistent colors for frameworks
+        colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
+        ax = df_pivot.plot(kind="bar", ax=plt.gca(), color=colors)
+        plt.title("Average Text Extraction Quality Score by Framework", fontsize=16, fontweight="bold")
+        plt.ylabel("Quality Score (0-1)", fontsize=12)
+        plt.xlabel("Framework", fontsize=12)
+        plt.xticks(rotation=45)
+        plt.ylim(0, 1.05)
+        plt.legend(title="Document Category", title_fontsize=12)
+        plt.grid(axis="y", alpha=0.3)
+
+        # Add note about quality metrics
+        plt.text(
+            0.02,
+            0.98,
+            "Quality score combines: completeness, coherence, readability,\nformat preservation, and noise detection",
+            transform=plt.gca().transAxes,
+            fontsize=10,
+            verticalalignment="top",
+            bbox={"boxstyle": "round", "facecolor": "lightyellow", "alpha": 0.8},
+        )
+
+        plt.tight_layout()
+        quality_chart = self.output_dir / "quality_score_comparison.png"
+        plt.savefig(quality_chart, dpi=300, bbox_inches="tight")
+        plt.close()
+        files.append(quality_chart)
 
         return files
 

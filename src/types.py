@@ -210,6 +210,14 @@ class BenchmarkSummary(msgspec.Struct, kw_only=True):
     avg_character_count: int | None = None
     avg_word_count: int | None = None
 
+    # Quality statistics (when quality assessment is enabled)
+    avg_quality_score: float | None = None
+    min_quality_score: float | None = None
+    max_quality_score: float | None = None
+    avg_completeness: float | None = None
+    avg_coherence: float | None = None
+    avg_readability: float | None = None
+
 
 class AggregatedResults(msgspec.Struct, kw_only=True):
     """Aggregated results from multiple benchmark runs."""
