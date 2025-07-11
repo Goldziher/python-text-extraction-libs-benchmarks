@@ -97,7 +97,13 @@ def main() -> None:
     default=None,
     help="Format tier to test: universal (5/5), common (4/5), or all",
 )
-def benchmark(  # noqa: PLR0915, C901, PLR0912
+@click.option(
+    "--table-extraction-only",
+    is_flag=True,
+    default=False,
+    help="Run benchmarks only on table extraction documents",
+)
+def benchmark(  # noqa: PLR0915, C901, PLR0912, PLR0913
     framework: str,
     category: str,
     iterations: int,
@@ -108,6 +114,7 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912
     enable_quality_assessment: bool,
     common_formats_only: bool,
     format_tier: str | None,
+    table_extraction_only: bool,
 ) -> None:
     """Run comprehensive benchmarks for text extraction frameworks."""
     console.print("[bold blue]Starting comprehensive benchmark run...[/bold blue]")
@@ -151,6 +158,10 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912
             elif tier == "common":
                 console.print(f"[yellow]Testing common formats (4/5 frameworks): {sorted(TIER2_FORMATS)}[/yellow]")
 
+    # Show table extraction mode info
+    if table_extraction_only:
+        console.print("[yellow]🔢 Table extraction mode: Only testing documents with tables[/yellow]")
+
     # Create configuration
     config = BenchmarkConfig(
         frameworks=frameworks,
@@ -163,6 +174,7 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912
         save_extracted_text=enable_quality_assessment,
         common_formats_only=common_formats_only,
         format_tier=format_tier if format_tier != "all" else None,
+        table_extraction_only=table_extraction_only,
     )
 
     # Run benchmarks
@@ -749,6 +761,72 @@ def metadata_analysis(results_dir: Path, output_dir: Path, exclude_kreuzberg: bo
 
     except Exception as e:
         console.print(f"[red]✗ Metadata analysis failed: {e}[/red]")
+        sys.exit(1)
+
+
+@main.command(name="table-analysis")
+@click.option(
+    "--results-dir",
+    type=click.Path(exists=True, path_type=Path),
+    default=Path("results"),
+    help="Directory containing benchmark results",
+)
+@click.option(
+    "--output-dir",
+    type=click.Path(path_type=Path),
+    default=Path("table_analysis"),
+    help="Output directory for table analysis",
+)
+def table_analysis(results_dir: Path, output_dir: Path) -> None:
+    """Analyze table extraction capabilities across frameworks."""
+    console.print("[bold blue]📊 Table Extraction Analysis[/bold blue]")
+
+    try:
+        # Find results file
+        results_file = results_dir / "results.json"
+        if not results_file.exists():
+            # Try benchmark_results.json as fallback
+            results_file = results_dir / "benchmark_results.json"
+            if not results_file.exists():
+                console.print(f"[red]✗ Results file not found in {results_dir}[/red]")
+                console.print("[yellow]💡 Try running benchmarks first with table documents[/yellow]")
+                sys.exit(1)
+
+        # Import and run table analysis
+        from .table_analysis import analyze_table_extraction_from_results
+
+        console.print(f"📊 Analyzing table extraction from {results_file}...")
+        analyze_table_extraction_from_results(results_file, output_dir)
+
+        console.print("\n[green]✅ Table analysis complete![/green]")
+        console.print(f"📁 Reports saved to: {output_dir}")
+
+        # List generated files
+        console.print("\n[bold cyan]Generated files:[/bold cyan]")
+        for file in sorted(output_dir.glob("*")):
+            if file.is_file():
+                console.print(f"  • {file.name}")
+
+        # Show quick insights
+        json_file = output_dir / "table_extraction_analysis.json"
+        if json_file.exists():
+            import json
+
+            with open(json_file) as f:
+                analysis = json.load(f)
+
+            summary = analysis.get("summary", {})
+            console.print("\n[bold cyan]📋 Quick Insights:[/bold cyan]")
+            console.print(f"  🏆 Best for structure: {summary.get('best_framework_structure', 'N/A')}")
+            console.print(f"  🔍 Best for detection: {summary.get('best_framework_detection', 'N/A')}")
+            console.print(f"  ⚡ Fastest: {summary.get('best_framework_speed', 'N/A')}")
+            console.print(f"  📄 Table files analyzed: {analysis.get('total_table_files', 0)}")
+
+    except Exception as e:
+        console.print(f"[red]✗ Table analysis failed: {e}[/red]")
+        import traceback
+
+        console.print(f"[dim]{traceback.format_exc()}[/dim]")
         sys.exit(1)
 
 

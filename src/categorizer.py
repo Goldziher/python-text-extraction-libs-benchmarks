@@ -60,6 +60,27 @@ class DocumentCategorizer:
         re.compile(r"[\uAC00-\uD7AF]"),  # Korean
     ]
 
+    # Patterns for detecting table-related files
+    TABLE_FILE_PATTERNS: ClassVar[list[re.Pattern[str]]] = [
+        re.compile(r"table", re.IGNORECASE),
+        re.compile(r"spreadsheet", re.IGNORECASE),
+        re.compile(r"stanley-cups", re.IGNORECASE),
+        re.compile(r"embedded.*table", re.IGNORECASE),
+        re.compile(r"complex.*table", re.IGNORECASE),
+        re.compile(r"simple.*table", re.IGNORECASE),
+    ]
+
+    # File types that commonly contain tables
+    TABLE_FILE_TYPES: ClassVar[list[FileType]] = [
+        FileType.CSV,
+        FileType.XLSX,
+        FileType.XLS,
+        FileType.HTML,  # when contains table in name
+        FileType.MARKDOWN,  # when contains table in name
+        FileType.PDF,  # when contains table in name
+        FileType.DOCX,  # when contains table in name
+    ]
+
     def __init__(self) -> None:
         self._file_type_map = self._build_file_type_map()
 
@@ -198,7 +219,9 @@ class DocumentCategorizer:
 
         return categories
 
-    def get_files_for_category(self, test_dir: Path, category: DocumentCategory) -> list[tuple[Path, dict[str, Any]]]:
+    def get_files_for_category(
+        self, test_dir: Path, category: DocumentCategory, table_extraction_only: bool = False
+    ) -> list[tuple[Path, dict[str, Any]]]:
         """Get all files belonging to a specific category with their metadata."""
         files_with_metadata = []
 
@@ -218,7 +241,36 @@ class DocumentCategorizer:
             ):
                 belongs = True
 
+            # Apply table extraction filter if requested
+            if belongs and table_extraction_only:
+                belongs = self._is_table_file(file_path, categorization)
+
             if belongs:
                 files_with_metadata.append((file_path, categorization))
 
         return files_with_metadata
+
+    def _is_table_file(self, file_path: Path, categorization: dict[str, Any]) -> bool:
+        """Check if a file likely contains tables."""
+        file_name = file_path.name.lower()
+        file_type = categorization.get("file_type")
+
+        # Check filename patterns
+        for pattern in self.TABLE_FILE_PATTERNS:
+            if pattern.search(file_name):
+                return True
+
+        # CSV and Excel files are always table files
+        if file_type in [FileType.CSV, FileType.XLSX, FileType.XLS]:
+            return True
+
+        # HTML/Markdown files with "table" in name
+        if file_type in [FileType.HTML, FileType.MARKDOWN] and "table" in file_name:
+            return True
+
+        # DOCX files with "table" in name
+        if file_type == FileType.DOCX and "table" in file_name:
+            return True
+
+        # PDF files with "table" in name
+        return bool(file_type == FileType.PDF and any(keyword in file_name for keyword in ["table", "embedded"]))

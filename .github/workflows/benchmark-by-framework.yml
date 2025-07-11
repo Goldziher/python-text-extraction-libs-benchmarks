@@ -1,4 +1,4 @@
-name: Benchmark by Framework
+name: Benchmark by Framework (General Text Extraction)
 
 on:
   release:

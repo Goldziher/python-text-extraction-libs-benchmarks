@@ -97,7 +97,7 @@ class ComprehensiveBenchmarkRunner:
 
         # Get one file from each major category
         for category in [DocumentCategory.TINY, DocumentCategory.PDF_STANDARD, DocumentCategory.OFFICE]:
-            files = self.categorizer.get_files_for_category(test_dir, category)
+            files = self.categorizer.get_files_for_category(test_dir, category, self.config.table_extraction_only)
             if files:
                 warmup_files.append(files[0][0])
 
@@ -146,7 +146,7 @@ class ComprehensiveBenchmarkRunner:
     ) -> list[tuple[Path, dict[str, Any]]]:
         """Get test files for a specific category."""
         test_dir = self.config.output_dir.parent / "test_documents"
-        files = self.categorizer.get_files_for_category(test_dir, category)
+        files = self.categorizer.get_files_for_category(test_dir, category, self.config.table_extraction_only)
 
         # Filter by file types if specified
         if self.config.file_types:
