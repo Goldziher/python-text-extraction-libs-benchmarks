@@ -69,16 +69,6 @@ These **4 additional formats** work with most frameworks:
 - `.jpeg` - JPEG images (not supported by Unstructured)
 - `.txt` - Plain text (not supported by Docling)
 
-### Tier 3: Partial Support (3/5 frameworks)
-
-These **5 formats** have more limited support:
-
-- `.jpg` - JPEG variant (Kreuzberg, Docling, MarkItDown)
-- `.eml` - Email files (MarkItDown, Unstructured, Extractous)
-- `.msg` - Outlook messages (MarkItDown, Unstructured, Extractous)
-- `.json` - JSON data (MarkItDown, Unstructured, Extractous)
-- `.yaml` - YAML data (MarkItDown, Unstructured, Extractous)
-
 ## Framework-Specific Analysis
 
 ### Kreuzberg (v3.5.0+)
@@ -135,23 +125,18 @@ These **5 formats** have more limited support:
     - All frameworks will achieve near 100% success rates
     - Best for comparing raw performance metrics
 
-1. **For Real-World Scenarios** (Tier 2)
+1. **For Real-World Scenarios** (Tier 2) - **RECOMMENDED**
 
     - Use `--format-tier common` to test 11 commonly supported formats
     - Represents typical business document processing needs
     - Balances fairness with practical coverage
-
-1. **For Comprehensive Testing** (Tier 3)
-
-    - Use `--format-tier partial` to include formats with partial support
-    - Shows framework strengths in specialized formats
-    - Good for evaluating email/data format capabilities
 
 1. **For Complete Coverage** (All formats)
 
     - Use `--format-tier all` or omit the flag
     - Tests all 18 format types
     - Best for understanding full framework capabilities
+    - Shows specialized format support (email, data formats)
 
 ### By Use Case
 

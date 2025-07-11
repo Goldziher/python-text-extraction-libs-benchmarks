@@ -277,4 +277,4 @@ class BenchmarkConfig(msgspec.Struct, kw_only=True):
 
     # Format filtering
     common_formats_only: bool = False  # Legacy support
-    format_tier: str | None = None  # 'universal', 'common', 'partial', or None
+    format_tier: str | None = None  # 'universal', 'common', or None

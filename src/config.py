@@ -21,19 +21,9 @@ COMMON_FORMATS = {
     ".txt",  # Not supported by Docling
 }
 
-# Tier 3: Partial support (3/5 frameworks)
-PARTIAL_FORMATS = {
-    ".jpg",  # Kreuzberg, Docling, MarkItDown
-    ".eml",  # MarkItDown, Unstructured, Extractous
-    ".msg",  # MarkItDown, Unstructured, Extractous
-    ".json",  # MarkItDown, Unstructured, Extractous
-    ".yaml",  # MarkItDown, Unstructured, Extractous
-}
-
 # Combined sets for different benchmarking scenarios
 TIER1_FORMATS = UNIVERSAL_FORMATS  # 7 formats
 TIER2_FORMATS = UNIVERSAL_FORMATS | COMMON_FORMATS  # 11 formats
-TIER3_FORMATS = UNIVERSAL_FORMATS | COMMON_FORMATS | PARTIAL_FORMATS  # 16 formats
 
 # Legacy alias for backward compatibility
 COMMON_SUPPORTED_FORMATS = UNIVERSAL_FORMATS
@@ -58,7 +48,7 @@ def should_test_file(file_path: str, framework: str, format_tier: str | None = N
     Args:
         file_path: Path to the file
         framework: Framework name
-        format_tier: Format tier to use ('universal', 'common', 'partial', or None for all)
+        format_tier: Format tier to use ('universal', 'common', or None for all)
 
     Returns:
         True if the file should be tested, False otherwise
@@ -73,8 +63,6 @@ def should_test_file(file_path: str, framework: str, format_tier: str | None = N
             return ext in TIER1_FORMATS
         if format_tier == "common":
             return ext in TIER2_FORMATS
-        if format_tier == "partial":
-            return ext in TIER3_FORMATS
         # Legacy support
         if format_tier == "common_only":
             return ext in UNIVERSAL_FORMATS

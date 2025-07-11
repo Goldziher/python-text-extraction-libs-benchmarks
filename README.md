@@ -112,16 +112,6 @@ These 4 additional formats work with most frameworks:
 - `.jpeg` - JPEG images (not Unstructured)
 - `.txt` - Plain text (not Docling)
 
-#### **Tier 3: Partial Support** (3/5 frameworks)
-
-These 5 formats have more limited support:
-
-- `.jpg` - JPEG variant (Kreuzberg, Docling, MarkItDown)
-- `.eml` - Email files (MarkItDown, Unstructured, Extractous)
-- `.msg` - Outlook messages (MarkItDown, Unstructured, Extractous)
-- `.json` - JSON data (MarkItDown, Unstructured, Extractous)
-- `.yaml` - YAML data (MarkItDown, Unstructured, Extractous)
-
 ### 📊 Framework-Specific Capabilities
 
 | Framework        | Supported Formats             | Notable Exclusions    |
@@ -140,13 +130,10 @@ Choose the appropriate tier based on your needs:
 # Tier 1: Test only universal formats (7 formats, 100% framework support)
 uv run python -m src.cli benchmark --framework all --format-tier universal
 
-# Tier 2: Test common formats (11 formats, 80%+ framework support)
+# Tier 2: Test common formats (11 formats, 80%+ framework support) - RECOMMENDED
 uv run python -m src.cli benchmark --framework all --format-tier common
 
-# Tier 3: Test partial support formats (16 formats, 60%+ support)
-uv run python -m src.cli benchmark --framework all --format-tier partial
-
-# Test all formats (default behavior)
+# Test all formats (18 formats, shows full capabilities)
 uv run python -m src.cli benchmark --framework all --format-tier all
 ```
 
@@ -346,8 +333,8 @@ python-text-extraction-libs-benchmarks-2025/
 
 ### 📋 **Format Support Analysis**
 
-- **Tiered Format Support**: Introduced 3-tier system (Universal, Common, Partial)
-- **Flexible Benchmarking**: Added `--format-tier` option with 4 choices
+- **Tiered Format Support**: Introduced 2-tier system (Universal, Common)
+- **Flexible Benchmarking**: Added `--format-tier` option (universal, common, all)
 - **Comprehensive Testing**: Analyzed format support across all 18 file types
 - **Format Documentation**: Created detailed compatibility matrix in FRAMEWORK_FORMAT_SUPPORT.md
 - **Success Rate Correction**: Fixed misleading metrics when frameworks skip categories

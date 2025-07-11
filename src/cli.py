@@ -92,9 +92,9 @@ def main() -> None:
 )
 @click.option(
     "--format-tier",
-    type=click.Choice(["universal", "common", "partial", "all"], case_sensitive=False),
+    type=click.Choice(["universal", "common", "all"], case_sensitive=False),
     default=None,
-    help="Format tier to test: universal (5/5), common (4/5), partial (3/5), or all",
+    help="Format tier to test: universal (5/5), common (4/5), or all",
 )
 def benchmark(  # noqa: PLR0915, C901, PLR0912
     framework: str,
@@ -141,7 +141,7 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912
     if format_tier or common_formats_only:
         tier = format_tier or ("universal" if common_formats_only else None)
         if tier:
-            from .config import TIER1_FORMATS, TIER2_FORMATS, TIER3_FORMATS
+            from .config import TIER1_FORMATS, TIER2_FORMATS
 
             if tier == "universal":
                 console.print(
@@ -149,10 +149,6 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912
                 )
             elif tier == "common":
                 console.print(f"[yellow]Testing common formats (4/5 frameworks): {sorted(TIER2_FORMATS)}[/yellow]")
-            elif tier == "partial":
-                console.print(
-                    f"[yellow]Testing partial support formats (3/5 frameworks): {sorted(TIER3_FORMATS)}[/yellow]"
-                )
 
     # Create configuration
     config = BenchmarkConfig(

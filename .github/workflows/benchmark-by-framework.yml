@@ -21,7 +21,7 @@ on:
         default: '3'
         type: string
       format_tier:
-        description: 'Format tier to test (universal, common, partial, or all)'
+        description: 'Format tier to test (universal, common, or all)'
         required: false
         default: 'common'
         type: choice
@@ -29,7 +29,6 @@ on:
           - all
           - universal
           - common
-          - partial
 
 jobs:
   prepare:
