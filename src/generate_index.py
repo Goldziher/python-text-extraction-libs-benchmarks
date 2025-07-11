@@ -387,7 +387,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <h3>Framework Exclusions</h3>
         <ul>
-            <li><strong>Kreuzberg:</strong> No email/data formats (by design)</li>
+            <li><strong>Kreuzberg:</strong> Email formats (EML, MSG) and data formats (JSON, YAML) only</li>
             <li><strong>Extractous:</strong> Skips DOCX, JPG</li>
             <li><strong>Docling:</strong> Limited format support</li>
             <li><strong>MarkItDown:</strong> Skips DOCX, MD, ODT</li>
@@ -400,7 +400,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <div class="framework-card">
             <h4>Kreuzberg</h4>
-            <p><strong>Version:</strong> {versions['kreuzberg']} | <strong>Size:</strong> 71MB base</p>
+            <p><strong>Version:</strong> {kreuzberg_version} | <strong>Size:</strong> 71MB base</p>
             <p>Fast Python text extraction with multiple OCR backends. Supports both sync and async APIs.</p>
             <p><strong>Strengths:</strong> Speed, small footprint, async support</p>
             <p><strong>Limitations:</strong> No email/data format support (by design)</p>
@@ -408,7 +408,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <div class="framework-card">
             <h4>Docling</h4>
-            <p><strong>Version:</strong> {versions['docling']} | <strong>Size:</strong> 1GB+</p>
+            <p><strong>Version:</strong> {docling_version} | <strong>Size:</strong> 1GB+</p>
             <p>IBM Research's advanced document understanding with ML models.</p>
             <p><strong>Strengths:</strong> Advanced ML understanding, high quality</p>
             <p><strong>Limitations:</strong> Large size, slower on complex PDFs</p>
@@ -416,7 +416,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <div class="framework-card">
             <h4>MarkItDown</h4>
-            <p><strong>Version:</strong> {versions['markitdown']} | <strong>Size:</strong> 251MB</p>
+            <p><strong>Version:</strong> {markitdown_version} | <strong>Size:</strong> 251MB</p>
             <p>Microsoft's lightweight Markdown converter optimized for LLM processing.</p>
             <p><strong>Strengths:</strong> LLM-optimized output, ONNX performance</p>
             <p><strong>Limitations:</strong> Limited format support</p>
@@ -424,7 +424,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <div class="framework-card">
             <h4>Unstructured</h4>
-            <p><strong>Version:</strong> {versions['unstructured']} | <strong>Size:</strong> 146MB</p>
+            <p><strong>Version:</strong> {unstructured_version} | <strong>Size:</strong> 146MB</p>
             <p>Enterprise solution supporting 64+ file types.</p>
             <p><strong>Strengths:</strong> Widest format support, enterprise features</p>
             <p><strong>Limitations:</strong> Moderate speed</p>
@@ -432,7 +432,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <div class="framework-card">
             <h4>Extractous</h4>
-            <p><strong>Version:</strong> {versions['extractous']} | <strong>Size:</strong> ~100MB</p>
+            <p><strong>Version:</strong> {extractous_version} | <strong>Size:</strong> ~100MB</p>
             <p>Fast Rust-based extraction with Python bindings.</p>
             <p><strong>Strengths:</strong> Native performance, low memory usage</p>
             <p><strong>Limitations:</strong> Newer library, some format gaps</p>
@@ -462,6 +462,15 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     </div>
 </body>
 </html>"""
+
+    # Format the HTML with version information
+    html = html.format(
+        kreuzberg_version=versions.get("kreuzberg", "3.7.0"),
+        docling_version=versions.get("docling", "2.41.0"),
+        markitdown_version=versions.get("markitdown", "0.0.1a2"),
+        unstructured_version=versions.get("unstructured", "0.18.5"),
+        extractous_version=versions.get("extractous", "0.1.0"),
+    )
 
     # Save the HTML
     output_path.parent.mkdir(parents=True, exist_ok=True)

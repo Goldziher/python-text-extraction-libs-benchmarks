@@ -30,11 +30,11 @@ COMMON_SUPPORTED_FORMATS = UNIVERSAL_FORMATS
 
 # Framework-specific exclusions (formats that are known to fail)
 FRAMEWORK_EXCLUSIONS = {
-    "kreuzberg_sync": {".eml", ".msg", ".json", ".yaml", ".docx", ".odt", ".rst", ".org"},
-    "kreuzberg_async": {".eml", ".msg", ".json", ".yaml", ".docx", ".odt", ".rst", ".org"},
-    "kreuzberg_tesseract": {".eml", ".msg", ".json", ".yaml", ".docx", ".odt", ".rst", ".org"},
-    "kreuzberg_easyocr": {".eml", ".msg", ".json", ".yaml", ".docx", ".odt", ".rst", ".org"},
-    "kreuzberg_paddleocr": {".eml", ".msg", ".json", ".yaml", ".docx", ".odt", ".rst", ".org"},
+    "kreuzberg_sync": {".eml", ".msg", ".json", ".yaml"},
+    "kreuzberg_async": {".eml", ".msg", ".json", ".yaml"},
+    "kreuzberg_tesseract": {".eml", ".msg", ".json", ".yaml"},
+    "kreuzberg_easyocr": {".eml", ".msg", ".json", ".yaml"},
+    "kreuzberg_paddleocr": {".eml", ".msg", ".json", ".yaml"},
     "docling": {".eml", ".msg", ".json", ".yaml", ".odt", ".org", ".rst", ".txt", ".xls"},
     "markitdown": {".docx", ".md", ".odt"},
     "unstructured": {".jpeg", ".jpg", ".odt", ".org", ".rst"},
