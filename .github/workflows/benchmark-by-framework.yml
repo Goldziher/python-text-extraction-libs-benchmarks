@@ -3,6 +3,8 @@ name: Benchmark by Framework (General Text Extraction)
 on:
   release:
     types: [published]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
       frameworks:
