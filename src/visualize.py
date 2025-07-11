@@ -21,6 +21,7 @@ FRAMEWORK_COLORS = {
     "docling": "#F18F01",  # Orange
     "markitdown": "#C73E1D",  # Red
     "unstructured": "#5B9A8B",  # Green
+    "extractous": "#FF6B35",  # Orange-red (Rust color theme)
 }
 
 
@@ -223,7 +224,7 @@ class BenchmarkVisualizer:
         plt.text(
             0.02,
             0.98,
-            "Success rate calculated on all 264 files (tiny: 147, small: 81, medium: 36)\nTesting ALL 18 formats - frameworks skip unsupported formats\nMissing categories counted as failures",
+            "Success rate calculated on all 94 files (tiny: 50, small: 27, medium: 12, large: 3, huge: 2)\nTesting ALL 20 formats - frameworks skip unsupported formats\nMissing categories counted as failures",
             transform=plt.gca().transAxes,
             fontsize=10,
             verticalalignment="top",

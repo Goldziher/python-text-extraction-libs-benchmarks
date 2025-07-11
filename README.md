@@ -119,8 +119,8 @@ These 4 additional formats work with most frameworks:
 | **Extractous**   | 1000+ formats via Apache Tika | Some edge cases       |
 | **Unstructured** | 64+ formats including emails  | Few limitations       |
 | **MarkItDown**   | Common office & web formats   | `.docx`, `.md` issues |
-| **Kreuzberg**    | 14/18 tested formats          | No email/JSON/YAML    |
-| **Docling**      | 10/18 tested formats          | Limited coverage      |
+| **Kreuzberg**    | 14/20 tested formats          | No email/JSON/YAML    |
+| **Docling**      | 10/20 tested formats          | Limited coverage      |
 
 ### 🔄 Tiered Benchmarking Options
 
@@ -133,7 +133,7 @@ uv run python -m src.cli benchmark --framework all --format-tier universal
 # Tier 2: Test common formats (11 formats, 80%+ framework support) - RECOMMENDED
 uv run python -m src.cli benchmark --framework all --format-tier common
 
-# Test all formats (18 formats, shows full capabilities)
+# Test all formats (20 formats, shows full capabilities)
 uv run python -m src.cli benchmark --framework all --format-tier all
 ```
 
@@ -335,7 +335,7 @@ python-text-extraction-libs-benchmarks-2025/
 
 - **Tiered Format Support**: Introduced 2-tier system (Universal, Common)
 - **Flexible Benchmarking**: Added `--format-tier` option (universal, common, all)
-- **Comprehensive Testing**: Analyzed format support across all 18 file types
+- **Comprehensive Testing**: Analyzed format support across all 20 file types
 - **Format Documentation**: Created detailed compatibility matrix in FRAMEWORK_FORMAT_SUPPORT.md
 - **Success Rate Correction**: Fixed misleading metrics when frameworks skip categories
 
