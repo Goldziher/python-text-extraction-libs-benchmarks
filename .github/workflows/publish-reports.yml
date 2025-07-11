@@ -122,6 +122,28 @@ jobs:
             exit 1
           fi
 
+      - name: Generate File Type Analysis
+        run: |
+          echo "Generating per-file-type performance analysis..."
+          # Look for individual benchmark results
+          if find downloads/ -name "benchmark_results.json" | head -1 | grep -q .; then
+            # Create file type analysis with interactive dashboard
+            uv run python -m src.cli file-type-analysis \
+              --results-dir downloads \
+              --output-dir file-type-analysis \
+              --interactive
+
+            # Move results to visualizations directory for inclusion in site
+            mkdir -p visualizations/file-type-analysis
+            cp -r file-type-analysis/* visualizations/file-type-analysis/
+
+            echo "Generated file type analysis:"
+            ls -la visualizations/file-type-analysis/
+          else
+            echo "No individual benchmark results found for file type analysis"
+            echo "Skipping file type analysis generation"
+          fi
+
       # README update removed - only publishing results
 
       - name: Setup Pages

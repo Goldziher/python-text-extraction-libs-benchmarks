@@ -87,8 +87,35 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
             "successful_files": successful_files,
         }
 
+    # Generate HTML with CSS template
+    css_styles = """
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .header { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; text-align: center; }
+        .logo { height: 60px; margin-bottom: 20px; }
+        h1 { margin: 0 0 10px 0; font-size: 2.5em; }
+        .subtitle { color: #666; font-size: 1.2em; }
+        .nav { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; text-align: center; }
+        .nav a { margin: 0 15px; text-decoration: none; color: #007bff; font-weight: 500; }
+        .nav a:hover { text-decoration: underline; }
+        .section { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 20px; }
+        .alert { padding: 15px; background: #e3f2fd; border-left: 4px solid #2196f3; margin-bottom: 20px; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f8f9fa; font-weight: 600; color: #2c3e50; }
+        tr:hover { background: #f8f9fa; }
+        .framework-card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; background: #fafafa; }
+        .framework-card h4 { margin-top: 0; color: #2c3e50; }
+        .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin: 20px 0; }
+        .chart-item { text-align: center; }
+        .chart-item img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .footer { text-align: center; color: #666; margin-top: 50px; padding: 20px; }
+        .footer a { color: #007bff; text-decoration: none; }
+        small { color: #666; font-style: italic; }
+    """
+
     # Generate HTML
-    html = """<!DOCTYPE html>
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -96,152 +123,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     <title>Python Text Extraction Libraries Benchmark Results</title>
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-
-        .header {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .logo {
-            height: 60px;
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            margin: 0 0 10px 0;
-            font-size: 2.5em;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 1.2em;
-        }
-
-        .nav {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .nav a {
-            margin: 0 15px;
-            text-decoration: none;
-            color: #007bff;
-            font-weight: 500;
-        }
-
-        .nav a:hover {
-            text-decoration: underline;
-        }
-
-        .section {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        h2 {
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        .alert {
-            padding: 15px;
-            background: #e3f2fd;
-            border-left: 4px solid #2196f3;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        tr:hover {
-            background: #f8f9fa;
-        }
-
-        .framework-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            background: #fafafa;
-        }
-
-        .framework-card h4 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
-
-        .chart-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .chart-item {
-            text-align: center;
-        }
-
-        .chart-item img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .footer {
-            text-align: center;
-            color: #666;
-            margin-top: 50px;
-            padding: 20px;
-        }
-
-        .footer a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        small {
-            color: #666;
-            font-style: italic;
-        }
+        {css_styles}
     </style>
 </head>
 <body>
@@ -400,7 +282,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <div class="framework-card">
             <h4>Kreuzberg</h4>
-            <p><strong>Version:</strong> {kreuzberg_version} | <strong>Size:</strong> 71MB base</p>
+            <p><strong>Version:</strong> {versions.get("kreuzberg", "3.7.0")} | <strong>Size:</strong> 71MB base</p>
             <p>Fast Python text extraction with multiple OCR backends. Supports both sync and async APIs.</p>
             <p><strong>Strengths:</strong> Speed, small footprint, async support</p>
             <p><strong>Limitations:</strong> No email/data format support (by design)</p>
@@ -408,7 +290,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <div class="framework-card">
             <h4>Docling</h4>
-            <p><strong>Version:</strong> {docling_version} | <strong>Size:</strong> 1GB+</p>
+            <p><strong>Version:</strong> {versions.get("docling", "2.41.0")} | <strong>Size:</strong> 1GB+</p>
             <p>IBM Research's advanced document understanding with ML models.</p>
             <p><strong>Strengths:</strong> Advanced ML understanding, high quality</p>
             <p><strong>Limitations:</strong> Large size, slower on complex PDFs</p>
@@ -416,7 +298,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <div class="framework-card">
             <h4>MarkItDown</h4>
-            <p><strong>Version:</strong> {markitdown_version} | <strong>Size:</strong> 251MB</p>
+            <p><strong>Version:</strong> {versions.get("markitdown", "0.0.1a2")} | <strong>Size:</strong> 251MB</p>
             <p>Microsoft's lightweight Markdown converter optimized for LLM processing.</p>
             <p><strong>Strengths:</strong> LLM-optimized output, ONNX performance</p>
             <p><strong>Limitations:</strong> Limited format support</p>
@@ -424,7 +306,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <div class="framework-card">
             <h4>Unstructured</h4>
-            <p><strong>Version:</strong> {unstructured_version} | <strong>Size:</strong> 146MB</p>
+            <p><strong>Version:</strong> {versions.get("unstructured", "0.18.5")} | <strong>Size:</strong> 146MB</p>
             <p>Enterprise solution supporting 64+ file types.</p>
             <p><strong>Strengths:</strong> Widest format support, enterprise features</p>
             <p><strong>Limitations:</strong> Moderate speed</p>
@@ -432,7 +314,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <div class="framework-card">
             <h4>Extractous</h4>
-            <p><strong>Version:</strong> {extractous_version} | <strong>Size:</strong> ~100MB</p>
+            <p><strong>Version:</strong> {versions.get("extractous", "0.1.0")} | <strong>Size:</strong> ~100MB</p>
             <p>Fast Rust-based extraction with Python bindings.</p>
             <p><strong>Strengths:</strong> Native performance, low memory usage</p>
             <p><strong>Limitations:</strong> Newer library, some format gaps</p>
@@ -449,6 +331,22 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
             <a href="visualizations/summary_metrics.json">📊 Summary Data</a>
         </p>
 
+        <h3>🔬 Advanced Analysis</h3>
+        <p>
+            <a href="visualizations/file-type-analysis/interactive_dashboard.html" style="background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; margin-right: 10px;">
+                📊 File Type Performance Dashboard
+            </a>
+            <a href="visualizations/file-type-analysis/performance_insights.md" style="background: #17a2b8; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">📝 Per-Format Analysis</a>
+        </p>
+
+        <h3>🎯 Key Insights from File Type Analysis</h3>
+        <ul>
+            <li><strong>Extractous</strong> dominates data formats (JSON/YAML) with 100% success rates</li>
+            <li><strong>Kreuzberg Sync</strong> achieves extreme speeds on spreadsheets (1800+ files/sec)</li>
+            <li><strong>Framework specializations</strong> clearly visible across different file types</li>
+            <li><strong>Interactive filtering</strong> available by framework and file category</li>
+        </ul>
+
         <h3>Links</h3>
         <ul>
             <li><a href="https://github.com/Goldziher/python-text-extraction-libs-benchmarks">📂 GitHub Repository</a></li>
@@ -463,14 +361,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 </body>
 </html>"""
 
-    # Format the HTML with version information
-    html = html.format(
-        kreuzberg_version=versions.get("kreuzberg", "3.7.0"),
-        docling_version=versions.get("docling", "2.41.0"),
-        markitdown_version=versions.get("markitdown", "0.0.1a2"),
-        unstructured_version=versions.get("unstructured", "0.18.5"),
-        extractous_version=versions.get("extractous", "0.1.0"),
-    )
+    # Version information is now included directly in the f-string above
 
     # Save the HTML
     output_path.parent.mkdir(parents=True, exist_ok=True)

@@ -535,5 +535,151 @@ def installation_sizes(output_file: str | None, include_charts: bool) -> None:
         sys.exit(1)
 
 
+@main.command(name="file-type-analysis")
+@click.option(
+    "--results-dir",
+    "-r",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, path_type=Path),
+    default=".",
+    help="Directory containing benchmark results",
+)
+@click.option(
+    "--output-dir",
+    "-o",
+    type=click.Path(path_type=Path),
+    default="file_type_analysis",
+    help="Output directory for analysis results",
+)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["all", "charts", "csv", "insights"], case_sensitive=False),
+    default="all",
+    help="Output format(s) to generate",
+)
+@click.option(
+    "--interactive",
+    is_flag=True,
+    help="Generate interactive HTML dashboard",
+)
+def file_type_analysis(
+    results_dir: Path,
+    output_dir: Path,
+    output_format: str,
+    interactive: bool,
+) -> None:
+    """Generate per-file-type performance and quality analysis."""
+    try:
+        import json
+
+        from .file_type_analysis import FileTypeAnalyzer
+
+        console.print("[bold blue]🔍 Loading benchmark results...[/bold blue]")
+
+        # Find all benchmark result files
+        result_files = []
+        for pattern in ["**/benchmark_results.json", "**/results.json", "**/*results*.json"]:
+            result_files.extend(results_dir.glob(pattern))
+
+        # Filter out cache and other non-benchmark files
+        filtered_files = []
+        for file_path in result_files:
+            if any(exclude in str(file_path) for exclude in [".mypy_cache", "node_modules", ".git"]):
+                continue
+            filtered_files.append(file_path)
+
+        if not filtered_files:
+            console.print(f"[red]✗ No benchmark results found in {results_dir}[/red]")
+            console.print("[yellow]💡 Try running benchmarks first:[/yellow]")
+            console.print("   uv run python -m src.cli benchmark --framework extractous --category tiny")
+            sys.exit(1)
+
+        # Load all results
+        all_results = []
+        for file_path in filtered_files:
+            try:
+                with open(file_path) as f:
+                    data = json.load(f)
+                    if isinstance(data, list):
+                        all_results.extend(data)
+                        console.print(f"[green]✓ Loaded {len(data)} results from {file_path.name}[/green]")
+            except Exception as e:
+                console.print(f"[yellow]⚠ Skipped {file_path.name}: {e}[/yellow]")
+
+        if not all_results:
+            console.print("[red]✗ No valid benchmark data found[/red]")
+            sys.exit(1)
+
+        console.print(f"[bold green]📊 Analyzing {len(all_results)} results...[/bold green]")
+
+        # Run analysis
+        analyzer = FileTypeAnalyzer(all_results)
+
+        # Create output directory
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Generate outputs based on format selection
+        if output_format in ["all", "charts", "csv", "insights"]:
+            if output_format in ["all", "charts"]:
+                console.print("[cyan]📈 Generating performance charts...[/cyan]")
+
+            if output_format in ["all", "csv"]:
+                console.print("[cyan]📋 Generating CSV summary...[/cyan]")
+
+            if output_format in ["all", "insights"]:
+                console.print("[cyan]🏆 Generating insights report...[/cyan]")
+
+            analyzer.generate_file_type_performance_report(output_dir)
+            analyzer.generate_insights_report(output_dir)
+
+        # Generate interactive dashboard if requested
+        if interactive:
+            console.print("[cyan]🌐 Generating interactive dashboard...[/cyan]")
+            _generate_interactive_dashboard(analyzer, output_dir)
+
+        # Show results
+        console.print("\n[bold green]✅ Analysis complete![/bold green]")
+        console.print(f"📁 Results saved in: {output_dir}/")
+
+        if output_format in ["all", "charts"]:
+            console.print(f"📊 Charts: {output_dir}/*.png")
+        if output_format in ["all", "csv"]:
+            console.print(f"📋 CSV: {output_dir}/file_type_performance_summary.csv")
+        if output_format in ["all", "insights"]:
+            console.print(f"📝 Insights: {output_dir}/performance_insights.md")
+        if interactive:
+            console.print(f"🌐 Dashboard: {output_dir}/interactive_dashboard.html")
+
+        # Show quick insights
+        console.print("\n[bold cyan]🏆 Quick Insights:[/bold cyan]")
+        top_success = analyzer.get_top_performing_frameworks("success_rate")
+        top_speed = analyzer.get_top_performing_frameworks("files_per_second")
+
+        console.print("  [green]Top success rates:[/green]")
+        for file_type, data in list(top_success.items())[:3]:
+            console.print(f"    {file_type}: {data['framework']} ({data['value']:.1f}%)")
+
+        console.print("  [blue]Top speeds:[/blue]")
+        for file_type, data in list(top_speed.items())[:3]:
+            console.print(f"    {file_type}: {data['framework']} ({data['value']:.2f} files/sec)")
+
+    except Exception as e:
+        console.print(f"[red]✗ File type analysis failed: {e}[/red]")
+        sys.exit(1)
+
+
+def _generate_interactive_dashboard(analyzer: "FileTypeAnalyzer", output_dir: Path) -> None:
+    """Generate an interactive HTML dashboard for file type analysis."""
+    try:
+        from .interactive_dashboard import InteractiveDashboardGenerator
+
+        generator = InteractiveDashboardGenerator(analyzer)
+        generator.generate_dashboard(output_dir)
+        console.print("[green]✅ Interactive dashboard generated successfully![/green]")
+    except Exception as e:
+        console.print(f"[yellow]⚠ Dashboard generation failed: {e}[/yellow]")
+        console.print("[yellow]Continuing with static analysis...[/yellow]")
+
+
 if __name__ == "__main__":
     main()
