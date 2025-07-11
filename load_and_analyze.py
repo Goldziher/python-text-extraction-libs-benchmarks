@@ -27,53 +27,66 @@ def find_all_benchmark_results() -> list[Path]:
     return filtered_files
 
 
-def load_all_benchmark_data() -> list[dict[str, Any]]:
-    """Load and combine all available benchmark results."""
-    result_files = find_all_benchmark_results()
-    all_results = []
+def _parse_json_data(data: Any, file_path: str) -> list[dict[str, Any]]:
+    """Parse JSON data and extract benchmark results."""
+    results = []
 
-    print(f"Found {len(result_files)} potential result files:")
+    if isinstance(data, list):
+        # Direct list of benchmark results
+        results.extend(data)
+        print(f"  ✅ {file_path}: {len(data)} results")
+    elif isinstance(data, dict) and "results" in data:
+        # Wrapped in results key
+        if isinstance(data["results"], list):
+            results.extend(data["results"])
+            print(f"  ✅ {file_path}: {len(data['results'])} results")
+    elif isinstance(data, dict) and any(key.endswith("_results") for key in data):
+        # Multiple result sets
+        count = _extract_multiple_result_sets(data, results)
+        if count > 0:
+            print(f"  ✅ {file_path}: {count} results")
+    elif _is_single_benchmark_result(data):
+        # Individual result
+        results.append(data)
+        print(f"  ✅ {file_path}: 1 result")
+    else:
+        print(f"  ⚠️  {file_path}: Unknown format, skipping")
 
-    for file_path in result_files:
-        try:
-            with open(file_path) as f:
-                data = json.load(f)
+    return results
 
-                # Handle different data formats
-                if isinstance(data, list):
-                    # Direct list of benchmark results
-                    all_results.extend(data)
-                    print(f"  ✅ {file_path}: {len(data)} results")
-                elif isinstance(data, dict) and "results" in data:
-                    # Wrapped in results key
-                    results = data["results"]
-                    if isinstance(results, list):
-                        all_results.extend(results)
-                        print(f"  ✅ {file_path}: {len(results)} results")
-                elif isinstance(data, dict) and any(key.endswith("_results") for key in data):
-                    # Multiple result sets
-                    count = 0
-                    for key, value in data.items():
-                        if key.endswith("_results") and isinstance(value, list):
-                            all_results.extend(value)
-                            count += len(value)
-                    if count > 0:
-                        print(f"  ✅ {file_path}: {count} results")
-                # Try to extract individual result if it looks like a BenchmarkResult
-                elif "file_path" in data and "framework" in data and "file_type" in data:
-                    all_results.append(data)
-                    print(f"  ✅ {file_path}: 1 result")
-                else:
-                    print(f"  ⚠️  {file_path}: Unknown format, skipping")
 
-        except json.JSONDecodeError as e:
-            print(f"  ❌ {file_path}: JSON decode error - {e}")
-        except Exception as e:
-            print(f"  ❌ {file_path}: Error - {e}")
+def _extract_multiple_result_sets(data: dict[str, Any], results: list[dict[str, Any]]) -> int:
+    """Extract results from multiple result sets in data."""
+    count = 0
+    for key, value in data.items():
+        if key.endswith("_results") and isinstance(value, list):
+            results.extend(value)
+            count += len(value)
+    return count
 
-    print(f"\n📊 Total results loaded: {len(all_results)}")
 
-    # Show breakdown by framework
+def _is_single_benchmark_result(data: Any) -> bool:
+    """Check if data looks like a single BenchmarkResult."""
+    return isinstance(data, dict) and "file_path" in data and "framework" in data and "file_type" in data
+
+
+def _load_file_data(file_path: str) -> list[dict[str, Any]]:
+    """Load and parse a single result file."""
+    try:
+        with open(file_path) as f:
+            data = json.load(f)
+        return _parse_json_data(data, file_path)
+    except json.JSONDecodeError as e:
+        print(f"  ❌ {file_path}: JSON decode error - {e}")
+        return []
+    except Exception as e:
+        print(f"  ❌ {file_path}: Error - {e}")
+        return []
+
+
+def _print_result_breakdown(all_results: list[dict[str, Any]]) -> None:
+    """Print breakdown of results by framework and file type."""
+    # Framework breakdown
     framework_counts = {}
     for result in all_results:
         fw = result.get("framework", "unknown")
@@ -83,7 +96,7 @@ def load_all_benchmark_data() -> list[dict[str, Any]]:
     for framework, count in sorted(framework_counts.items()):
         print(f"  - {framework}: {count}")
 
-    # Show breakdown by file type
+    # File type breakdown
     file_type_counts = {}
     for result in all_results:
         ft = result.get("file_type", "unknown")
@@ -92,6 +105,21 @@ def load_all_benchmark_data() -> list[dict[str, Any]]:
     print("\n📄 Results by file type:")
     for file_type, count in sorted(file_type_counts.items()):
         print(f"  - {file_type}: {count}")
+
+
+def load_all_benchmark_data() -> list[dict[str, Any]]:
+    """Load and combine all available benchmark results."""
+    result_files = find_all_benchmark_results()
+    all_results = []
+
+    print(f"Found {len(result_files)} potential result files:")
+
+    for file_path in result_files:
+        file_results = _load_file_data(file_path)
+        all_results.extend(file_results)
+
+    print(f"\n📊 Total results loaded: {len(all_results)}")
+    _print_result_breakdown(all_results)
 
     return all_results
 
