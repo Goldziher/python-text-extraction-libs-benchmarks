@@ -30,7 +30,8 @@ Comprehensive automated benchmarking of text extraction frameworks with enhanced
 - Both sync and async APIs with OCR support (Tesseract, EasyOCR, PaddleOCR)
 - **Lightweight**: Perfect for AWS Lambda, edge functions, serverless
 - **Smallest footprint**: 71MB with only 20 dependencies
-- Handles all document types reliably and very fast
+- **Format limitations**: No email (EML/MSG) or data format (JSON/YAML) support
+- **Success rate**: 72.7% on all formats, ~100% on supported formats
 
 ### 🦀 **Extractous** (46MB, Rust-based)
 
@@ -40,16 +41,18 @@ Comprehensive automated benchmarking of text extraction frameworks with enhanced
 - **Rust-based**: Native performance without garbage collection overhead
 - **Minimal footprint**: 11x less memory usage than Python alternatives
 - Built-in OCR support via Tesseract integration
-- **New addition**: Latest high-performance extraction framework
+- **Format support**: 1000+ formats via Apache Tika
+- **Success rate**: 94.3% across all test documents
 
 ### 🏢 **Unstructured** (146MB, 54 deps)
 
 **Best for: Enterprise applications, mixed document types**
 
-- Most reliable overall (88%+ success rate)
+- Most comprehensive format support (64+ formats including emails)
 - Handles complex layouts well
 - Moderate speed, good for batch processing
 - **Moderate footprint**: 146MB installation with 54 dependencies
+- **Success rate**: 88.6% across diverse formats
 
 ### 📝 **MarkItDown** (251MB, 25 deps)
 
@@ -58,7 +61,8 @@ Comprehensive automated benchmarking of text extraction frameworks with enhanced
 - Good for basic PDF and Office documents
 - **Limitation**: Struggles with large/complex files (>10MB)
 - **ONNX Runtime included**: 251MB (includes ML inference models)
-- Optimized for Markdown output but slower than Kreuzberg and has lower quality markdown outputs
+- Optimized for Markdown output but slower than Kreuzberg
+- **Success rate**: 77.3% with some format limitations
 
 ### 🔬 **Docling** (1,032MB, 88 deps)
 
@@ -68,6 +72,7 @@ Comprehensive automated benchmarking of text extraction frameworks with enhanced
 - **Major limitation**: Extremely slow (often 60+ minutes per file)
 - **Frequent failures** on medium-sized documents due to timeouts
 - **Heaviest install**: 1GB+ with PyTorch, transformers, vision models
+- **Success rate**: 69.3% (many timeouts on larger files)
 
 ## 📊 Test Coverage
 
@@ -79,6 +84,43 @@ Comprehensive automated benchmarking of text extraction frameworks with enhanced
 - **5 Frameworks** - Kreuzberg, Extractous, Unstructured, MarkItDown, Docling
 - **Enhanced CI/CD** - 2-hour timeout handling with graceful failure management
 - **Comprehensive Metrics** - Speed, memory usage, success rates, installation sizes
+
+## 📋 Format Support Analysis
+
+Our comprehensive testing revealed significant differences in format support across frameworks:
+
+### 🎯 Universal Format Support
+
+Only **5 formats** are reliably supported by ALL frameworks:
+
+- `.pdf` - Portable Document Format
+- `.pptx` - PowerPoint presentations
+- `.xlsx` - Excel spreadsheets
+- `.png` - Portable Network Graphics
+- `.bmp` - Bitmap images
+
+### 📊 Framework-Specific Capabilities
+
+| Framework        | Supported Formats             | Notable Exclusions    |
+| ---------------- | ----------------------------- | --------------------- |
+| **Extractous**   | 1000+ formats via Apache Tika | Some edge cases       |
+| **Unstructured** | 64+ formats including emails  | Few limitations       |
+| **MarkItDown**   | Common office & web formats   | `.docx`, `.md` issues |
+| **Kreuzberg**    | 14/18 tested formats          | No email/JSON/YAML    |
+| **Docling**      | 10/18 tested formats          | Limited coverage      |
+
+### 🔄 Fair Benchmarking Mode
+
+To ensure fair comparison, use the `--common-formats-only` flag:
+
+```bash
+# Test only formats that ALL frameworks support
+uv run python -m src.cli benchmark --framework all --common-formats-only
+
+# This tests only: PDF, PPTX, XLSX, PNG, BMP files
+```
+
+For detailed format compatibility, see [FRAMEWORK_FORMAT_SUPPORT.md](FRAMEWORK_FORMAT_SUPPORT.md)
 
 ## 🚀 Quick Start
 
@@ -98,6 +140,9 @@ uv run python -m src.cli benchmark --framework extractous --category small
 
 # Compare multiple frameworks
 uv run python -m src.cli benchmark --framework kreuzberg_sync,extractous --category tiny,small
+
+# Fair comparison mode - test only universally supported formats
+uv run python -m src.cli benchmark --framework all --common-formats-only
 
 # Generate comprehensive reports
 uv run python -m src.cli report --output-format html
@@ -264,7 +309,14 @@ python-text-extraction-libs-benchmarks-2025/
 - **GitHub Actions** for automated benchmarking with isolated framework jobs
 - **uv** for fast dependency management
 
-## 🆕 Recent Improvements (v1.2.0)
+## 🆕 Recent Improvements (v1.3.0)
+
+### 📋 **Format Support Analysis**
+
+- **Comprehensive Testing**: Analyzed format support across all 18 file types
+- **Fair Comparison Mode**: Added `--common-formats-only` flag for unbiased benchmarking
+- **Format Documentation**: Created detailed compatibility matrix in FRAMEWORK_FORMAT_SUPPORT.md
+- **Success Rate Correction**: Fixed misleading metrics when frameworks skip categories
 
 ### 🚀 **New Framework Addition**
 
@@ -279,12 +331,14 @@ python-text-extraction-libs-benchmarks-2025/
 - **Robust Aggregation**: Runs even when some frameworks fail/timeout
 - **Failure Reporting**: Comprehensive timeout and error analysis
 - **Isolated Jobs**: Each framework runs independently for better reliability
+- **System Dependencies**: Auto-install Pandoc, Tesseract with all language packs
 
 ### 📊 **Improved Benchmarking**
 
 - **Memory Profiling**: Enhanced resource monitoring with 50ms sampling
 - **Quality Metrics**: Better extraction quality assessment
 - **Performance Tracking**: More accurate CPU and memory measurements
+- **Fair Success Rates**: Count skipped files as failures for honest comparison
 
 ## 📊 Performance Highlights
 
@@ -293,10 +347,12 @@ Based on our latest benchmarks:
 ### 🏆 **Winners by Category**
 
 - **🚀 Speed**: Extractous (18x faster than Python solutions) → Kreuzberg (35+ files/second)
-- **🛡️ Reliability**: Unstructured (88%+ success rate)
+- **🛡️ Reliability**: Extractous (94.3%) → Unstructured (88.6%) across all formats
+- **📋 Format Support**: Unstructured (64+ formats) → Extractous (1000+ via Tika)
 - **💾 Memory Footprint**: Extractous (11x less memory) → Kreuzberg (~530MB on average)
 - **📦 Installation Size**: Extractous (46MB, Rust-based) → Kreuzberg (71MB, 20 deps)
-- **🏢 Enterprise Features**: Unstructured
+- **🏢 Enterprise Features**: Unstructured (emails, complex layouts)
+- **⚖️ Fair Comparison**: When testing only universal formats, all frameworks achieve >95% success
 
 ### ⚠️ **Key Limitations**
 
