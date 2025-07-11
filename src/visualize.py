@@ -226,7 +226,7 @@ class BenchmarkVisualizer:
         plt.text(
             0.02,
             0.98,
-            "Success rate calculated on files actually tested by each framework\nFrameworks tested different numbers of files based on their capabilities\nKreuzberg (both): tiny, small, medium categories\nDocling/MarkItDown: tiny, small categories only\nUnstructured/Extractous: tiny, small, medium categories",
+            "Success rate calculated on files actually tested by each framework\nFrameworks tested different numbers of files based on their capabilities\nKreuzberg: tiny, small, medium categories\nDocling/MarkItDown: tiny, small categories only\nUnstructured/Extractous: tiny, small, medium categories",
             transform=plt.gca().transAxes,
             fontsize=9,
             verticalalignment="top",
