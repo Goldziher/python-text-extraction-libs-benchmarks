@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .file_type_analysis import FileTypeAnalyzer
 
 
 class InteractiveDashboardGenerator:
     """Generate interactive HTML dashboard with Plotly charts."""
 
-    def __init__(self, analyzer: "FileTypeAnalyzer") -> None:
+    def __init__(self, analyzer: FileTypeAnalyzer) -> None:
         """Initialize with file type analyzer."""
         self.analyzer = analyzer
         self.file_type_stats = analyzer.file_type_stats

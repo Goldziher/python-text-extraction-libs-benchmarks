@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import sys
 from pathlib import Path
+from typing import Any
 
 if sys.version_info >= (3, 13):
     pass
@@ -668,7 +669,7 @@ def file_type_analysis(
         sys.exit(1)
 
 
-def _generate_interactive_dashboard(analyzer: "FileTypeAnalyzer", output_dir: Path) -> None:
+def _generate_interactive_dashboard(analyzer: Any, output_dir: Path) -> None:
     """Generate an interactive HTML dashboard for file type analysis."""
     try:
         from .interactive_dashboard import InteractiveDashboardGenerator
