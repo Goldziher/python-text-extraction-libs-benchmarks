@@ -143,7 +143,7 @@ jobs:
           # Generate dynamic index.html from aggregated results
           if [ -f "aggregated-results/aggregated_results.json" ]; then
             echo "Generating dynamic index.html..."
-            uv run python src/generate_index.py aggregated-results/aggregated_results.json pages/index.html
+            uv run python -m src.generate_index aggregated-results/aggregated_results.json pages/index.html
           else
             echo "No aggregated results found, creating fallback index"
             # Create minimal fallback index
