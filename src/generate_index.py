@@ -1,7 +1,6 @@
 """Generate dynamic HTML index for GitHub Pages from aggregated results."""
 
-# Import tomllib after msgspec to avoid circular import issues
-import tomllib
+import re
 from pathlib import Path
 
 import msgspec
@@ -14,9 +13,15 @@ def get_framework_versions() -> dict[str, str]:
         pyproject_path = Path("../pyproject.toml")
 
     if pyproject_path.exists():
-        with open(pyproject_path, "rb") as f:
-            data = tomllib.load(f)
-            deps = data.get("project", {}).get("dependencies", [])
+        # Parse pyproject.toml manually to avoid tomllib import issues
+        with open(pyproject_path) as f:
+            content = f.read()
+
+        # Extract dependencies section
+        deps_match = re.search(r"dependencies\s*=\s*\[(.*?)\]", content, re.DOTALL)
+        if deps_match:
+            deps_text = deps_match.group(1)
+            deps = [line.strip().strip('"').strip("'") for line in deps_text.split(",") if line.strip()]
 
             versions = {}
             for dep in deps:
