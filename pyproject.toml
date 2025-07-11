@@ -30,12 +30,12 @@ classifiers = [
 dependencies = [
   "anyio>=4.9.0",
   "click>=8.2.1",
-  "docling>=2.40.0",
-  "kreuzberg>=3.6.1",
+  "docling>=2.41.0",
+  "kreuzberg>=3.6.2",
   "markitdown>=0.0.1a2",
   "matplotlib>=3.8.0",
   "msgspec>=0.18.0",
-  "pandas>=2.2.0",
+  "pandas>=2.3.1",
   "plotly>=5.15.0",
   "psutil>=7.0.0",
   "rich>=14.0.0",
@@ -43,7 +43,7 @@ dependencies = [
   "seaborn>=0.13.0",
   "sentence-transformers>=2.2.0",
   "textstat>=0.7.0",
-  "unstructured[all-docs]>=0.16.11",
+  "unstructured[all-docs]>=0.18.3",
 ]
 
 optional-dependencies.ocr = [
