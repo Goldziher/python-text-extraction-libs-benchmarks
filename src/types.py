@@ -274,3 +274,6 @@ class BenchmarkConfig(msgspec.Struct, kw_only=True):
     sampling_interval_ms: int = 50
     profile_startup: bool = True
     profile_io: bool = True
+
+    # Format filtering
+    common_formats_only: bool = False

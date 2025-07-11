@@ -124,7 +124,7 @@ class ComprehensiveBenchmarkRunner:
                     )
 
                     # Get files for this category
-                    test_files = await self._get_test_files(category)
+                    test_files = await self._get_test_files(category, framework)
 
                     # Process files
                     for file_path, metadata in test_files:
@@ -141,7 +141,9 @@ class ComprehensiveBenchmarkRunner:
 
         return iteration_results
 
-    async def _get_test_files(self, category: DocumentCategory) -> list[tuple[Path, dict[str, Any]]]:
+    async def _get_test_files(
+        self, category: DocumentCategory, framework: Framework | None = None
+    ) -> list[tuple[Path, dict[str, Any]]]:
         """Get test files for a specific category."""
         test_dir = self.config.output_dir.parent / "test_documents"
         files = self.categorizer.get_files_for_category(test_dir, category)
@@ -149,6 +151,16 @@ class ComprehensiveBenchmarkRunner:
         # Filter by file types if specified
         if self.config.file_types:
             files = [(path, meta) for path, meta in files if meta.get("file_type") in self.config.file_types]
+
+        # Apply format filtering if enabled
+        if self.config.common_formats_only or framework:
+            from .config import should_test_file
+
+            filtered_files = []
+            for path, meta in files:
+                if should_test_file(str(path), framework.value if framework else "", self.config.common_formats_only):
+                    filtered_files.append((path, meta))
+            files = filtered_files
 
         return files
 

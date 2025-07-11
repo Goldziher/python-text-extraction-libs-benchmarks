@@ -84,6 +84,12 @@ def main() -> None:
     default=False,
     help="Enable quality assessment by saving extracted text for analysis",
 )
+@click.option(
+    "--common-formats-only",
+    is_flag=True,
+    default=False,
+    help="Only test formats supported by ALL frameworks (pdf, pptx, xlsx, png, bmp)",
+)
 def benchmark(  # noqa: PLR0915
     framework: str,
     category: str,
@@ -93,6 +99,7 @@ def benchmark(  # noqa: PLR0915
     timeout: int,
     continue_on_error: bool,
     enable_quality_assessment: bool,
+    common_formats_only: bool,
 ) -> None:
     """Run comprehensive benchmarks for text extraction frameworks."""
     console.print("[bold blue]Starting comprehensive benchmark run...[/bold blue]")
@@ -133,6 +140,7 @@ def benchmark(  # noqa: PLR0915
         timeout_seconds=timeout,
         continue_on_error=continue_on_error,
         save_extracted_text=enable_quality_assessment,
+        common_formats_only=common_formats_only,
     )
 
     # Run benchmarks
