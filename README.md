@@ -20,10 +20,20 @@ Automated performance benchmarking of Python text extraction frameworks with rea
 **Best for: Production workloads, edge computing, cloud functions**
 
 - Fastest extraction speeds (35+ files/second)
-- Both sync and async APIs with OCR support
+- Both sync and async APIs with OCR support (Tesseract, EasyOCR, PaddleOCR)
 - **Lightweight**: Perfect for AWS Lambda, edge functions, serverless
 - **Smallest footprint**: 71MB with only 20 dependencies
 - Handles all document types reliably and very fast
+
+### 🦀 **Extractous** (46MB, Rust-based)
+
+**Best for: High-performance applications, speed-critical workloads**
+
+- **Ultra-fast**: 18x faster than traditional Python solutions
+- **Rust-based**: Native performance without garbage collection overhead
+- **Minimal footprint**: 11x less memory usage than Python alternatives
+- Built-in OCR support via Tesseract integration
+- **New addition**: Latest high-performance extraction framework
 
 ### 🏢 **Unstructured** (146MB, 54 deps)
 
@@ -72,7 +82,10 @@ cd python-text-extraction-libs-benchmarks
 uv sync --all-extras
 
 # Run benchmarks (specific framework and category)
-uv run python -m src.cli benchmark --framework kreuzberg_sync --category small
+uv run python -m src.cli benchmark --framework extractous --category small
+
+# Test multiple frameworks
+uv run python -m src.cli benchmark --framework kreuzberg_sync,extractous --category tiny,small
 
 # Generate reports
 uv run python -m src.cli report --output-format html
@@ -224,9 +237,11 @@ python-text-extraction-libs-benchmarks-2025/
 ## 🔧 Technical Details
 
 - **Python 3.13+** with modern async/await patterns
+- **Rust Integration**: Extractous provides native Rust performance
+- **Enhanced CI/CD**: 2-hour timeout handling with graceful failure management
 - **msgspec** for fast JSON serialization
 - **plotly/matplotlib** for comprehensive visualizations
-- **GitHub Actions** for automated benchmarking
+- **GitHub Actions** for automated benchmarking with isolated framework jobs
 - **uv** for fast dependency management
 
 ## 📊 Performance Highlights
@@ -235,10 +250,10 @@ Based on our latest benchmarks:
 
 ### 🏆 **Winners by Category**
 
-- **Speed**: Kreuzberg (35+ files/second)
+- **Speed**: Extractous (18x faster than Python solutions) → Kreuzberg (35+ files/second)
 - **Reliability**: Unstructured (88%+ success rate)
-- **Memory Footprint**: Kreuzberg (~530MB on average)
-- **Installation Size**: Kreuzberg (71MB, 20 deps vs Docling's 1GB+, 88 deps)
+- **Memory Footprint**: Extractous (11x less memory) → Kreuzberg (~530MB on average)
+- **Installation Size**: Extractous (46MB, Rust-based) → Kreuzberg (71MB, 20 deps)
 - **Enterprise Features**: Unstructured
 
 ### ⚠️ **Key Limitations**
@@ -249,10 +264,11 @@ Based on our latest benchmarks:
 
 ### 🎯 **Quick Recommendations**
 
+- **Maximum performance**: Choose Extractous (new Rust-based framework)
 - **High-volume production or edge computing**: Choose Kreuzberg
 - **Enterprise/mixed docs**: Choose Unstructured
-- **Simple docs for LLMs**: Choose Kreuzberg
-- **Research/ML workflows**: Choose Kreuzberg with fallback to Unstructured
+- **Simple docs for LLMs**: Choose Extractous or Kreuzberg
+- **Research/ML workflows**: Choose Extractous with fallback to Kreuzberg/Unstructured
 
 See the [live results](https://goldziher.github.io/python-text-extraction-libs-benchmarks/) for detailed comparisons and failure analysis.
 
