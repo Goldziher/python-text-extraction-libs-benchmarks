@@ -700,7 +700,7 @@ def _generate_interactive_dashboard(analyzer: "FileTypeAnalyzer", output_dir: Pa
     default=True,
     help="Exclude Kreuzberg results (while it's being updated)",
 )
-def metadata_analysis(results_dir: Path, output_dir: Path, exclude_kreuzberg: bool) -> None:
+def metadata_analysis(results_dir: Path, output_dir: Path, exclude_kreuzberg: bool) -> None:  # noqa: ARG001
     """Analyze metadata extraction capabilities across frameworks."""
     console.print("[bold blue]🔍 Metadata Extraction Analysis[/bold blue]")
 
@@ -716,10 +716,10 @@ def metadata_analysis(results_dir: Path, output_dir: Path, exclude_kreuzberg: bo
 
         console.print(f"📊 Analyzing metadata from {results_file}...")
         analyze_metadata_from_results(results_file, output_dir)
-        
-        console.print(f"\n[green]✅ Metadata analysis complete![/green]")
+
+        console.print("\n[green]✅ Metadata analysis complete![/green]")
         console.print(f"📁 Reports saved to: {output_dir}")
-        
+
         # List generated files
         console.print("\n[bold cyan]Generated files:[/bold cyan]")
         for file in sorted(output_dir.glob("*")):

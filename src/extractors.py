@@ -51,8 +51,9 @@ try:
 except ImportError:
     Extractor = None  # type: ignore[assignment,misc]
 
-from .types import AsyncExtractorProtocol, ExtractorProtocol
 from typing import Any
+
+from .types import AsyncExtractorProtocol, ExtractorProtocol
 
 
 def get_language_config(file_path: str | Path) -> str:
@@ -91,7 +92,7 @@ class KreuzbergSyncExtractor:
             raise ImportError(msg)
         result = kreuzberg.extract_file_sync(file_path)
         return result.content
-    
+
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
         """Extract text and metadata using Kreuzberg synchronously."""
         if kreuzberg is None:
@@ -99,7 +100,7 @@ class KreuzbergSyncExtractor:
             raise ImportError(msg)
         result = kreuzberg.extract_file_sync(file_path)
         # Convert metadata to dict if it's a TypedDict
-        metadata = dict(result.metadata) if hasattr(result, 'metadata') else {}
+        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
         return result.content, metadata
 
 
@@ -113,7 +114,7 @@ class KreuzbergAsyncExtractor:
             raise ImportError(msg)
         result = await kreuzberg.extract_file(file_path)
         return result.content
-    
+
     async def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
         """Extract text and metadata using Kreuzberg asynchronously."""
         if kreuzberg is None:
@@ -121,7 +122,7 @@ class KreuzbergAsyncExtractor:
             raise ImportError(msg)
         result = await kreuzberg.extract_file(file_path)
         # Convert metadata to dict if it's a TypedDict
-        metadata = dict(result.metadata) if hasattr(result, 'metadata') else {}
+        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
         return result.content, metadata
 
 
@@ -161,23 +162,23 @@ class DoclingExtractor:
         result = self.converter.convert(file_path)
         # Use text export instead of markdown for better performance
         return result.document.export_to_text()
-    
+
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
         """Extract text and metadata using Docling."""
         result = self.converter.convert(file_path)
         text = result.document.export_to_text()
-        
+
         # Extract metadata from Docling result
         metadata = {}
-        if hasattr(result.document, 'origin'):
-            metadata['origin'] = {
-                'mimetype': getattr(result.document.origin, 'mimetype', None),
-                'binary_hash': getattr(result.document.origin, 'binary_hash', None),
-                'filename': getattr(result.document.origin, 'filename', None)
+        if hasattr(result.document, "origin"):
+            metadata["origin"] = {
+                "mimetype": getattr(result.document.origin, "mimetype", None),
+                "binary_hash": getattr(result.document.origin, "binary_hash", None),
+                "filename": getattr(result.document.origin, "filename", None),
             }
-        if hasattr(result.document, 'pages'):
-            metadata['page_count'] = len(result.document.pages)
-        
+        if hasattr(result.document, "pages"):
+            metadata["page_count"] = len(result.document.pages)
+
         return text, metadata
 
 
@@ -197,14 +198,14 @@ class MarkItDownExtractor:
         # No explicit language configuration available
         result = self.converter.convert(file_path)
         return result.text_content
-    
+
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
         """Extract text and metadata using MarkItDown."""
         result = self.converter.convert(file_path)
         metadata = {}
         # MarkItDown has minimal metadata - check for title
-        if hasattr(result, 'title') and result.title:
-            metadata['title'] = result.title
+        if hasattr(result, "title") and result.title:
+            metadata["title"] = result.title
         return result.text_content, metadata
 
 
@@ -228,7 +229,7 @@ class KreuzbergTesseractExtractor:
 
         result = kreuzberg.extract_file_sync(file_path, config=config)
         return result.content
-    
+
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
         """Extract text and metadata using Kreuzberg with Tesseract OCR."""
         if kreuzberg is None or TesseractConfig is None:
@@ -242,7 +243,7 @@ class KreuzbergTesseractExtractor:
         )
 
         result = kreuzberg.extract_file_sync(file_path, config=config)
-        metadata = dict(result.metadata) if hasattr(result, 'metadata') else {}
+        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
         return result.content, metadata
 
 
@@ -279,6 +280,7 @@ class KreuzbergEasyOCRExtractor:
 
         result = await kreuzberg.extract_file(file_path, config=config)
         return result.content
+
     async def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
         """Extract text and metadata using Kreuzberg with EasyOCR."""
         if kreuzberg is None or EasyOCRConfig is None:
@@ -305,8 +307,9 @@ class KreuzbergEasyOCRExtractor:
         )
 
         result = await kreuzberg.extract_file(file_path, config=config)
-        metadata = dict(result.metadata) if hasattr(result, 'metadata') else {}
+        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
         return result.content, metadata
+
 
 class KreuzbergPaddleOCRExtractor:
     """Kreuzberg with PaddleOCR backend (async only)."""
@@ -341,6 +344,7 @@ class KreuzbergPaddleOCRExtractor:
 
         result = await kreuzberg.extract_file(file_path, config=config)
         return result.content
+
     async def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
         """Extract text and metadata using Kreuzberg with PaddleOCR."""
         if kreuzberg is None or PaddleOCRConfig is None:
@@ -367,8 +371,9 @@ class KreuzbergPaddleOCRExtractor:
         )
 
         result = await kreuzberg.extract_file(file_path, config=config)
-        metadata = dict(result.metadata) if hasattr(result, 'metadata') else {}
+        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
         return result.content, metadata
+
 
 class KreuzbergEasyOCRSyncExtractor:
     """Kreuzberg with EasyOCR backend (synchronous)."""
@@ -403,6 +408,7 @@ class KreuzbergEasyOCRSyncExtractor:
 
         result = kreuzberg.extract_file_sync(file_path, config=config)
         return result.content
+
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
         """Extract text and metadata using Kreuzberg with EasyOCR synchronously."""
         if kreuzberg is None or EasyOCRConfig is None:
@@ -429,8 +435,9 @@ class KreuzbergEasyOCRSyncExtractor:
         )
 
         result = kreuzberg.extract_file_sync(file_path, config=config)
-        metadata = dict(result.metadata) if hasattr(result, 'metadata') else {}
+        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
         return result.content, metadata
+
 
 class KreuzbergPaddleOCRSyncExtractor:
     """Kreuzberg with PaddleOCR backend (synchronous)."""
@@ -465,6 +472,7 @@ class KreuzbergPaddleOCRSyncExtractor:
 
         result = kreuzberg.extract_file_sync(file_path, config=config)
         return result.content
+
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
         """Extract text and metadata using Kreuzberg with PaddleOCR synchronously."""
         if kreuzberg is None or PaddleOCRConfig is None:
@@ -491,8 +499,9 @@ class KreuzbergPaddleOCRSyncExtractor:
         )
 
         result = kreuzberg.extract_file_sync(file_path, config=config)
-        metadata = dict(result.metadata) if hasattr(result, 'metadata') else {}
+        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
         return result.content, metadata
+
 
 class UnstructuredExtractor:
     """Unstructured text extractor."""
@@ -521,6 +530,7 @@ class UnstructuredExtractor:
         # Unstructured auto-detects OCR needs and language
         elements = partition(filename=file_path, languages=languages)
         return "\n".join(str(element) for element in elements)
+
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
         """Extract text and metadata using Unstructured."""
         if partition is None:
@@ -540,40 +550,41 @@ class UnstructuredExtractor:
 
         languages = unstructured_langs.get(lang_code, ["eng"])
         elements = partition(filename=file_path, languages=languages)
-        
+
         # Extract text
         text = "\n".join(str(element) for element in elements)
-        
+
         # Extract metadata - Unstructured provides rich element-level metadata
         metadata = {}
         if elements:
             # Get file-level metadata from first element
             first_elem = elements[0]
-            if hasattr(first_elem, 'metadata'):
+            if hasattr(first_elem, "metadata"):
                 elem_meta = first_elem.metadata
                 # Extract common metadata fields
-                if hasattr(elem_meta, 'filename'):
-                    metadata['filename'] = elem_meta.filename
-                if hasattr(elem_meta, 'file_directory'):
-                    metadata['file_directory'] = elem_meta.file_directory
-                if hasattr(elem_meta, 'last_modified'):
-                    metadata['last_modified'] = str(elem_meta.last_modified) if elem_meta.last_modified else None
-                if hasattr(elem_meta, 'filetype'):
-                    metadata['filetype'] = elem_meta.filetype
-                if hasattr(elem_meta, 'page_number'):
-                    metadata['page_number'] = elem_meta.page_number
-                if hasattr(elem_meta, 'languages'):
-                    metadata['languages'] = elem_meta.languages
-                    
+                if hasattr(elem_meta, "filename"):
+                    metadata["filename"] = elem_meta.filename
+                if hasattr(elem_meta, "file_directory"):
+                    metadata["file_directory"] = elem_meta.file_directory
+                if hasattr(elem_meta, "last_modified"):
+                    metadata["last_modified"] = str(elem_meta.last_modified) if elem_meta.last_modified else None
+                if hasattr(elem_meta, "filetype"):
+                    metadata["filetype"] = elem_meta.filetype
+                if hasattr(elem_meta, "page_number"):
+                    metadata["page_number"] = elem_meta.page_number
+                if hasattr(elem_meta, "languages"):
+                    metadata["languages"] = elem_meta.languages
+
             # Count element types
             element_types = {}
             for elem in elements:
                 elem_type = type(elem).__name__
                 element_types[elem_type] = element_types.get(elem_type, 0) + 1
-            metadata['element_types'] = element_types
-            metadata['total_elements'] = len(elements)
-            
+            metadata["element_types"] = element_types
+            metadata["total_elements"] = len(elements)
+
         return text, metadata
+
 
 class ExtractousExtractor:
     """Extractous text extractor."""
@@ -622,11 +633,12 @@ class ExtractousExtractor:
         # Extract text directly to string (returns tuple of text and metadata)
         result = self.extractor.extract_file_to_string(file_path)
         return result[0] if isinstance(result, tuple) else result
+
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
         """Extract text and metadata using Extractous."""
         # Extractous returns a tuple of (text, metadata) from extract_file_to_string
         result = self.extractor.extract_file_to_string(file_path)
-        
+
         if isinstance(result, tuple) and len(result) >= 2:
             text, raw_metadata = result[0], result[1]
             # Convert metadata to dict if it's not already
@@ -635,8 +647,9 @@ class ExtractousExtractor:
             # Fallback if result format is unexpected
             text = result[0] if isinstance(result, tuple) else result
             metadata = {}
-            
+
         return text, metadata
+
 
 def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
     """Get an extractor instance for the specified framework.

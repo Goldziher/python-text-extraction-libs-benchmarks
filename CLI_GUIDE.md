@@ -124,6 +124,7 @@ uv run python -m src.cli metadata-analysis --exclude-kreuzberg
 ```
 
 **Output files:**
+
 - `metadata_coverage.json` - Detailed coverage statistics by framework
 - `metadata_field_comparison.csv` - Field-by-field comparison matrix
 - `metadata_quality.json` - Quality metrics and field examples
@@ -148,6 +149,7 @@ uv run python -m src.cli file-type-analysis --output-format json --output-format
 ```
 
 **Output options:**
+
 - `table` - Console table display
 - `csv` - Detailed CSV exports
 - `json` - JSON data for programmatic access
@@ -287,11 +289,11 @@ metadata_analysis(
 ## Tips and Best Practices
 
 1. **Start Small**: Test with `--category tiny` first to verify setup
-2. **Use Format Tiers**: Use `--format-tier universal` for fair comparisons
-3. **Multiple Iterations**: Use at least 3 iterations for reliable results
-4. **Save Extracted Text**: Use `--enable-quality-assessment` for detailed analysis
-5. **Monitor Resources**: Some frameworks use significant memory (1GB+)
-6. **Clear Cache**: Kreuzberg cache is automatically cleared between runs
+1. **Use Format Tiers**: Use `--format-tier universal` for fair comparisons
+1. **Multiple Iterations**: Use at least 3 iterations for reliable results
+1. **Save Extracted Text**: Use `--enable-quality-assessment` for detailed analysis
+1. **Monitor Resources**: Some frameworks use significant memory (1GB+)
+1. **Clear Cache**: Kreuzberg cache is automatically cleared between runs
 
 ## Troubleshooting
 

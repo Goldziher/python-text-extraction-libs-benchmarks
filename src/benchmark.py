@@ -230,7 +230,9 @@ class ComprehensiveBenchmarkRunner:
                     error_message=extraction_result.error_message,
                     extracted_text=extraction_result.extracted_text,
                     extracted_metadata=extraction_result.extracted_metadata,
-                    metadata_field_count=len(extraction_result.extracted_metadata) if extraction_result.extracted_metadata else None,
+                    metadata_field_count=len(extraction_result.extracted_metadata)
+                    if extraction_result.extracted_metadata
+                    else None,
                     attempts=attempt + 1,
                 )
 
@@ -321,9 +323,9 @@ class ComprehensiveBenchmarkRunner:
             start_time = time.time()
 
             try:
-                # Try to extract with metadata if available (skip Kreuzberg for now)
+                # Try to extract with metadata if available
                 metadata = None
-                if hasattr(extractor, 'extract_with_metadata') and 'kreuzberg' not in framework.value.lower():
+                if hasattr(extractor, "extract_with_metadata"):
                     text, metadata = await extractor.extract_with_metadata(str(file_path))
                 else:
                     text = await extractor.extract_text(str(file_path))
@@ -363,9 +365,9 @@ class ComprehensiveBenchmarkRunner:
                 start_time = time.time()
 
                 try:
-                    # Try to extract with metadata if available (skip Kreuzberg for now)
+                    # Try to extract with metadata if available
                     metadata = None
-                    if hasattr(extractor, 'extract_with_metadata') and 'kreuzberg' not in framework.value.lower():
+                    if hasattr(extractor, "extract_with_metadata"):
                         text, metadata = extractor.extract_with_metadata(str(file_path))
                     else:
                         text = extractor.extract_text(str(file_path))
