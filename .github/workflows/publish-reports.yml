@@ -1,4 +1,4 @@
-name: Publish Benchmark Reports
+name: Deploy to GitHub Pages
 
 on:
   workflow_run:
@@ -13,7 +13,7 @@ on:
         default: ''
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -122,21 +122,7 @@ jobs:
             exit 1
           fi
 
-      - name: Update README
-        run: |
-          if [ -f "visualizations/summary_metrics.json" ]; then
-            echo "Updating README with latest results..."
-            uv run python src/update_readme.py \
-              --summary-file visualizations/summary_metrics.json \
-              --readme-path README.md \
-              --visualizations-dir visualizations \
-              --run-id "${{ steps.get-run.outputs.run-id }}"
-
-            echo "README updated successfully"
-          else
-            echo "No summary metrics found"
-            exit 1
-          fi
+      # README update removed - only publishing results
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -240,29 +226,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Commit Updated README
-        if: success()
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-
-          if git diff --quiet README.md; then
-            echo "No changes to README"
-          else
-            git add README.md
-            git commit -m "$(cat <<'EOF'
-docs: update README with latest benchmark results
-
-Updated from benchmark run ${{ steps.get-run.outputs.run-id }}
-
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
-)"
-            git push
-            echo "README updated and committed"
-          fi
+      # Commit step removed - no README updates
 
       - name: Create Release Summary
         run: |
