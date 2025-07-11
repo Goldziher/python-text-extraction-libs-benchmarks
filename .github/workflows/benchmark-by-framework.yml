@@ -95,7 +95,27 @@ jobs:
       - name: Install APT packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+          sudo apt-get install -y \
+            pandoc \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            tesseract-ocr-deu \
+            tesseract-ocr-fra \
+            tesseract-ocr-heb \
+            tesseract-ocr-chi-sim \
+            tesseract-ocr-jpn \
+            tesseract-ocr-kor \
+            poppler-utils \
+            libmagic1
+
+      - name: Verify installations
+        run: |
+          echo "Pandoc version:"
+          pandoc --version | head -1
+          echo "Tesseract version:"
+          tesseract --version | head -1
+          echo "Available Tesseract languages:"
+          tesseract --list-langs | head -10
 
       - name: Run Benchmark
         run: |
@@ -148,7 +168,27 @@ jobs:
       - name: Install APT packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+          sudo apt-get install -y \
+            pandoc \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            tesseract-ocr-deu \
+            tesseract-ocr-fra \
+            tesseract-ocr-heb \
+            tesseract-ocr-chi-sim \
+            tesseract-ocr-jpn \
+            tesseract-ocr-kor \
+            poppler-utils \
+            libmagic1
+
+      - name: Verify installations
+        run: |
+          echo "Pandoc version:"
+          pandoc --version | head -1
+          echo "Tesseract version:"
+          tesseract --version | head -1
+          echo "Available Tesseract languages:"
+          tesseract --list-langs | head -10
 
       - name: Run Benchmark
         run: |
@@ -201,7 +241,27 @@ jobs:
       - name: Install APT packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+          sudo apt-get install -y \
+            pandoc \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            tesseract-ocr-deu \
+            tesseract-ocr-fra \
+            tesseract-ocr-heb \
+            tesseract-ocr-chi-sim \
+            tesseract-ocr-jpn \
+            tesseract-ocr-kor \
+            poppler-utils \
+            libmagic1
+
+      - name: Verify installations
+        run: |
+          echo "Pandoc version:"
+          pandoc --version | head -1
+          echo "Tesseract version:"
+          tesseract --version | head -1
+          echo "Available Tesseract languages:"
+          tesseract --list-langs | head -10
 
       - name: Run Benchmark with timeout handling
         run: |
@@ -260,7 +320,27 @@ jobs:
       - name: Install APT packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+          sudo apt-get install -y \
+            pandoc \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            tesseract-ocr-deu \
+            tesseract-ocr-fra \
+            tesseract-ocr-heb \
+            tesseract-ocr-chi-sim \
+            tesseract-ocr-jpn \
+            tesseract-ocr-kor \
+            poppler-utils \
+            libmagic1
+
+      - name: Verify installations
+        run: |
+          echo "Pandoc version:"
+          pandoc --version | head -1
+          echo "Tesseract version:"
+          tesseract --version | head -1
+          echo "Available Tesseract languages:"
+          tesseract --list-langs | head -10
 
       - name: Run Benchmark with timeout handling
         run: |
@@ -319,7 +399,27 @@ jobs:
       - name: Install APT packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+          sudo apt-get install -y \
+            pandoc \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            tesseract-ocr-deu \
+            tesseract-ocr-fra \
+            tesseract-ocr-heb \
+            tesseract-ocr-chi-sim \
+            tesseract-ocr-jpn \
+            tesseract-ocr-kor \
+            poppler-utils \
+            libmagic1
+
+      - name: Verify installations
+        run: |
+          echo "Pandoc version:"
+          pandoc --version | head -1
+          echo "Tesseract version:"
+          tesseract --version | head -1
+          echo "Available Tesseract languages:"
+          tesseract --list-langs | head -10
 
       - name: Run Benchmark
         run: |
@@ -373,7 +473,27 @@ jobs:
       - name: Install APT packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu poppler-utils libmagic1
+          sudo apt-get install -y \
+            pandoc \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            tesseract-ocr-deu \
+            tesseract-ocr-fra \
+            tesseract-ocr-heb \
+            tesseract-ocr-chi-sim \
+            tesseract-ocr-jpn \
+            tesseract-ocr-kor \
+            poppler-utils \
+            libmagic1
+
+      - name: Verify installations
+        run: |
+          echo "Pandoc version:"
+          pandoc --version | head -1
+          echo "Tesseract version:"
+          tesseract --version | head -1
+          echo "Available Tesseract languages:"
+          tesseract --list-langs | head -10
 
       - name: Run Benchmark with timeout handling
         run: |

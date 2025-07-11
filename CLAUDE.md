@@ -260,6 +260,11 @@ python src/check_installation_sizes.py
 - Python 3.13+
 - macOS or Linux
 - 8GB+ RAM recommended
+- System dependencies for full functionality:
+    - **Pandoc**: Required by Kreuzberg for DOCX, ODT, RST, and ORG files
+    - **Tesseract OCR**: With language packs for eng, deu, fra, heb, chi-sim, jpn, kor
+    - **Poppler**: For PDF processing
+    - **libmagic**: For file type detection
 
 ### Installation
 
