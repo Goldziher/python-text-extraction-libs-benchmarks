@@ -1,0 +1,58 @@
+{
+  "total_files": 1191,
+  "total_time": 4050.512913942337,
+  "frameworks_tested": 6,
+  "categories_tested": 3,
+  "best_framework": "kreuzberg_async",
+  "framework_stats": {
+    "kreuzberg_sync": {
+      "success_rate": 80.24691358024691,
+      "avg_time": 0.15116469038857355,
+      "total_files": 195,
+      "successful_files": 195,
+      "expected_files": 243,
+      "missing_files": 0
+    },
+    "kreuzberg_async": {
+      "success_rate": 80.24691358024691,
+      "avg_time": 0.1380667277744838,
+      "total_files": 195,
+      "successful_files": 195,
+      "expected_files": 243,
+      "missing_files": 0
+    },
+    "docling": {
+      "success_rate": 75.30864197530865,
+      "avg_time": 9.122684825340034,
+      "total_files": 186,
+      "successful_files": 183,
+      "expected_files": 243,
+      "missing_files": 36
+    },
+    "markitdown": {
+      "success_rate": 64.19753086419753,
+      "avg_time": 0.21675595358164623,
+      "total_files": 159,
+      "successful_files": 156,
+      "expected_files": 243,
+      "missing_files": 36
+    },
+    "unstructured": {
+      "success_rate": 97.53086419753086,
+      "avg_time": 8.89364383090732,
+      "total_files": 240,
+      "successful_files": 237,
+      "expected_files": 243,
+      "missing_files": 0
+    },
+    "extractous": {
+      "success_rate": 87.65432098765432,
+      "avg_time": 5.261549933681038,
+      "total_files": 216,
+      "successful_files": 213,
+      "expected_files": 243,
+      "missing_files": 0
+    }
+  },
+  "timestamp": 1752250666.4012682
+}

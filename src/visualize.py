@@ -204,11 +204,15 @@ class BenchmarkVisualizer:
         for _i, (bar, row) in enumerate(zip(bars, df.itertuples(), strict=False)):
             height = bar.get_height()
             # Show success rate and breakdown
-            if row.Missing > 0:
-                label = f"{height:.1f}%\n({row.Successful}/{row.Total})\nMissed: {row.Missing}"
+            # Access by index since itertuples creates a namedtuple
+            total_files = row[3]  # Total Files column
+            successful = row[4]  # Successful column
+            missing = row[7]  # Missing column
+            if missing > 0:
+                label = f"{height:.1f}%\n({successful}/{total_files})\nMissed: {missing}"
                 color = "red"
             else:
-                label = f"{height:.1f}%\n({row.Successful}/{row.Total})"
+                label = f"{height:.1f}%\n({successful}/{total_files})"
                 color = "black"
             plt.text(
                 bar.get_x() + bar.get_width() / 2.0,

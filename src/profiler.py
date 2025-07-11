@@ -334,14 +334,15 @@ class AsyncPerformanceProfiler:
         self._start_time = time.time()
         await self.monitor.start()
 
-        # Return metrics object that will be updated on exit
+        # Return metrics object that shares the monitor's buffer
+        # This ensures samples are available immediately
         self.metrics = PerformanceMetrics(
             extraction_time=0,
             peak_memory_mb=0,
             avg_memory_mb=0,
             peak_cpu_percent=0,
             avg_cpu_percent=0,
-            samples=[],  # Initialize with empty list that will be populated
+            samples=self.monitor.metrics_buffer,  # Share the buffer directly
         )
         return self.metrics
 
@@ -358,5 +359,5 @@ class AsyncPerformanceProfiler:
             self.metrics.avg_cpu_percent = result.avg_cpu_percent
             self.metrics.total_io_read_mb = result.total_io_read_mb
             self.metrics.total_io_write_mb = result.total_io_write_mb
-            self.metrics.samples = result.samples.copy()  # Copy the samples
+            # Don't copy samples - they're already shared via the buffer
             self.metrics.startup_time = result.startup_time
