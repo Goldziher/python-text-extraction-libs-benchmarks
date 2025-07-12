@@ -344,12 +344,20 @@ def report(aggregated_file: Path | None, output_dir: Path, output_formats: tuple
                 html_path = output_dir / "benchmark_report.html"
                 # First generate visualizations
                 visualizer = BenchmarkVisualizer(output_dir / "charts")
-                aggregated_file = output_dir.parent / "aggregated_results.json"
-                if aggregated_file.exists():
-                    visualizer.generate_all_visualizations(aggregated_file)
+                # Use the already loaded aggregated file path
+                if aggregated_file:
+                    agg_path = aggregated_file
+                else:
+                    agg_path = Path("aggregated-results/aggregated_results.json")
+                    if not agg_path.exists():
+                        agg_path = Path("results/aggregated_results.json")
+                
+                if agg_path.exists():
+                    visualizer.generate_all_visualizations(agg_path)
+                
                 # Then generate HTML report
                 html_generator = HTMLReportGenerator(output_dir / "charts")
-                html_generator.generate_report(aggregated_file, html_path)
+                html_generator.generate_report(agg_path, html_path)
                 console.print(f"[green]✓ Generated HTML report with visualizations: {html_path}[/green]")
 
     except Exception as e:
