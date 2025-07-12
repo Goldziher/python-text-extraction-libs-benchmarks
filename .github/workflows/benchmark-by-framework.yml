@@ -293,6 +293,9 @@ jobs:
           # Install Kreuzberg from source WITH extractous support
           uv add ./kreuzberg-source --extra extractous --extra gmft --extra cli
 
+          # Ensure extractous is installed (needed for Kreuzberg v4 extractous integration)
+          uv add extractous
+
       - name: Install APT packages
         run: |
           sudo apt-get update
@@ -381,6 +384,9 @@ jobs:
 
           # Install Kreuzberg from source WITH extractous support
           uv add ./kreuzberg-source --extra extractous --extra gmft --extra cli
+
+          # Ensure extractous is installed (needed for Kreuzberg v4 extractous integration)
+          uv add extractous
 
       - name: Install APT packages
         run: |
