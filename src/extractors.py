@@ -62,9 +62,9 @@ except ImportError:
     pdfplumber = None  # type: ignore[assignment]
 
 try:
-    import playa_pdf
+    import playa
 except ImportError:
-    playa_pdf = None  # type: ignore[assignment]
+    playa = None  # type: ignore[assignment]
 
 from typing import Any
 
@@ -819,17 +819,21 @@ class PlayaPDFExtractor:
 
     def __init__(self) -> None:
         """Initialize Playa-PDF extractor."""
-        if playa_pdf is None:
+        if playa is None:
             msg = "playa-pdf is not installed. Install with: pip install playa-pdf"
             raise ImportError(msg)
 
     def extract_text(self, file_path: str) -> str:
         """Extract text using Playa-PDF."""
         try:
-            # Use playa-pdf for fast, low-level PDF text extraction
-            with open(file_path, "rb") as file:
-                text = playa_pdf.extract_text(file)
-                return text if text else ""
+            # Use playa for fast, low-level PDF text extraction
+            with playa.open(file_path) as doc:
+                text_parts = []
+                for page in doc.pages:
+                    page_text = page.extract_text()
+                    if page_text and page_text.strip():
+                        text_parts.append(page_text)
+                return "\n\n".join(text_parts)
         except Exception:
             # If not a PDF or other error, return empty string
             return ""
@@ -837,27 +841,36 @@ class PlayaPDFExtractor:
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
         """Extract text and metadata using Playa-PDF."""
         try:
-            with open(file_path, "rb") as file:
+            with playa.open(file_path) as doc:
                 # Extract text
-                text = playa_pdf.extract_text(file)
+                text_parts = []
+                for page in doc.pages:
+                    page_text = page.extract_text()
+                    if page_text and page_text.strip():
+                        text_parts.append(page_text)
+
+                text = "\n\n".join(text_parts)
 
                 # Basic metadata (playa focuses on speed over metadata extraction)
-                metadata = {"file_type": "pdf", "extractor": "playa-pdf", "optimization": "speed_focused"}
+                metadata = {
+                    "file_type": "pdf",
+                    "extractor": "playa-pdf",
+                    "optimization": "speed_focused",
+                    "page_count": len(list(doc.pages)),
+                }
 
-                # Try to get basic document info if available
+                # Try to get additional document info if available
                 try:
-                    # Reset file pointer for metadata extraction
-                    file.seek(0)
-                    doc_info = playa_pdf.get_document_info(file)
-                    if doc_info:
-                        metadata.update(doc_info)
+                    if hasattr(doc, "objects") and doc.objects:
+                        metadata["total_objects"] = len(doc.objects)
+                    if hasattr(doc, "fonts") and doc.fonts:
+                        metadata["font_count"] = len(doc.fonts)
                 except (AttributeError, Exception):
-                    # Playa may not have get_document_info method
                     pass
 
-                return text if text else "", metadata
-        except Exception:
-            return "", {"error": "Failed to extract with playa-pdf"}
+                return text, metadata
+        except Exception as e:
+            return "", {"error": f"Failed to extract with playa-pdf: {e!s}"}
 
 
 def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:

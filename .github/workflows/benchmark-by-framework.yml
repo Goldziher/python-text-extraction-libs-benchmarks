@@ -764,7 +764,7 @@ jobs:
       - name: Verify installations
         run: |
           echo "playa-pdf version:"
-          uv run python -c "import playa_pdf; print('playa-pdf installed')"
+          uv run python -c "import playa; print('playa-pdf installed')"
 
       - name: Run Benchmark
         run: |
