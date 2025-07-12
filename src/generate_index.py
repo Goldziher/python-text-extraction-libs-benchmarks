@@ -80,9 +80,9 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         # Success rate on files actually tested
         success_rate = (successful_files / total_files * 100) if total_files > 0 else 0
 
-        # Average speed (files per second) - weighted by file count
-        total_time = sum(s.get("total_time", 0) for s in summaries)
-        avg_speed = (total_files / total_time) if total_time > 0 else 0
+        # Average speed (files per second) - weighted by successful files
+        speeds = [s.get("files_per_second", 0) for s in summaries if s.get("files_per_second")]
+        avg_speed = sum(speeds) / len(speeds) if speeds else 0
 
         # Average memory usage - weighted average
         memories = [s["avg_peak_memory_mb"] for s in summaries if s.get("avg_peak_memory_mb")]
