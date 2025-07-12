@@ -48,9 +48,6 @@ class InteractiveDashboardGenerator:
             "markitdown": "MIT",
             "unstructured": "Apache 2.0",
             "extractous": "Apache 2.0",
-            "pymupdf": "AGPL v3.0",
-            "pdfplumber": "MIT",
-            "playa": "MIT",
         }
 
         # Framework categories
@@ -64,9 +61,6 @@ class InteractiveDashboardGenerator:
             "markitdown": "Multi-Format",
             "unstructured": "Multi-Format",
             "extractous": "Multi-Format",
-            "pymupdf": "PDF Specialist",
-            "pdfplumber": "PDF Specialist",
-            "playa": "PDF Specialist",
         }
 
         for file_type, frameworks in self.file_type_stats.items():

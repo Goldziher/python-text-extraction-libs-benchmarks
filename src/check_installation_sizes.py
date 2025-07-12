@@ -80,9 +80,6 @@ def main() -> None:
         "docling": {"package": "docling", "description": "IBM's document processing library"},
         "markitdown": {"package": "markitdown", "description": "Microsoft's markdown converter"},
         "unstructured": {"package": "unstructured", "description": "Unstructured.io document processing"},
-        "pymupdf": {"package": "pymupdf", "description": "Fast PDF text extraction with PyMuPDF"},
-        "pdfplumber": {"package": "pdfplumber", "description": "Specialized PDF table extraction"},
-        "playa": {"package": "playa-pdf", "description": "Fast PDF text extraction with playa-pdf"},
     }
 
     results = {}

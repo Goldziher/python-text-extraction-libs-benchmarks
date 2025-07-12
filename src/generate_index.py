@@ -193,7 +193,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         </div>
 
         <div class="alert">
-            <strong>⚠️ Methodology Note:</strong> PDF specialist frameworks (PyMuPDF, Playa, PDFPlumber) are tested only on PDF documents, while multi-format frameworks are tested across all file types. Performance metrics reflect each framework's intended use case and format coverage.
+            <strong>⚠️ Methodology Note:</strong> All frameworks are multi-format text extraction libraries tested across all supported file types for fair comparison.
         </div>
 
         <h3>Framework Performance Rankings</h3>
@@ -221,9 +221,6 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         "markitdown": "251MB",
         "unstructured": "146MB",
         "extractous": "~100MB",
-        "pymupdf": "~50MB",
-        "pdfplumber": "~40MB",
-        "playa": "~30MB",
     }
 
     licenses = {
@@ -233,9 +230,6 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         "markitdown": "MIT",
         "unstructured": "Apache 2.0",
         "extractous": "Apache 2.0",
-        "pymupdf": "AGPL v3.0",
-        "pdfplumber": "MIT",
-        "playa": "MIT",
     }
 
     for fw_name, stats in sorted_frameworks:
@@ -406,15 +400,15 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                 <h3>4️⃣ Installation Size Comparison</h3>
                 <div class="ranking-info" style="background: #fff2e6; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
                     <strong>💿 Installation Footprint Ranking (Smaller = Better):</strong><br>
-                    1st: Playa (~30MB) | 2nd: PyMuPDF (~50MB) | 3rd: Kreuzberg (71MB) | 4th: Extractous (~100MB) | 5th: Unstructured (146MB) | 6th: MarkItDown (251MB) | 7th: Docling (1GB+)
+                    1st: Kreuzberg (71MB) | 2nd: Extractous (~100MB) | 3rd: Unstructured (146MB) | 4th: MarkItDown (251MB) | 5th: Docling (1GB+)
                 </div>
                 <img src="visualizations/installation_sizes.png" alt="Installation Sizes"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <div style="display:none; text-align:center; padding:40px; background:#f8f9fa; border-radius:8px; border: 2px dashed #dee2e6;">
                     <h4>📦 Installation Size Analysis</h4>
-                    <p>Framework installation sizes range from 30MB to 1GB+ depending on dependencies:</p>
+                    <p>Framework installation sizes range from 71MB to 1GB+ depending on dependencies:</p>
                     <div style="text-align: left; display: inline-block; margin-top: 15px;">
-                        <p><strong>Lightweight:</strong> Playa (30MB), PyMuPDF (50MB), Kreuzberg (71MB)</p>
+                        <p><strong>Lightweight:</strong> Kreuzberg (71MB)</p>
                         <p><strong>Moderate:</strong> Extractous (100MB), Unstructured (146MB)</p>
                         <p><strong>Heavy:</strong> MarkItDown (251MB), Docling (1GB+)</p>
                     </div>
@@ -704,12 +698,6 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                 <li><strong>Unstructured:</strong> 64+ file types including enterprise formats</li>
                 <li><strong>Extractous:</strong> Rust-based performance across common formats</li>
             </ul>
-            <li><strong>PDF Specialists:</strong></li>
-            <ul>
-                <li><strong>PyMuPDF:</strong> PDF only (AGPL v3.0 license)</li>
-                <li><strong>Playa:</strong> PDF only (fast extraction)</li>
-                <li><strong>PDFPlumber:</strong> PDF only (table extraction focus)</li>
-            </ul>
         </ul>
     </section>
 
@@ -761,32 +749,6 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
             <p><strong>Commercial Use:</strong> ✅ Permissive Apache 2.0 license</p>
         </div>
 
-        <h3>📄 PDF Specialist Frameworks</h3>
-
-        <div class="framework-card">
-            <h4>PyMuPDF</h4>
-            <p><strong>License:</strong> AGPL v3.0 | <strong>Size:</strong> ~50MB</p>
-            <p>High-performance PDF processing library with comprehensive features.</p>
-            <p><strong>Strengths:</strong> Extremely fast, comprehensive PDF support</p>
-            <p><strong>Format Support:</strong> PDF only</p>
-            <p><strong>Note:</strong> AGPL license requires open source distribution or commercial license</p>
-        </div>
-
-        <div class="framework-card">
-            <h4>Playa</h4>
-            <p><strong>License:</strong> MIT | <strong>Size:</strong> ~30MB</p>
-            <p>Fast and lightweight PDF text extraction library.</p>
-            <p><strong>Strengths:</strong> Speed, simple API, MIT license</p>
-            <p><strong>Format Support:</strong> PDF only</p>
-        </div>
-
-        <div class="framework-card">
-            <h4>PDFPlumber</h4>
-            <p><strong>License:</strong> MIT | <strong>Size:</strong> ~40MB</p>
-            <p>PDF processing with focus on table extraction and layout preservation.</p>
-            <p><strong>Strengths:</strong> Table extraction, layout analysis</p>
-            <p><strong>Format Support:</strong> PDF only</p>
-        </div>
     </section>
 
     <section id="reports" class="section">
@@ -889,7 +851,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <h3>🎯 Key Insights from File-Type Analysis</h3>
         <ul>
-            <li><strong>PDF Specialists Dominate:</strong> PyMuPDF achieves 89+ files/sec on PDFs, 5x faster than multi-format tools</li>
+            <li><strong>Framework Specialization:</strong> Each framework has strengths in different file types and use cases</li>
             <li><strong>Format-Specific Optimization:</strong> Frameworks show 10-100x performance differences in their specialty areas</li>
             <li><strong>OCR Processing Costs:</strong> Image extraction consumes 10-50x more memory and time than text documents</li>
             <li><strong>Scaling Behavior:</strong> Performance degrades differently by file size depending on document complexity</li>
