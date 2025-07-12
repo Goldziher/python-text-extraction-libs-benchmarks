@@ -1,6 +1,12 @@
 name: Deploy to GitHub Pages
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/generate_index.py'
+      - '.github/workflows/publish-reports.yml'
+      - 'docs/**'
   workflow_run:
     workflows: ["Benchmark by Framework"]
     types:
