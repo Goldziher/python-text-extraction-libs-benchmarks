@@ -127,4 +127,3 @@ max_supported_python = "3.13"
 
 [tool.uv.sources]
 uv-bump = { git = "https://github.com/Goldziher/uv-bump" }
-kreuzberg = { path = "../kreuzberg", editable = true }
