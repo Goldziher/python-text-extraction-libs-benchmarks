@@ -76,6 +76,27 @@ FRAMEWORK_EXCLUSIONS = {
         ".jpg",
         ".bmp",
     },  # PDF only
+    "playa": {
+        ".eml",
+        ".msg",
+        ".json",
+        ".yaml",
+        ".docx",
+        ".pptx",
+        ".xlsx",
+        ".xls",
+        ".odt",
+        ".org",
+        ".rst",
+        ".md",
+        ".txt",
+        ".csv",
+        ".html",
+        ".png",
+        ".jpeg",
+        ".jpg",
+        ".bmp",
+    },  # PDF only (playa-pdf specialist)
 }
 
 

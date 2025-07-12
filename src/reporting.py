@@ -113,6 +113,7 @@ class BenchmarkReporter:
                 "extractous",
                 "pymupdf",
                 "pdfplumber",
+                "playa",
             ]:
                 excluded = ", ".join(sorted(exclusions))
                 supported_count = len(all_formats - exclusions)

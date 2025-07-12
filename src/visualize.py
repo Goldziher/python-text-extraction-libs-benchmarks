@@ -22,6 +22,9 @@ FRAMEWORK_COLORS = {
     "markitdown": "#C73E1D",  # Red
     "unstructured": "#5B9A8B",  # Green
     "extractous": "#FF6B35",  # Orange-red (Rust color theme)
+    "pymupdf": "#8E44AD",  # Purple
+    "pdfplumber": "#E67E22",  # Orange
+    "playa": "#16A085",  # Teal (speed-focused theme)
 }
 
 
@@ -840,7 +843,16 @@ class BenchmarkVisualizer:
             ".org",
         ]
 
-        frameworks = ["kreuzberg_sync", "docling", "markitdown", "unstructured", "extractous", "pymupdf", "pdfplumber"]
+        frameworks = [
+            "kreuzberg_sync",
+            "docling",
+            "markitdown",
+            "unstructured",
+            "extractous",
+            "pymupdf",
+            "pdfplumber",
+            "playa",
+        ]
 
         # Create support matrix
         support_matrix = []

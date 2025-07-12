@@ -25,6 +25,7 @@ class Framework(str, Enum):
     EXTRACTOUS = "extractous"
     PYMUPDF = "pymupdf"
     PDFPLUMBER = "pdfplumber"
+    PLAYA = "playa"
 
 
 class FileType(str, Enum):

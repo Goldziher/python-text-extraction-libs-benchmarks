@@ -61,6 +61,11 @@ try:
 except ImportError:
     pdfplumber = None  # type: ignore[assignment]
 
+try:
+    import playa_pdf
+except ImportError:
+    playa_pdf = None  # type: ignore[assignment]
+
 from typing import Any
 
 from .types import AsyncExtractorProtocol, ExtractorProtocol
@@ -809,6 +814,52 @@ class PDFPlumberExtractor:
             return "", {}
 
 
+class PlayaPDFExtractor:
+    """Playa-PDF text extractor for PDF documents."""
+
+    def __init__(self) -> None:
+        """Initialize Playa-PDF extractor."""
+        if playa_pdf is None:
+            msg = "playa-pdf is not installed. Install with: pip install playa-pdf"
+            raise ImportError(msg)
+
+    def extract_text(self, file_path: str) -> str:
+        """Extract text using Playa-PDF."""
+        try:
+            # Use playa-pdf for fast, low-level PDF text extraction
+            with open(file_path, "rb") as file:
+                text = playa_pdf.extract_text(file)
+                return text if text else ""
+        except Exception:
+            # If not a PDF or other error, return empty string
+            return ""
+
+    def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
+        """Extract text and metadata using Playa-PDF."""
+        try:
+            with open(file_path, "rb") as file:
+                # Extract text
+                text = playa_pdf.extract_text(file)
+
+                # Basic metadata (playa focuses on speed over metadata extraction)
+                metadata = {"file_type": "pdf", "extractor": "playa-pdf", "optimization": "speed_focused"}
+
+                # Try to get basic document info if available
+                try:
+                    # Reset file pointer for metadata extraction
+                    file.seek(0)
+                    doc_info = playa_pdf.get_document_info(file)
+                    if doc_info:
+                        metadata.update(doc_info)
+                except (AttributeError, Exception):
+                    # Playa may not have get_document_info method
+                    pass
+
+                return text if text else "", metadata
+        except Exception:
+            return "", {"error": "Failed to extract with playa-pdf"}
+
+
 def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
     """Get an extractor instance for the specified framework.
 
@@ -835,6 +886,7 @@ def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
         "extractous": ExtractousExtractor,
         "pymupdf": PyMuPDFExtractor,
         "pdfplumber": PDFPlumberExtractor,
+        "playa": PlayaPDFExtractor,
     }
 
     if framework not in extractors:

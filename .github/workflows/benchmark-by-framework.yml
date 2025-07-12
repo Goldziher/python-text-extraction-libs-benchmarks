@@ -51,7 +51,7 @@ jobs:
           # Parse frameworks
           INPUT_FRAMEWORKS="${{ github.event.inputs.frameworks || 'all' }}"
           if [ "$INPUT_FRAMEWORKS" = "all" ]; then
-            FRAMEWORKS='["kreuzberg_sync","kreuzberg_async","docling","markitdown","unstructured","extractous","pymupdf","pdfplumber"]'
+            FRAMEWORKS='["kreuzberg_sync","kreuzberg_async","docling","markitdown","unstructured","extractous","pymupdf","pdfplumber","playa"]'
           else
             # Convert comma-separated to JSON array
             FRAMEWORKS=$(echo "$INPUT_FRAMEWORKS" | sed 's/,/","/g' | sed 's/^/["/' | sed 's/$/"]/')
@@ -718,6 +718,77 @@ jobs:
           path: results-pdfplumber-${{ matrix.category }}/
           retention-days: 30
 
+  benchmark-playa:
+    needs: prepare
+    if: contains(needs.prepare.outputs.frameworks, 'playa')
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        category: ${{ fromJson(needs.prepare.outputs.categories) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Dependencies
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Install APT packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pandoc \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            tesseract-ocr-deu \
+            tesseract-ocr-fra \
+            tesseract-ocr-heb \
+            tesseract-ocr-chi-sim \
+            tesseract-ocr-jpn \
+            tesseract-ocr-kor \
+            poppler-utils \
+            libmagic1
+
+      - name: Verify installations
+        run: |
+          echo "playa-pdf version:"
+          uv run python -c "import playa_pdf; print('playa-pdf installed')"
+
+      - name: Run Benchmark
+        run: |
+          uv run python -m src.cli benchmark \
+            --framework playa \
+            --category ${{ matrix.category }} \
+            --iterations ${{ needs.prepare.outputs.iterations }} \
+            --warmup-runs 1 \
+            --timeout 300 \
+            --continue-on-error \
+            --format-tier ${{ needs.prepare.outputs.format_tier }} \
+            --enable-quality-assessment \
+            --output-dir "results-playa-${{ matrix.category }}"
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-playa-${{ matrix.category }}-${{ github.run_id }}
+          path: results-playa-${{ matrix.category }}/
+          retention-days: 30
+
   # Aggregate all results after benchmarks complete
   aggregate:
     needs:
@@ -730,6 +801,7 @@ jobs:
       - benchmark-extractous
       - benchmark-pymupdf
       - benchmark-pdfplumber
+      - benchmark-playa
     runs-on: ubuntu-latest
     timeout-minutes: 60
     if: always() && needs.prepare.result == 'success'
