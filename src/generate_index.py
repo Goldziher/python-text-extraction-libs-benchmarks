@@ -142,6 +142,12 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         .framework-card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; background: #fafafa; }
         .framework-card h4 { margin-top: 0; color: #2c3e50; }
         .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin: 20px 0; }
+        .chart-single { display: block; margin-bottom: 40px; }
+        .chart-single .chart-item { width: 100%; text-align: center; }
+        .chart-single .chart-item img { max-width: 100%; width: 100%; max-width: 1200px; height: auto; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .ranking-info { font-size: 14px; line-height: 1.6; margin: 15px 0; }
+        .metrics-guide { font-size: 14px; }
+        .metrics-guide ul { margin: 10px 0; padding-left: 20px; }
         .chart-item { text-align: center; }
         .chart-item img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .footer { text-align: center; color: #666; margin-top: 50px; padding: 20px; }
@@ -195,6 +201,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
             <thead>
                 <tr>
                     <th>Framework</th>
+                    <th>License</th>
                     <th>Avg Speed (files/sec)</th>
                     <th>Success Rate</th>
                     <th>Memory Usage (MB)</th>
@@ -206,7 +213,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     # Sort frameworks by speed
     sorted_frameworks = sorted(framework_stats.items(), key=lambda x: x[1]["avg_speed"], reverse=True)
 
-    # Installation sizes (hardcoded for now, could be dynamic)
+    # Installation sizes and licenses
     install_sizes = {
         "kreuzberg_sync": "71MB",
         "kreuzberg_async": "71MB",
@@ -219,14 +226,33 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         "playa": "~30MB",
     }
 
+    licenses = {
+        "kreuzberg_sync": "MIT",
+        "kreuzberg_async": "MIT",
+        "docling": "MIT",
+        "markitdown": "MIT",
+        "unstructured": "Apache 2.0",
+        "extractous": "Apache 2.0",
+        "pymupdf": "AGPL v3.0",
+        "pdfplumber": "MIT",
+        "playa": "MIT",
+    }
+
     for fw_name, stats in sorted_frameworks:
         # Handle missing or zero speed data properly
         speed_display = "Failed/Timeout" if stats["avg_speed"] == 0 else f"{stats['avg_speed']:.2f}"
         memory_display = "N/A" if stats["avg_memory"] == 0 else f"{stats['avg_memory']:.1f}"
+        license_display = licenses.get(fw_name, "Unknown")
+        # Color code licenses for easy identification
+        if license_display == "AGPL v3.0":
+            license_display = '<span style="color: #dc3545; font-weight: bold;">⚠️ AGPL v3.0</span>'
+        elif license_display in ["MIT", "Apache 2.0"]:
+            license_display = f'<span style="color: #28a745;">✅ {license_display}</span>'
 
         html += f"""
                 <tr>
                     <td>{fw_name.replace("_", " ").title()}</td>
+                    <td>{license_display}</td>
                     <td>{speed_display}</td>
                     <td>{stats["success_rate"]:.1f}%</td>
                     <td>{memory_display}</td>
@@ -489,42 +515,47 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 
         <div class="framework-card">
             <h4>Kreuzberg 3.8.0</h4>
-            <p><strong>Version:</strong> {kreuzberg_version} | <strong>Size:</strong> 71MB base</p>
+            <p><strong>License:</strong> MIT | <strong>Version:</strong> {kreuzberg_version} | <strong>Size:</strong> 71MB base</p>
             <p>Fast Python text extraction with multiple OCR backends. Supports both sync and async APIs.</p>
             <p><strong>Strengths:</strong> Speed, small footprint, async support, comprehensive format coverage</p>
             <p><strong>Format Support:</strong> All tested formats except MSG (no open source support)</p>
+            <p><strong>Commercial Use:</strong> ✅ Fully permissive MIT license</p>
         </div>
 
         <div class="framework-card">
             <h4>Docling</h4>
-            <p><strong>Version:</strong> {docling_version} | <strong>Size:</strong> 1GB+</p>
+            <p><strong>License:</strong> MIT | <strong>Version:</strong> {docling_version} | <strong>Size:</strong> 1GB+</p>
             <p>IBM Research's advanced document understanding with ML models.</p>
             <p><strong>Strengths:</strong> Advanced ML understanding, high quality</p>
             <p><strong>Format Support:</strong> PDF, DOCX, XLSX, PPTX, HTML, CSV, MD, AsciiDoc, Images</p>
+            <p><strong>Commercial Use:</strong> ✅ Fully permissive MIT license</p>
         </div>
 
         <div class="framework-card">
             <h4>MarkItDown</h4>
-            <p><strong>Version:</strong> {markitdown_version} | <strong>Size:</strong> 251MB</p>
+            <p><strong>License:</strong> MIT | <strong>Version:</strong> {markitdown_version} | <strong>Size:</strong> 251MB</p>
             <p>Microsoft's lightweight Markdown converter optimized for LLM processing.</p>
             <p><strong>Strengths:</strong> LLM-optimized output, ONNX performance</p>
             <p><strong>Limitations:</strong> Limited format support</p>
+            <p><strong>Commercial Use:</strong> ✅ Fully permissive MIT license</p>
         </div>
 
         <div class="framework-card">
             <h4>Unstructured</h4>
-            <p><strong>Version:</strong> {unstructured_version} | <strong>Size:</strong> 146MB</p>
+            <p><strong>License:</strong> Apache 2.0 | <strong>Version:</strong> {unstructured_version} | <strong>Size:</strong> 146MB</p>
             <p>Enterprise solution supporting 64+ file types.</p>
             <p><strong>Strengths:</strong> Widest format support, enterprise features</p>
             <p><strong>Limitations:</strong> Moderate speed</p>
+            <p><strong>Commercial Use:</strong> ✅ Permissive Apache 2.0 license</p>
         </div>
 
         <div class="framework-card">
             <h4>Extractous</h4>
-            <p><strong>Version:</strong> {extractous_version} | <strong>Size:</strong> ~100MB</p>
+            <p><strong>License:</strong> Apache 2.0 | <strong>Version:</strong> {extractous_version} | <strong>Size:</strong> ~100MB</p>
             <p>Fast Rust-based extraction with Python bindings.</p>
             <p><strong>Strengths:</strong> Native performance, low memory usage</p>
             <p><strong>Format Support:</strong> Common office and web formats</p>
+            <p><strong>Commercial Use:</strong> ✅ Permissive Apache 2.0 license</p>
         </div>
 
         <h3>📄 PDF Specialist Frameworks</h3>
