@@ -37,12 +37,46 @@ class InteractiveDashboardGenerator:
         """Prepare data for JavaScript consumption."""
         summary_data = []
 
+        # Framework license mapping
+        framework_licenses = {
+            "kreuzberg_sync": "MIT",
+            "kreuzberg_async": "MIT",
+            "kreuzberg_tesseract": "MIT",
+            "kreuzberg_easyocr": "MIT",
+            "kreuzberg_paddleocr": "MIT",
+            "docling": "MIT",
+            "markitdown": "MIT",
+            "unstructured": "Apache 2.0",
+            "extractous": "Apache 2.0",
+            "pymupdf": "AGPL v3.0",
+            "pdfplumber": "MIT",
+            "playa": "MIT",
+        }
+
+        # Framework categories
+        framework_categories = {
+            "kreuzberg_sync": "Multi-Format",
+            "kreuzberg_async": "Multi-Format",
+            "kreuzberg_tesseract": "Multi-Format",
+            "kreuzberg_easyocr": "Multi-Format",
+            "kreuzberg_paddleocr": "Multi-Format",
+            "docling": "Multi-Format",
+            "markitdown": "Multi-Format",
+            "unstructured": "Multi-Format",
+            "extractous": "Multi-Format",
+            "pymupdf": "PDF Specialist",
+            "pdfplumber": "PDF Specialist",
+            "playa": "PDF Specialist",
+        }
+
         for file_type, frameworks in self.file_type_stats.items():
             for framework, stats in frameworks.items():
                 summary_data.append(
                     {
                         "file_type": file_type,
                         "framework": framework,
+                        "license": framework_licenses.get(framework, "Unknown"),
+                        "category": framework_categories.get(framework, "Unknown"),
                         "total_files": stats["total_files"],
                         "success_rate": stats["success_rate"],
                         "avg_extraction_time": stats["avg_extraction_time"],
@@ -60,6 +94,8 @@ class InteractiveDashboardGenerator:
             "summary": summary_data,
             "file_types": list(self.file_type_stats.keys()),
             "frameworks": list({fw for fw_dict in self.file_type_stats.values() for fw in fw_dict}),
+            "licenses": list(set(framework_licenses.values())),
+            "categories": list(set(framework_categories.values())),
             "metrics": {
                 "success_rate": "Success Rate (%)",
                 "files_per_second": "Speed (files/sec)",
@@ -232,6 +268,20 @@ class InteractiveDashboardGenerator:
         </div>
 
         <div class="control-group">
+            <label for="licenseFilter">License Filter</label>
+            <select id="licenseFilter">
+                <option value="all">All Licenses</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="categoryFilter">Framework Category</label>
+            <select id="categoryFilter">
+                <option value="all">All Categories</option>
+            </select>
+        </div>
+
+        <div class="control-group">
             <label for="minSuccessRate">Min Success Rate (%)</label>
             <select id="minSuccessRate">
                 <option value="0">0%</option>
@@ -280,6 +330,8 @@ class InteractiveDashboardGenerator:
         let currentMetric = 'success_rate';
         let frameworkFilter = 'all';
         let fileTypeFilter = 'all';
+        let licenseFilter = 'all';
+        let categoryFilter = 'all';
         let minSuccessRate = 75;
 
         // Initialize dashboard
@@ -307,6 +359,24 @@ class InteractiveDashboardGenerator:
                 option.value = ft;
                 option.textContent = ft.toUpperCase();
                 fileTypeSelect.appendChild(option);
+            }});
+
+            // Populate license filter
+            const licenseSelect = document.getElementById('licenseFilter');
+            data.licenses.forEach(license => {{
+                const option = document.createElement('option');
+                option.value = license;
+                option.textContent = license;
+                licenseSelect.appendChild(option);
+            }});
+
+            // Populate category filter
+            const categorySelect = document.getElementById('categoryFilter');
+            data.categories.forEach(category => {{
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
             }});
         }}
 
@@ -351,6 +421,8 @@ class InteractiveDashboardGenerator:
             return data.summary.filter(d => {{
                 if (frameworkFilter !== 'all' && d.framework !== frameworkFilter) return false;
                 if (fileTypeFilter !== 'all' && d.file_type !== fileTypeFilter) return false;
+                if (licenseFilter !== 'all' && d.license !== licenseFilter) return false;
+                if (categoryFilter !== 'all' && d.category !== categoryFilter) return false;
                 if (d.success_rate < minSuccessRate) return false;
                 return true;
             }});
@@ -543,6 +615,18 @@ class InteractiveDashboardGenerator:
 
             document.getElementById('fileTypeFilter').addEventListener('change', function(e) {{
                 fileTypeFilter = e.target.value;
+                updateSummaryStats();
+                updateAllCharts();
+            }});
+
+            document.getElementById('licenseFilter').addEventListener('change', function(e) {{
+                licenseFilter = e.target.value;
+                updateSummaryStats();
+                updateAllCharts();
+            }});
+
+            document.getElementById('categoryFilter').addEventListener('change', function(e) {{
+                categoryFilter = e.target.value;
                 updateSummaryStats();
                 updateAllCharts();
             }});
