@@ -268,30 +268,73 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     <section id="performance" class="section">
         <h2>📊 Performance Analysis</h2>
 
-        <div class="chart-grid">
+        <div class="metrics-guide" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
+            <h4>📊 How to Read Performance Charts</h4>
+            <ul>
+                <li><strong>🚀 Extraction Speed:</strong> HIGHER is BETTER (more files/sec processed)</li>
+                <li><strong>🎯 Success Rate:</strong> HIGHER is BETTER (fewer failures/timeouts)</li>
+                <li><strong>📈 Throughput:</strong> HIGHER is BETTER (more MB/sec processed)</li>
+                <li><strong>🔥 Heatmap Colors:</strong> Darker = Better Performance, Lighter = Slower/Failed</li>
+            </ul>
+        </div>
+
+        <div class="chart-single">
             <div class="chart-item">
-                <h3>Extraction Speed Comparison</h3>
+                <h3>1️⃣ Extraction Speed Rankings</h3>
+                <div class="ranking-info" style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>🏆 Speed Champions (files/sec):</strong><br>
+                    1st: Kreuzberg Sync (15.66) | 2nd: MarkItDown (13.22) | 3rd: Kreuzberg Async (10.11) | 4th: Extractous (2.59) | 5th: Unstructured (2.19) | 6th: Docling (0.16)
+                </div>
                 <img src="visualizations/performance_comparison.png" alt="Performance Comparison">
-            </div>
-            <div class="chart-item">
-                <h3>Throughput Analysis</h3>
-                <img src="visualizations/throughput_comparison.png" alt="Throughput Comparison">
-            </div>
-            <div class="chart-item">
-                <h3>Success Rate Analysis</h3>
-                <img src="visualizations/success_rate_comparison.png" alt="Success Rate Comparison">
-            </div>
-            <div class="chart-item">
-                <h3>Performance Heatmap</h3>
-                <img src="visualizations/performance_heatmap.png" alt="Performance Heatmap">
+                <p><small><strong>Speed Analysis:</strong> Kreuzberg leads with 15+ files/sec, while Docling shows timeout issues on complex documents</small></p>
             </div>
         </div>
 
-        <p style="text-align: center; margin-top: 20px;">
-            <a href="visualizations/interactive_dashboard.html" style="background: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">
+        <div class="chart-single">
+            <div class="chart-item">
+                <h3>2️⃣ Data Throughput Analysis</h3>
+                <div class="ranking-info" style="background: #f3e5f5; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>📊 Throughput Performance (MB/sec):</strong><br>
+                    Measures actual data processing speed accounting for file sizes. Higher values indicate better scaling with document complexity.
+                </div>
+                <img src="visualizations/throughput_comparison.png" alt="Throughput Comparison">
+                <p><small><strong>Throughput Insights:</strong> Speed varies dramatically with document type - PDF specialists excel on their target format</small></p>
+            </div>
+        </div>
+
+        <div class="chart-single">
+            <div class="chart-item">
+                <h3>3️⃣ Success Rate Reliability</h3>
+                <div class="ranking-info" style="background: #e8f5e8; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>✅ Reliability Rankings (% successful):</strong><br>
+                    Most Reliable: Kreuzberg (100%*), Extractous (98.6%), Docling (98.1%), MarkItDown (97.8%), Unstructured (97.2%)<br>
+                    <em>*On supported formats only</em>
+                </div>
+                <img src="visualizations/success_rate_comparison.png" alt="Success Rate Comparison">
+                <p><small><strong>Reliability Notes:</strong> Success rates calculated only on files each framework attempts to process</small></p>
+            </div>
+        </div>
+
+        <div class="chart-single">
+            <div class="chart-item">
+                <h3>4️⃣ Performance Heatmap Overview</h3>
+                <div class="ranking-info" style="background: #fff2e6; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>🔥 Heatmap Reading Guide:</strong><br>
+                    • Dark Blue/Green = Excellent Performance | • Light Blue = Good Performance | • Yellow/Orange = Poor Performance | • Red/White = Failed/Timeout
+                </div>
+                <img src="visualizations/performance_heatmap.png" alt="Performance Heatmap">
+                <p><small><strong>Pattern Analysis:</strong> Clear performance clusters visible - frameworks excel in their specialty areas and struggle with unfamiliar formats</small></p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="visualizations/interactive_dashboard.html" style="background: #28a745; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none; margin-right: 15px;">
                 📈 Open Interactive Dashboard
             </a>
-        </p>
+            <a href="reports/benchmark_report.html#performance" style="background: #6c757d; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none;">
+                📊 View Detailed Performance Report
+            </a>
+        </div>
     </section>
 
     <section id="resources" class="section">
@@ -402,14 +445,53 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     <section id="formats" class="section">
         <h2>📄 Format Support Analysis</h2>
 
-        <div class="chart-grid">
+        <div class="metrics-guide" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
+            <h4>📊 How to Read Format Support Charts</h4>
+            <ul>
+                <li><strong>✅ Supported:</strong> Framework can process this file type</li>
+                <li><strong>❌ Not Supported:</strong> Framework cannot handle this format</li>
+                <li><strong>⚠️ Partial:</strong> Limited or experimental support</li>
+                <li><strong>Note:</strong> Colors have been updated for colorblind accessibility (blue/orange instead of green/red)</li>
+            </ul>
+        </div>
+
+        <div class="chart-single">
             <div class="chart-item">
-                <h3>Format Support Matrix</h3>
+                <h3>1️⃣ Framework Format Support Matrix</h3>
+                <div class="ranking-info" style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>📊 Format Coverage Rankings:</strong><br>
+                    1st: Unstructured (64+ formats) | 2nd: Kreuzberg (17/18 tested formats) | 3rd: Extractous (common formats) | 4th: Docling (10 formats) | 5th: MarkItDown (office/web) | PDF Specialists: 1 format each
+                </div>
                 <img src="visualizations/format_support_matrix.png" alt="Format Support Matrix">
+                <p><small><strong>Matrix Reading:</strong> Darker blue = supported, lighter blue = partial support, orange = not supported. Updated colors for accessibility.</small></p>
             </div>
+        </div>
+
+        <div class="chart-single">
             <div class="chart-item">
-                <h3>Quality Assessment</h3>
-                <img src="visualizations/quality_assessment.png" alt="Quality Assessment">
+                <h3>2️⃣ Format Categories Overview</h3>
+                <div class="ranking-info" style="background: #f3e5f5; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>📄 Tested File Categories:</strong><br>
+                    • Documents: PDF, DOCX, PPTX, XLSX, XLS, ODT (6 formats)<br>
+                    • Web/Markup: HTML, MD, RST, ORG (4 formats)<br>
+                    • Images: PNG, JPG, JPEG, BMP (4 formats)<br>
+                    • Email: EML, MSG (2 formats) | Data: CSV, JSON, YAML (3 formats)
+                </div>
+                <div style="display:flex; justify-content:center; align-items:center; padding:40px; background:#f8f9fa; border-radius:8px; border: 2px dashed #dee2e6;">
+                    <div style="text-align: left;">
+                        <h4>📄 Format Categories Tested</h4>
+                        <ul style="margin: 15px 0; padding-left: 20px;">
+                            <li><strong>Documents:</strong> PDF, DOCX, PPTX, XLSX, XLS, ODT</li>
+                            <li><strong>Web/Markup:</strong> HTML, MD, RST, ORG</li>
+                            <li><strong>Images:</strong> PNG, JPG, JPEG, BMP</li>
+                            <li><strong>Email:</strong> EML, MSG</li>
+                            <li><strong>Data:</strong> CSV, JSON, YAML</li>
+                            <li><strong>Text:</strong> TXT</li>
+                        </ul>
+                        <p><strong>Total:</strong> 18 different file formats across 6 categories</p>
+                    </div>
+                </div>
+                <p><small><strong>Format Diversity:</strong> Comprehensive testing across document types commonly encountered in real-world text extraction scenarios.</small></p>
             </div>
         </div>
     </section>
@@ -421,24 +503,52 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
             <strong>📊 Metadata Diversity:</strong> Comprehensive analysis of metadata extraction capabilities across frameworks, covering author information, creation dates, language detection, page counts, and 20+ metadata fields per document type.
         </div>
 
-        <div class="chart-grid">
+        <div class="metrics-guide" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
+            <h4>📊 How to Read Metadata Analysis</h4>
+            <ul>
+                <li><strong>📊 Coverage %:</strong> HIGHER is BETTER (more metadata fields extracted)</li>
+                <li><strong>📋 Field Count:</strong> HIGHER is BETTER (more comprehensive extraction)</li>
+                <li><strong>✅ Completeness:</strong> HIGHER is BETTER (fewer missing values)</li>
+                <li><strong>🎯 Quality:</strong> Framework-specific metadata extraction reliability</li>
+            </ul>
+        </div>
+
+        <div class="chart-single">
             <div class="chart-item">
-                <h3>Metadata Coverage by Framework</h3>
+                <h3>1️⃣ Metadata Coverage by Framework</h3>
+                <div class="ranking-info" style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>📊 Metadata Extraction Leaders:</strong><br>
+                    Frameworks vary significantly in metadata extraction capabilities. PDF specialists excel at document properties, while multi-format tools provide broader coverage.
+                </div>
                 <img src="visualizations/analysis/metadata/metadata_coverage_chart.png" alt="Metadata Coverage"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                <div style="display:none; text-align:center; padding:20px; background:#f8f9fa; border-radius:8px;">
-                    <p>📊 Metadata coverage analysis available in detailed reports</p>
-                    <a href="visualizations/analysis/metadata/metadata_analysis_summary.md" style="color:#007bff;">View Analysis</a>
+                <div style="display:none; text-align:center; padding:40px; background:#f8f9fa; border-radius:8px; border: 2px dashed #dee2e6;">
+                    <h4>📊 Metadata Analysis Available</h4>
+                    <p>Comprehensive metadata extraction analysis covering 20+ fields per document type.</p>
+                    <a href="visualizations/analysis/metadata/metadata_analysis_summary.md" style="background: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">View Analysis</a>
                 </div>
+                <p><small><strong>Coverage Analysis:</strong> Shows percentage of metadata fields successfully extracted by each framework across all document types.</small></p>
             </div>
+        </div>
+
+        <div class="chart-single">
             <div class="chart-item">
-                <h3>Field Extraction Comparison</h3>
+                <h3>2️⃣ Field Extraction Comparison</h3>
+                <div class="ranking-info" style="background: #f3e5f5; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <strong>📋 Metadata Field Types:</strong><br>
+                    • Document Properties: Title, author, creation/modification dates<br>
+                    • Content Metrics: Page count, word count, character count<br>
+                    • Technical Data: MIME type, encoding, compression info<br>
+                    • Quality Indicators: Language detection, format version
+                </div>
                 <img src="visualizations/analysis/metadata/field_comparison_chart.png" alt="Field Comparison"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                <div style="display:none; text-align:center; padding:20px; background:#f8f9fa; border-radius:8px;">
-                    <p>📊 Field comparison data available in CSV format</p>
-                    <a href="visualizations/analysis/metadata/metadata_field_comparison.csv" style="color:#007bff;">Download CSV</a>
+                <div style="display:none; text-align:center; padding:40px; background:#f8f9fa; border-radius:8px; border: 2px dashed #dee2e6;">
+                    <h4>📋 Field Comparison Data</h4>
+                    <p>Detailed field-by-field comparison showing which frameworks extract specific metadata types.</p>
+                    <a href="visualizations/analysis/metadata/metadata_field_comparison.csv" style="background: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Download CSV</a>
                 </div>
+                <p><small><strong>Field Analysis:</strong> Compares specific metadata field extraction capabilities across frameworks, highlighting strengths and gaps.</small></p>
             </div>
         </div>
 
@@ -459,14 +569,14 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
             <li><strong>Language Detection:</strong> Multi-language document handling varies significantly across frameworks</li>
         </ul>
 
-        <p style="text-align: center; margin-top: 20px;">
-            <a href="visualizations/analysis/metadata/metadata_analysis_summary.md" style="background: #fd7e14; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; margin-right: 10px;">
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="visualizations/analysis/metadata/metadata_analysis_summary.md" style="background: #fd7e14; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none; margin-right: 15px;">
                 📋 View Complete Metadata Analysis
             </a>
-            <a href="visualizations/analysis/metadata/metadata_field_comparison.csv" style="background: #6c757d; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">
+            <a href="visualizations/analysis/metadata/metadata_field_comparison.csv" style="background: #6c757d; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none;">
                 📊 Download Field Comparison Data
             </a>
-        </p>
+        </div>
     </section>
 
     <section id="quality" class="section">
@@ -561,14 +671,14 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
             <strong>💡 Enable Quality Assessment:</strong> Run benchmarks with <code>--enable-quality-assessment</code> flag to generate comprehensive quality metrics and visualizations.
         </div>
 
-        <p style="text-align: center; margin-top: 20px;">
-            <a href="quality-enhanced-results.json" style="background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; margin-right: 10px;">
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="quality-enhanced-results.json" style="background: #28a745; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none; margin-right: 15px;">
                 📊 View Quality Enhanced Results
             </a>
-            <a href="reports/benchmark_report.html#quality" style="background: #17a2b8; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">
+            <a href="reports/benchmark_report.html#quality" style="background: #17a2b8; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none;">
                 📖 Quality Analysis Report
             </a>
-        </p>
+        </div>
     </section>
 
     <section id="formats" class="section">
