@@ -105,7 +105,15 @@ class BenchmarkReporter:
         }
 
         for framework, exclusions in FRAMEWORK_EXCLUSIONS.items():
-            if framework in ["kreuzberg_sync", "docling", "markitdown", "unstructured", "extractous"]:
+            if framework in [
+                "kreuzberg_sync",
+                "docling",
+                "markitdown",
+                "unstructured",
+                "extractous",
+                "pymupdf",
+                "pdfplumber",
+            ]:
                 excluded = ", ".join(sorted(exclusions))
                 supported_count = len(all_formats - exclusions)
                 support_table.add_row(

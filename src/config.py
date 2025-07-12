@@ -39,6 +39,43 @@ FRAMEWORK_EXCLUSIONS = {
     "markitdown": {".docx", ".md", ".odt"},
     "unstructured": {".jpeg", ".jpg", ".odt", ".org", ".rst"},
     "extractous": {".docx", ".jpg"},
+    "pymupdf": {
+        ".eml",
+        ".msg",
+        ".json",
+        ".yaml",
+        ".docx",
+        ".pptx",
+        ".xlsx",
+        ".xls",
+        ".odt",
+        ".org",
+        ".rst",
+        ".md",
+        ".txt",
+        ".csv",
+    },  # PDF specialist
+    "pdfplumber": {
+        ".eml",
+        ".msg",
+        ".json",
+        ".yaml",
+        ".docx",
+        ".pptx",
+        ".xlsx",
+        ".xls",
+        ".odt",
+        ".org",
+        ".rst",
+        ".md",
+        ".txt",
+        ".csv",
+        ".html",
+        ".png",
+        ".jpeg",
+        ".jpg",
+        ".bmp",
+    },  # PDF only
 }
 
 

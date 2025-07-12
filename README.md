@@ -11,7 +11,7 @@
 [![Benchmark Pipeline](https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions/workflows/benchmark-by-framework.yml/badge.svg)](https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions/workflows/benchmark-by-framework.yml)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Frameworks](https://img.shields.io/badge/frameworks-6-green.svg)](#-framework-assessment)
+[![Frameworks](https://img.shields.io/badge/frameworks-8-green.svg)](#-framework-assessment)
 [![Documents](https://img.shields.io/badge/test_documents-94-blue.svg)](#-test-coverage)
 
 > **🎯 [📊 VIEW LIVE BENCHMARK RESULTS →](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)**
@@ -20,7 +20,7 @@ Comprehensive automated benchmarking of text extraction frameworks with enhanced
 
 ## 🏆 What You'll Find in the Results
 
-- **⚡ Performance Comparison** - Speed, memory usage, and success rates across 6 frameworks
+- **⚡ Performance Comparison** - Speed, memory usage, and success rates across 8 frameworks
 - **📊 Interactive Charts** - Visual breakdowns by file type, size category, and framework
 - **🔍 Detailed Metrics** - Per-file results, error analysis, and resource utilization
 - **📈 Trend Analysis** - Performance changes over iterations and time
@@ -99,7 +99,7 @@ Our comprehensive testing revealed significant differences in format support acr
 
 ### 🎯 Format Support Tiers
 
-#### **Tier 1: Universal Support** (5/5 frameworks)
+#### **Tier 1: Universal Support** (5/8 frameworks)
 
 These 7 formats are supported by ALL frameworks:
 
@@ -111,7 +111,7 @@ These 7 formats are supported by ALL frameworks:
 - `.html` - Web pages
 - `.csv` - Comma-separated values
 
-#### **Tier 2: Common Support** (4/5 frameworks)
+#### **Tier 2: Common Support** (3/8 frameworks)
 
 These 4 additional formats work with most frameworks:
 

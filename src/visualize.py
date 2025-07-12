@@ -840,7 +840,7 @@ class BenchmarkVisualizer:
             ".org",
         ]
 
-        frameworks = ["kreuzberg_sync", "docling", "markitdown", "unstructured", "extractous"]
+        frameworks = ["kreuzberg_sync", "docling", "markitdown", "unstructured", "extractous", "pymupdf", "pdfplumber"]
 
         # Create support matrix
         support_matrix = []
