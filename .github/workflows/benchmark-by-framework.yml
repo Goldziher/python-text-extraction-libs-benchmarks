@@ -323,7 +323,22 @@ jobs:
           echo "Kreuzberg version:"
           uv run python -c "import kreuzberg; print(kreuzberg.__version__)"
           echo "Extractous support:"
-          uv run python -c "try: import extractous; print('✅ Extractous available'); except ImportError: print('❌ Extractous not available')"
+          uv run python -c "
+          try:
+              import extractous
+              print('✅ Extractous directly importable')
+          except ImportError:
+              print('⚠️  Extractous not directly importable')
+
+          # Test if Kreuzberg can use extractous
+          try:
+              from src.extractors import KreuzbergExtractousSyncExtractor
+              extractor = KreuzbergExtractousSyncExtractor()
+              print('✅ Kreuzberg extractous extractor works')
+          except Exception as e:
+              print(f'❌ Kreuzberg extractous extractor failed: {e}')
+              exit(1)
+          " || exit 1
 
       - name: Run Benchmark (Kreuzberg v4 RC1 Enhanced with Extractous)
         run: |
@@ -415,7 +430,22 @@ jobs:
           echo "Kreuzberg version:"
           uv run python -c "import kreuzberg; print(kreuzberg.__version__)"
           echo "Extractous support:"
-          uv run python -c "try: import extractous; print('✅ Extractous available'); except ImportError: print('❌ Extractous not available')"
+          uv run python -c "
+          try:
+              import extractous
+              print('✅ Extractous directly importable')
+          except ImportError:
+              print('⚠️  Extractous not directly importable')
+
+          # Test if Kreuzberg can use extractous
+          try:
+              from src.extractors import KreuzbergExtractousSyncExtractor
+              extractor = KreuzbergExtractousSyncExtractor()
+              print('✅ Kreuzberg extractous extractor works')
+          except Exception as e:
+              print(f'❌ Kreuzberg extractous extractor failed: {e}')
+              exit(1)
+          " || exit 1
 
       - name: Run Benchmark (Kreuzberg v4 RC1 Enhanced with Extractous)
         run: |
