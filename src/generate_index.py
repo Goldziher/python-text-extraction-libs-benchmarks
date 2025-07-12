@@ -220,12 +220,16 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     }
 
     for fw_name, stats in sorted_frameworks:
+        # Handle missing or zero speed data properly
+        speed_display = "Failed/Timeout" if stats["avg_speed"] == 0 else f"{stats['avg_speed']:.2f}"
+        memory_display = "N/A" if stats["avg_memory"] == 0 else f"{stats['avg_memory']:.1f}"
+
         html += f"""
                 <tr>
                     <td>{fw_name.replace("_", " ").title()}</td>
-                    <td>{stats["avg_speed"]:.2f}</td>
+                    <td>{speed_display}</td>
                     <td>{stats["success_rate"]:.1f}%</td>
-                    <td>{stats["avg_memory"]:.1f}</td>
+                    <td>{memory_display}</td>
                     <td>{install_sizes.get(fw_name, "N/A")}</td>
                 </tr>"""
 
