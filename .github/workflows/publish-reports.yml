@@ -632,13 +632,14 @@ jobs:
                           </div>
                       </div>
 
-                      <h3>Framework Exclusions</h3>
+                      <h3>Framework Format Support</h3>
                       <ul>
-                          <li><strong>Kreuzberg:</strong> No email/data formats (by design)</li>
-                          <li><strong>Extractous:</strong> Skips DOCX, JPG</li>
-                          <li><strong>Docling:</strong> Limited format support</li>
-                          <li><strong>MarkItDown:</strong> Skips DOCX, MD, ODT</li>
-                          <li><strong>Unstructured:</strong> Skips JPEG, JPG, ODT, ORG, RST</li>
+                          <li><strong>PDF Specialists:</strong> PyMuPDF, Playa, PDFPlumber - PDF only</li>
+                          <li><strong>Kreuzberg 3.8.0:</strong> All formats except MSG (no open source MSG support)</li>
+                          <li><strong>Docling:</strong> PDF, DOCX, XLSX, PPTX, HTML, CSV, MD, AsciiDoc, Images (PNG, JPEG, TIFF, BMP, WEBP)</li>
+                          <li><strong>Extractous:</strong> 50+ formats via Apache Tika, some gaps in DOCX/JPG</li>
+                          <li><strong>Unstructured:</strong> 60+ formats, gaps in some image formats and markup</li>
+                          <li><strong>MarkItDown:</strong> Microsoft's converter, optimized subset of formats</li>
                       </ul>
                   </section>
 
