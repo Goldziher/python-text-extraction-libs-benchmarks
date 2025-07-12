@@ -103,71 +103,72 @@ Compare against specialized frameworks:
 
 ## Competitive Analysis
 
-### Critical Licensing Considerations
+### Licensing Information
 
-**⚠️ License-Based Restrictions for Commercial Use:**
+**Framework License Details:**
 
-| Framework        | License        | Commercial Implications                                                                                 |
-| ---------------- | -------------- | ------------------------------------------------------------------------------------------------------- |
-| **PyMuPDF**      | **AGPL v3.0**  | **🚨 AGPL copyleft - requires entire application to be open source OR commercial license from Artifex** |
-| **Playa**        | **MIT**        | **✅ Permissive - commercial friendly**                                                                 |
-| **Kreuzberg**    | **MIT**        | **✅ Permissive - commercial friendly**                                                                 |
-| **Extractous**   | **Apache 2.0** | **✅ Permissive - commercial friendly**                                                                 |
-| **Unstructured** | **Apache 2.0** | **✅ Permissive - commercial friendly**                                                                 |
-| **Docling**      | **MIT**        | **✅ Permissive - commercial friendly**                                                                 |
-| **PDFPlumber**   | BSD/MIT-style  | ✅ Permissive - commercial friendly                                                                     |
+| Framework        | License       | Commercial Usage Requirements                                                           |
+| ---------------- | ------------- | --------------------------------------------------------------------------------------- |
+| **PyMuPDF**      | AGPL v3.0     | Copyleft license - requires open source distribution or commercial license from Artifex |
+| **Playa**        | MIT           | Permissive license - minimal restrictions                                               |
+| **Kreuzberg**    | MIT           | Permissive license - minimal restrictions                                               |
+| **Extractous**   | Apache 2.0    | Permissive license - minimal restrictions                                               |
+| **Unstructured** | Apache 2.0    | Permissive license - minimal restrictions                                               |
+| **Docling**      | MIT           | Permissive license - minimal restrictions                                               |
+| **PDFPlumber**   | BSD/MIT-style | Permissive license - minimal restrictions                                               |
 
-**🔴 CRITICAL**: PyMuPDF's AGPL v3.0 license (confirmed from package: "Dual Licensed - GNU AFFERO GPL 3.0 or Artifex Commercial License") means any commercial application using it must either:
+**Note**: PyMuPDF's license (confirmed from package: "Dual Licensed - GNU AFFERO GPL 3.0 or Artifex Commercial License") requires either:
 
-1. **Make entire application open source under AGPL**, OR
-1. **Purchase commercial license from Artifex**
+1. Open source distribution under AGPL v3.0, OR
+1. Commercial license purchase from Artifex
 
-**This completely disqualifies PyMuPDF for most enterprise applications**, despite its superior PDF performance.
+Organizations should evaluate license compatibility with their distribution requirements.
 
-### Methodology Issues with Current Rankings
+### Benchmark Methodology Considerations
 
-**⚠️ Unfair Comparison Problem:**
-The published benchmark rankings are fundamentally flawed because they aggregate:
+**Comparison Scope Differences:**
+Current benchmark rankings aggregate results from frameworks with different scopes:
 
-- **PDF specialists** (PyMuPDF, Playa, PDFPlumber) tested only on PDFs
-- **Multi-format frameworks** (Kreuzberg, Extractous, Unstructured, Docling) tested on 10+ file types
+- **Format specialists** (PyMuPDF, Playa, PDFPlumber) tested only on their supported formats
+- **Multi-format frameworks** (Kreuzberg, Extractous, Unstructured, Docling) tested across diverse file types
 
-This creates misleading averages where specialists appear faster simply because they skip challenging file types.
+This aggregation methodology may impact comparative results, as specialists optimize for specific formats while generalists handle broader format coverage.
 
-### Corrected Competitive Analysis
+### Alternative Comparison Approaches
 
-**Per-File-Type Performance Needed:**
+**Proposed Analysis Methods:**
 
-1. **PDF-only comparison**: PyMuPDF vs Playa vs PDFPlumber vs others on PDFs only
-1. **Multi-format comparison**: Full-featured frameworks on comprehensive test suites
-1. **License-adjusted rankings**: Separate enterprise-friendly vs AGPL-restricted options
+1. **Format-specific comparisons**: Compare frameworks only on formats they both support
+1. **Scope-adjusted analysis**: Separate specialists from multi-format frameworks
+1. **License-filtered comparisons**: Group by license compatibility requirements
 
-**Example of Proper Comparison Structure:**
+**Example Per-Format Performance (files/sec):**
 
-| File Type        | PyMuPDF (AGPL)                 | Playa (MIT)       | Kreuzberg (MIT)   | Enterprise Winner                      |
-| ---------------- | ------------------------------ | ----------------- | ----------------- | -------------------------------------- |
-| **PDF**          | ❌ 89.2 files/sec (AGPL toxic) | ✅ 18.2 files/sec | ✅ 11.4 files/sec | **Playa** (fastest + license-safe)     |
-| **DOCX**         | ❌ Not supported               | ❌ Not supported  | ✅ Supported      | **Kreuzberg** (only viable option)     |
-| **Images**       | ❌ Not supported               | ❌ Not supported  | ✅ Supported      | **Kreuzberg** (only viable option)     |
-| **Multi-format** | ❌ PDF only                    | ❌ PDF only       | ✅ 10+ formats    | **Kreuzberg** (comprehensive coverage) |
+| File Type        | PyMuPDF (AGPL) | Playa (MIT)   | Kreuzberg (MIT) | Format Coverage |
+| ---------------- | -------------- | ------------- | --------------- | --------------- |
+| **PDF**          | 89.2           | 18.2          | 11.4            | All support     |
+| **DOCX**         | Not supported  | Not supported | Supported       | Limited support |
+| **Images**       | Not supported  | Not supported | Supported       | Limited support |
+| **Multi-format** | PDF only       | PDF only      | 10+ formats     | Varies          |
 
-**Key Insight**: PyMuPDF's AGPL license completely disqualifies it for enterprise use, making **Playa the clear winner for PDF processing** and **Kreuzberg the winner for everything else**.
+This structure separates performance data from scope limitations, allowing users to evaluate based on their specific format requirements and license constraints.
 
-### Kreuzberg's Position in the Ecosystem
+### Framework Characteristics
 
-**Strengths**:
+**Kreuzberg 3.8.0 Features**:
 
-- Best-in-class caching system (unique feature)
-- 100% success rate across all file types
-- Comprehensive format support
-- Both sync and async APIs
-- **MIT license** - enterprise/commercial friendly
+- Caching system for repeated document access (1000x performance improvement)
+- Multi-format support (10+ file types)
+- Both synchronous and asynchronous APIs
+- MIT license
+- 100% success rate on tested formats
 
-**Competitive Gaps** (when properly compared):
+**Performance Observations**:
 
-1. **PDF Performance**: Slower than PDF specialists on PDF-only workloads
-1. **Memory**: Uses more memory than specialized extractors
-1. **First-time Speed**: Room for optimization vs specialized tools
+1. **PDF processing**: Lower throughput than PDF-specialized frameworks
+1. **Memory usage**: Higher consumption compared to format-specific tools
+1. **Caching benefit**: Significant performance advantage for repeated access patterns
+1. **Format coverage**: Broader support than specialist alternatives
 
 ## Recommendations for 3.8.0 Release
 
@@ -183,12 +184,12 @@ This creates misleading averages where specialists appear faster simply because 
     - Optimize async implementation for small files
     - Reduce memory footprint for large documents
 
-1. **Benchmark Methodology Fixes**
+1. **Benchmark Methodology Improvements**
 
-    - **CRITICAL**: Fix the misleading benchmark rankings that aggregate specialists vs generalists
-    - Provide separate per-file-type comparisons (PDF vs PDF, DOCX vs DOCX)
-    - Create license-adjusted rankings that exclude AGPL frameworks for enterprise context
-    - Show both aggregate performance AND per-format breakdowns
+    - Implement separate comparisons for specialists vs multi-format frameworks
+    - Provide per-file-type performance breakdowns
+    - Include license information in benchmark presentations
+    - Offer both aggregate and format-specific performance views
 
 1. **Benchmark Completion**
 
@@ -202,11 +203,11 @@ This creates misleading averages where specialists appear faster simply because 
     - Provide performance hints API
     - Enable format-specific optimizations
 
-1. **Marketing/Positioning**
+1. **Documentation and Positioning**
 
-    - Position Kreuzberg as the enterprise-friendly multi-format champion
-    - Highlight license advantage over PyMuPDF for commercial use
-    - Partner with Playa for PDF-only use cases where appropriate
+    - Document caching system capabilities and use cases
+    - Provide license information for compliance evaluation
+    - Include format coverage and performance trade-offs in documentation
 
 ## Conclusion
 
