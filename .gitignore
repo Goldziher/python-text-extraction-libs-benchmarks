@@ -176,6 +176,7 @@ test-reports/
 test_output/
 test_aggregated.json
 installation_sizes.json
+last_run_results/
 
 # Allow published reports and pages
 !pages/

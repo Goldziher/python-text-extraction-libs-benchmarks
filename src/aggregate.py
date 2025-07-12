@@ -39,8 +39,16 @@ class ResultAggregator:
         if not results_file.exists():
             return []
 
-        with open(results_file, "rb") as f:
-            return msgspec.json.decode(f.read(), type=list[BenchmarkResult])
+        try:
+            with open(results_file, "rb") as f:
+                data = f.read()
+                if not data or len(data) == 0:
+                    print(f"Warning: Empty results file: {results_file}")
+                    return []
+                return msgspec.json.decode(data, type=list[BenchmarkResult])
+        except Exception as e:
+            print(f"Error loading {results_file}: {e}")
+            return []
 
     def _calculate_aggregated_metrics(self, results: list[BenchmarkResult]) -> AggregatedResults:
         """Calculate aggregated metrics from all results."""
