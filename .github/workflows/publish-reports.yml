@@ -122,26 +122,70 @@ jobs:
             exit 1
           fi
 
-      - name: Generate File Type Analysis
+      - name: Generate Comprehensive Analysis
         run: |
-          echo "Generating per-file-type performance analysis..."
+          echo "Generating comprehensive benchmark analysis..."
+
           # Look for individual benchmark results
           if find downloads/ -name "benchmark_results.json" | head -1 | grep -q .; then
-            # Create file type analysis with interactive dashboard
+            echo "Found benchmark results, generating all analysis modules..."
+
+            # 1. File Type Analysis with Interactive Dashboard
+            echo "🔍 Generating per-file-type performance analysis..."
             uv run python -m src.cli file-type-analysis \
               --results-dir downloads \
               --output-dir file-type-analysis \
               --interactive
 
-            # Move results to visualizations directory for inclusion in site
-            mkdir -p visualizations/file-type-analysis
-            cp -r file-type-analysis/* visualizations/file-type-analysis/
+            # 2. Metadata Analysis
+            echo "📋 Generating metadata extraction analysis..."
+            uv run python -m src.cli metadata-analysis \
+              --results-dir downloads \
+              --output-dir metadata-analysis
 
-            echo "Generated file type analysis:"
-            ls -la visualizations/file-type-analysis/
+            # 3. Table Analysis
+            echo "📊 Generating table extraction analysis..."
+            uv run python -m src.cli table-analysis \
+              --results-dir downloads \
+              --output-dir table-analysis
+
+            # 4. Quality Assessment (if quality data exists)
+            echo "✨ Checking for quality assessment data..."
+            RESULTS_FILE=$(find downloads/ -name "benchmark_results.json" | head -1)
+            if [ -n "$RESULTS_FILE" ] && grep -q "quality" "$RESULTS_FILE" 2>/dev/null; then
+              echo "Quality data found, generating quality analysis..."
+              uv run python -m src.cli quality-assess \
+                --results-file "$RESULTS_FILE" \
+                --output-file quality-enhanced-results.json
+            else
+              echo "No quality data found in results"
+            fi
+
+            # Move all analysis results to visualizations directory
+            mkdir -p visualizations/analysis
+
+            # Copy file type analysis
+            if [ -d "file-type-analysis" ]; then
+              cp -r file-type-analysis/* visualizations/analysis/ 2>/dev/null || true
+            fi
+
+            # Copy metadata analysis
+            if [ -d "metadata-analysis" ]; then
+              mkdir -p visualizations/analysis/metadata
+              cp -r metadata-analysis/* visualizations/analysis/metadata/ 2>/dev/null || true
+            fi
+
+            # Copy table analysis
+            if [ -d "table-analysis" ]; then
+              mkdir -p visualizations/analysis/tables
+              cp -r table-analysis/* visualizations/analysis/tables/ 2>/dev/null || true
+            fi
+
+            echo "Generated comprehensive analysis:"
+            find visualizations/analysis -type f | head -20
           else
-            echo "No individual benchmark results found for file type analysis"
-            echo "Skipping file type analysis generation"
+            echo "No individual benchmark results found for comprehensive analysis"
+            echo "Skipping detailed analysis generation"
           fi
 
       # README update removed - only publishing results

@@ -49,7 +49,7 @@ def get_framework_versions() -> dict[str, str]:
 
 
 def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
-    """Generate index.html from aggregated results."""
+    """Generate comprehensive index.html from aggregated results."""
     # Load aggregated results
     with open(aggregated_path, "rb") as f:
         results = msgspec.json.decode(f.read())
@@ -57,8 +57,15 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     # Get framework versions
     versions = get_framework_versions()
 
-    # Calculate metrics for the summary table
+    # Calculate comprehensive metrics for the summary table
     framework_stats = {}
+    dataset_stats = {
+        "total_extractions": 0,
+        "total_frameworks": 0,
+        "total_file_types": set(),
+        "total_categories": set(),
+        "size_ranges": {"tiny": 0, "small": 0, "medium": 0, "large": 0, "huge": 0},
+    }
 
     for framework, summaries in results["framework_summaries"].items():
         if not summaries:
@@ -67,25 +74,53 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         # Calculate overall metrics
         total_files = sum(s["total_files"] for s in summaries)
         successful_files = sum(s["successful_files"] for s in summaries)
+        failed_files = sum(s.get("failed_files", 0) for s in summaries)
+        timeout_files = sum(s.get("timeout_files", 0) for s in summaries)
 
         # Success rate on files actually tested
         success_rate = (successful_files / total_files * 100) if total_files > 0 else 0
 
-        # Average speed (files per second)
-        speeds = [s["files_per_second"] for s in summaries if s.get("files_per_second")]
-        avg_speed = sum(speeds) / len(speeds) if speeds else 0
+        # Average speed (files per second) - weighted by file count
+        total_time = sum(s.get("total_time", 0) for s in summaries)
+        avg_speed = (total_files / total_time) if total_time > 0 else 0
 
-        # Average memory usage
+        # Average memory usage - weighted average
         memories = [s["avg_peak_memory_mb"] for s in summaries if s.get("avg_peak_memory_mb")]
         avg_memory = sum(memories) / len(memories) if memories else 0
+
+        # Throughput
+        throughputs = [s.get("mb_per_second", 0) for s in summaries if s.get("mb_per_second")]
+        avg_throughput = sum(throughputs) / len(throughputs) if throughputs else 0
 
         framework_stats[framework] = {
             "success_rate": success_rate,
             "avg_speed": avg_speed,
             "avg_memory": avg_memory,
+            "avg_throughput": avg_throughput,
             "total_files": total_files,
             "successful_files": successful_files,
+            "failed_files": failed_files,
+            "timeout_files": timeout_files,
+            "version": versions.get(framework.replace("_sync", "").replace("_async", ""), "Unknown"),
         }
+
+        # Update dataset statistics
+        dataset_stats["total_extractions"] += total_files
+        for summary in summaries:
+            dataset_stats["total_categories"].add(summary.get("category", "unknown"))
+            if summary.get("category") in dataset_stats["size_ranges"]:
+                dataset_stats["size_ranges"][summary["category"]] += summary.get("total_files", 0)
+
+    dataset_stats["total_frameworks"] = len(framework_stats)
+    dataset_stats["total_file_types"] = len(results.get("file_types", []))
+
+    # Detect available analysis modules
+    analysis_available = {
+        "file_type": Path("visualizations/analysis/interactive_dashboard.html").exists(),
+        "metadata": Path("visualizations/analysis/metadata").exists(),
+        "tables": Path("visualizations/analysis/tables").exists(),
+        "quality": Path("quality-enhanced-results.json").exists(),
+    }
 
     # Generate HTML with CSS template
     css_styles = """
