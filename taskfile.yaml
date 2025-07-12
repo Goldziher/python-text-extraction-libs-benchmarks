@@ -1,0 +1,76 @@
+version: '3'
+
+tasks:
+  kreuzberg-sync-all:
+    desc: Run Kreuzberg sync benchmarks for all categories
+    cmds:
+      - uv run python -m src.cli benchmark --framework kreuzberg_sync --category tiny --iterations 3 --timeout 14400
+      - uv run python -m src.cli benchmark --framework kreuzberg_sync --category small --iterations 3 --timeout 14400
+      - uv run python -m src.cli benchmark --framework kreuzberg_sync --category medium --iterations 3 --timeout 14400
+      - uv run python -m src.cli benchmark --framework kreuzberg_sync --category large --iterations 3 --timeout 14400
+      - uv run python -m src.cli benchmark --framework kreuzberg_sync --category huge --iterations 3 --timeout 14400
+
+  kreuzberg-async-all:
+    desc: Run Kreuzberg async benchmarks for all categories
+    cmds:
+      - uv run python -m src.cli benchmark --framework kreuzberg_async --category tiny --iterations 3 --timeout 14400
+      - uv run python -m src.cli benchmark --framework kreuzberg_async --category small --iterations 3 --timeout 14400
+      - uv run python -m src.cli benchmark --framework kreuzberg_async --category medium --iterations 3 --timeout 14400
+      - uv run python -m src.cli benchmark --framework kreuzberg_async --category large --iterations 3 --timeout 14400
+      - uv run python -m src.cli benchmark --framework kreuzberg_async --category huge --iterations 3 --timeout 14400
+
+  kreuzberg-all:
+    desc: Run all Kreuzberg benchmarks (sync and async)
+    deps:
+      - kreuzberg-sync-all
+      - kreuzberg-async-all
+
+  kreuzberg-sync-quick:
+    desc: Run Kreuzberg sync benchmarks for tiny/small/medium only
+    cmds:
+      - uv run python -m src.cli benchmark --framework kreuzberg_sync --category tiny --iterations 3 --timeout 300
+      - uv run python -m src.cli benchmark --framework kreuzberg_sync --category small --iterations 3 --timeout 300
+      - uv run python -m src.cli benchmark --framework kreuzberg_sync --category medium --iterations 3 --timeout 300
+
+  kreuzberg-async-quick:
+    desc: Run Kreuzberg async benchmarks for tiny/small/medium only
+    cmds:
+      - uv run python -m src.cli benchmark --framework kreuzberg_async --category tiny --iterations 3 --timeout 300
+      - uv run python -m src.cli benchmark --framework kreuzberg_async --category small --iterations 3 --timeout 300
+      - uv run python -m src.cli benchmark --framework kreuzberg_async --category medium --iterations 3 --timeout 300
+
+  aggregate:
+    desc: Aggregate all benchmark results
+    cmd: uv run python -m src.cli aggregate --results-dir results
+
+  report:
+    desc: Generate benchmark report
+    cmd: uv run python -m src.cli report --results-dir results --output-format html
+
+  visualize:
+    desc: Generate benchmark visualizations
+    cmd: uv run python -m src.cli visualize --results-dir results
+
+  kreuzberg-full-pipeline:
+    desc: Run full Kreuzberg benchmarking pipeline
+    cmds:
+      - task: kreuzberg-all
+      - task: aggregate
+      - task: report
+      - task: visualize
+
+  clean-cache:
+    desc: Clean Kreuzberg cache before benchmarking
+    cmd: rm -rf .kreuzberg
+
+  kreuzberg-clean-sync:
+    desc: Run Kreuzberg sync benchmarks with clean cache
+    cmds:
+      - task: clean-cache
+      - task: kreuzberg-sync-all
+
+  kreuzberg-clean-async:
+    desc: Run Kreuzberg async benchmarks with clean cache
+    cmds:
+      - task: clean-cache
+      - task: kreuzberg-async-all

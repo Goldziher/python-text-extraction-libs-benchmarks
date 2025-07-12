@@ -1,9 +1,9 @@
-"""Generate comprehensive visualizations from benchmark results."""
+"""Visualization module for benchmark results."""
+# ruff: noqa: PERF401, PLR0915
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 import matplotlib.pyplot as plt
 import msgspec
@@ -31,12 +31,24 @@ FRAMEWORK_COLORS = {
 class BenchmarkVisualizer:
     """Generate comprehensive visualizations from benchmark results."""
 
-    def __init__(self, output_dir: Path = Path("reports")) -> None:
+    def __init__(self, output_dir: Path = Path("results/charts")) -> None:
         self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Set style for matplotlib/seaborn
+        # Set style for matplotlib/seaborn with larger default sizes
         plt.style.use("default")
+        plt.rcParams.update(
+            {
+                "figure.dpi": 150,
+                "savefig.dpi": 150,
+                "font.size": 12,
+                "axes.titlesize": 16,
+                "axes.labelsize": 14,
+                "xtick.labelsize": 12,
+                "ytick.labelsize": 12,
+                "legend.fontsize": 12,
+            }
+        )
 
         # Set consistent color palette for frameworks
         framework_colors = list(FRAMEWORK_COLORS.values())
@@ -48,863 +60,667 @@ class BenchmarkVisualizer:
         with open(aggregated_file, "rb") as f:
             aggregated = msgspec.json.decode(f.read(), type=AggregatedResults)
 
-        generated_files = []
+        output_files = []
 
-        # Performance comparison charts
-        generated_files.extend(self._generate_performance_charts(aggregated))
+        # Generate individual visualizations
+        output_files.extend(self._create_performance_comparison(aggregated))
+        output_files.extend(self._create_memory_usage_charts(aggregated))
+        output_files.extend(self._create_success_rate_chart(aggregated))
+        output_files.extend(self._create_throughput_charts(aggregated))
+        output_files.extend(self._create_per_file_breakdown(aggregated))
+        output_files.extend(self._create_category_analysis(aggregated))
+        output_files.append(self._create_interactive_dashboard(aggregated))
 
-        # Success rate analysis
-        generated_files.extend(self._generate_success_rate_charts(aggregated))
+        return output_files
 
-        # Memory and CPU usage charts
-        generated_files.extend(self._generate_resource_charts(aggregated))
+    def _create_performance_comparison(self, aggregated: AggregatedResults) -> list[Path]:
+        """Create performance comparison charts."""
+        output_files = []
 
-        # Data throughput charts
-        generated_files.extend(self._generate_throughput_charts(aggregated))
-
-        # Framework comparison heatmaps
-        generated_files.extend(self._generate_heatmaps(aggregated))
-
-        # Detailed category analysis
-        generated_files.extend(self._generate_category_analysis(aggregated))
-
-        # Format breakdown analysis
-        generated_files.extend(self._generate_format_breakdown(aggregated))
-
-        # Interactive dashboard
-        generated_files.extend(self._generate_interactive_dashboard(aggregated))
-
-        # Quality assessment charts (if quality data available)
-        generated_files.extend(self._generate_quality_charts(aggregated))
-
-        return generated_files
-
-    def _generate_performance_charts(self, aggregated: AggregatedResults) -> list[Path]:
-        """Generate performance comparison charts."""
-        files = []
-
-        # Prepare data for plotting
-        perf_data = [
-            {
-                "Framework": framework.value,
-                "Category": summary.category.value,
-                "Avg Time (s)": summary.avg_extraction_time,
-                "Median Time (s)": summary.median_extraction_time or 0,
-                "Success Rate (%)": summary.success_rate * 100,
-                "Files per Second": summary.files_per_second or 0,
-                "Total Files": summary.total_files,
-            }
-            for framework, summaries in aggregated.framework_summaries.items()
-            for summary in summaries
-            if summary.avg_extraction_time is not None
-        ]
+        # Extract data for visualization
+        perf_data = []
+        for summary in aggregated.summaries:
+            if summary.total_files > 0:
+                perf_data.append(
+                    {
+                        "Framework": summary.framework,
+                        "Category": summary.category,
+                        "Avg Time (s)": summary.avg_extraction_time,
+                        "Median Time (s)": summary.median_extraction_time,
+                        "Files per Second": summary.files_per_second,
+                        "Success Rate (%)": summary.success_rate * 100,
+                    }
+                )
 
         if not perf_data:
-            return files
+            return output_files
 
         df = pd.DataFrame(perf_data)
 
-        # 1. Performance comparison bar chart
-        fig = plt.figure(figsize=(12, 8))
+        # 1. Large performance comparison by category
+        fig = plt.figure(figsize=(20, 12))
         df_pivot = df.pivot(index="Framework", columns="Category", values="Avg Time (s)")
 
-        # Use consistent colors for frameworks
-        colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
-        ax = df_pivot.plot(kind="bar", ax=plt.gca(), color=colors)
-        plt.title("Average Extraction Time by Framework and Category", fontsize=16, fontweight="bold")
-        plt.ylabel("Time (seconds)", fontsize=12)
-        plt.xlabel("Framework", fontsize=12)
-        plt.xticks(rotation=45)
-        plt.legend(title="Document Category", title_fontsize=12)
-        plt.grid(axis="y", alpha=0.3)
+        ax = df_pivot.plot(kind="bar", width=0.8, figsize=(20, 12))
+        plt.title("Average Extraction Time by Framework and Category", fontsize=20, fontweight="bold", pad=20)
+        plt.xlabel("Framework", fontsize=16)
+        plt.ylabel("Average Time (seconds)", fontsize=16)
+        plt.yscale("log")
+        plt.grid(True, alpha=0.3, axis="y")
+        plt.legend(title="Category", bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=14)
+        plt.xticks(rotation=45, ha="right")
         plt.tight_layout()
 
-        perf_chart = self.output_dir / "performance_comparison.png"
-        plt.savefig(perf_chart, dpi=300, bbox_inches="tight")
+        output_path = self.output_dir / "performance_comparison_large.png"
+        plt.savefig(output_path, bbox_inches="tight", dpi=150)
         plt.close()
-        files.append(perf_chart)
+        output_files.append(output_path)
 
-        # 2. Throughput comparison
-        fig = plt.figure(figsize=(12, 8))
-        df_pivot = df.pivot(index="Framework", columns="Category", values="Files per Second")
+        # 2. Performance by size category (focused view)
+        size_categories = ["tiny", "small", "medium", "large", "huge"]
+        df_sizes = df[df["Category"].isin(size_categories)]
 
-        # Use consistent colors for frameworks
-        colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
-        ax = df_pivot.plot(kind="bar", ax=plt.gca(), color=colors)
-        plt.title("Throughput Comparison by Framework and Category", fontsize=16, fontweight="bold")
-        plt.ylabel("Files per Second", fontsize=12)
-        plt.xlabel("Framework", fontsize=12)
-        plt.xticks(rotation=45)
-        plt.legend(title="Document Category", title_fontsize=12)
-        plt.grid(axis="y", alpha=0.3)
+        if not df_sizes.empty:
+            fig, axes = plt.subplots(2, 3, figsize=(24, 16))
+            axes = axes.flatten()
+
+            for idx, category in enumerate(size_categories):
+                ax = axes[idx]
+                cat_data = df_sizes[df_sizes["Category"] == category].sort_values("Avg Time (s)")
+
+                if not cat_data.empty:
+                    bars = ax.bar(
+                        cat_data["Framework"],
+                        cat_data["Avg Time (s)"],
+                        color=[FRAMEWORK_COLORS.get(fw, "#999999") for fw in cat_data["Framework"]],
+                    )
+                    ax.set_title(f"{category.title()} Files", fontsize=16, fontweight="bold")
+                    ax.set_ylabel("Average Time (s)", fontsize=14)
+                    ax.set_yscale("log")
+                    ax.grid(True, alpha=0.3, axis="y")
+                    ax.tick_params(axis="x", rotation=45)
+
+                    # Add value labels on bars
+                    for bar, val in zip(bars, cat_data["Avg Time (s)"], strict=False):
+                        ax.text(
+                            bar.get_x() + bar.get_width() / 2,
+                            bar.get_height(),
+                            f"{val:.3f}s",
+                            ha="center",
+                            va="bottom",
+                            fontsize=10,
+                        )
+
+            # Hide the 6th subplot
+            axes[5].axis("off")
+
+            plt.suptitle("Performance Comparison by File Size Category", fontsize=20, fontweight="bold")
+            plt.tight_layout()
+
+            output_path = self.output_dir / "performance_by_size_category.png"
+            plt.savefig(output_path, bbox_inches="tight", dpi=150)
+            plt.close()
+            output_files.append(output_path)
+
+        return output_files
+
+    def _create_memory_usage_charts(self, aggregated: AggregatedResults) -> list[Path]:
+        """Create memory usage visualizations."""
+        output_files = []
+
+        # Extract memory data
+        memory_data = []
+        for summary in aggregated.summaries:
+            if summary.avg_peak_memory_mb and summary.avg_peak_memory_mb > 0:
+                memory_data.append(
+                    {
+                        "Framework": summary.framework,
+                        "Category": summary.category,
+                        "Avg Memory (MB)": summary.avg_peak_memory_mb,
+                        "CPU Usage (%)": summary.avg_cpu_percent,
+                    }
+                )
+
+        if not memory_data:
+            return output_files
+
+        df = pd.DataFrame(memory_data)
+
+        # Create large dual-axis chart
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 16))
+
+        # Memory usage heatmap
+        df_pivot = df.pivot(index="Framework", columns="Category", values="Avg Memory (MB)")
+        sns.heatmap(df_pivot, annot=True, fmt=".0f", cmap="YlOrRd", ax=ax1, cbar_kws={"label": "Memory Usage (MB)"})
+        ax1.set_title("Average Peak Memory Usage by Framework and Category", fontsize=18, fontweight="bold", pad=15)
+        ax1.set_xlabel("")
+
+        # CPU usage heatmap
+        df_pivot_cpu = df.pivot(index="Framework", columns="Category", values="CPU Usage (%)")
+        sns.heatmap(df_pivot_cpu, annot=True, fmt=".1f", cmap="Blues", ax=ax2, cbar_kws={"label": "CPU Usage (%)"})
+        ax2.set_title("Average CPU Usage by Framework and Category", fontsize=18, fontweight="bold", pad=15)
+
         plt.tight_layout()
-
-        throughput_chart = self.output_dir / "throughput_comparison.png"
-        plt.savefig(throughput_chart, dpi=300, bbox_inches="tight")
+        output_path = self.output_dir / "resource_usage_heatmaps.png"
+        plt.savefig(output_path, bbox_inches="tight", dpi=150)
         plt.close()
-        files.append(throughput_chart)
+        output_files.append(output_path)
 
-        return files
+        return output_files
 
-    def _generate_success_rate_charts(self, aggregated: AggregatedResults) -> list[Path]:
-        """Generate success rate analysis charts."""
-        files = []
+    def _create_success_rate_chart(self, aggregated: AggregatedResults) -> list[Path]:
+        """Create success rate visualization."""
+        output_files = []
 
-        # Determine expected files per category from the data
-        expected_files_per_category = {}
-        for category, cat_summaries in aggregated.category_summaries.items():
-            # Get the maximum files tested in each category
-            max_files = max(s.total_files for s in cat_summaries)
-            expected_files_per_category[category] = max_files
-
-        # Total expected files across all categories
-        total_expected_files = sum(expected_files_per_category.values())
-
-        # Prepare success rate data
-        success_data = []
-        for framework, summaries in aggregated.framework_summaries.items():
-            success_files = sum(s.successful_files for s in summaries)
-            total_files = sum(s.total_files for s in summaries)
-            failed_files = sum(s.failed_files for s in summaries)
-            timeout_files = sum(s.timeout_files for s in summaries)
-
-            # Calculate success rate based on files actually tested
-            success_rate = (success_files / total_files * 100) if total_files > 0 else 0
-
-            success_data.append(
-                {
-                    "Framework": framework.value,
-                    "Success Rate (%)": success_rate,
-                    "Total Files": total_files,
-                    "Successful": success_files,
-                    "Failed": failed_files,
-                    "Timeout": timeout_files,
-                    "Tested": total_files,
+        # Calculate overall success rates
+        framework_stats = {}
+        for summary in aggregated.summaries:
+            if summary.framework not in framework_stats:
+                framework_stats[summary.framework] = {
+                    "total": 0,
+                    "successful": 0,
+                    "failed": 0,
+                    "timeout": 0,
                 }
-            )
 
-        if not success_data:
-            return files
+            stats = framework_stats[summary.framework]
+            stats["total"] += summary.total_files
+            stats["successful"] += summary.successful_files
+            stats["failed"] += summary.failed_files
+            stats["timeout"] += summary.timeout_files
 
-        df = pd.DataFrame(success_data)
+        # Create detailed success chart
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
 
-        # Success rate comparison
-        fig = plt.figure(figsize=(12, 7))
-        bars = plt.bar(df["Framework"], df["Success Rate (%)"])
-        plt.title("Success Rate by Framework (All Categories)", fontsize=14, fontweight="bold")
-        plt.ylabel("Success Rate (%)")
-        plt.xlabel("Framework")
-        plt.xticks(rotation=45)
-        plt.ylim(0, 105)
+        # Overall success rates
+        frameworks = list(framework_stats.keys())
+        success_rates = [
+            (stats["successful"] / stats["total"] * 100) if stats["total"] > 0 else 0
+            for stats in framework_stats.values()
+        ]
 
-        # Add detailed value labels on bars
-        for _i, (bar, row) in enumerate(zip(bars, df.itertuples(), strict=False)):
-            height = bar.get_height()
-            # Show success rate and breakdown
-            # Access by index since itertuples creates a namedtuple
-            total_files = row[3]  # Total Files column
-            successful = row[4]  # Successful column
-            failed = row[5]  # Failed column
-            timeout = row[6]  # Timeout column
+        bars = ax1.bar(frameworks, success_rates, color=[FRAMEWORK_COLORS.get(fw, "#999999") for fw in frameworks])
+        ax1.set_title("Overall Success Rate by Framework", fontsize=18, fontweight="bold")
+        ax1.set_ylabel("Success Rate (%)", fontsize=14)
+        ax1.set_ylim(0, 105)
+        ax1.grid(True, alpha=0.3, axis="y")
 
-            if failed > 0 or timeout > 0:
-                label = f"{height:.1f}%\n({successful}/{total_files})"
-                if timeout > 0:
-                    label += f"\nTimeout: {timeout}"
-                color = "red" if height < 90 else "black"
-            else:
-                label = f"{height:.1f}%\n({successful}/{total_files})"
-                color = "black"
-            plt.text(
-                bar.get_x() + bar.get_width() / 2.0,
-                height + 1,
-                label,
+        # Add value labels
+        for bar, rate in zip(bars, success_rates, strict=False):
+            ax1.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 1,
+                f"{rate:.1f}%",
                 ha="center",
                 va="bottom",
-                fontsize=9,
-                color=color,
+                fontsize=12,
             )
 
-        # Add note about calculation method
-        plt.text(
-            0.02,
-            0.98,
-            "Success rate calculated on files actually tested by each framework\nFrameworks tested different numbers of files based on their capabilities\nKreuzberg: tiny, small, medium categories\nDocling/MarkItDown: tiny, small categories only\nUnstructured/Extractous: tiny, small, medium categories",
-            transform=plt.gca().transAxes,
-            fontsize=9,
-            verticalalignment="top",
-            bbox={"boxstyle": "round", "facecolor": "lightyellow", "alpha": 0.8},
-        )
+        ax1.tick_params(axis="x", rotation=45)
+
+        # Failure breakdown
+        failure_data = []
+        for fw, stats in framework_stats.items():
+            if stats["failed"] > 0 or stats["timeout"] > 0:
+                failure_data.append(
+                    {
+                        "Framework": fw,
+                        "Failed": stats["failed"],
+                        "Timeout": stats["timeout"],
+                    }
+                )
+
+        if failure_data:
+            df_failures = pd.DataFrame(failure_data)
+            df_failures.set_index("Framework")[["Failed", "Timeout"]].plot(
+                kind="bar", stacked=True, ax=ax2, color=["#ef4444", "#f59e0b"]
+            )
+            ax2.set_title("Failure Breakdown by Type", fontsize=18, fontweight="bold")
+            ax2.set_ylabel("Number of Files", fontsize=14)
+            ax2.tick_params(axis="x", rotation=45)
+            ax2.legend(title="Failure Type")
+        else:
+            ax2.text(
+                0.5,
+                0.5,
+                "No failures detected!",
+                transform=ax2.transAxes,
+                ha="center",
+                va="center",
+                fontsize=20,
+                fontweight="bold",
+                color="green",
+            )
+            ax2.set_xticks([])
+            ax2.set_yticks([])
 
         plt.tight_layout()
-        success_chart = self.output_dir / "success_rate_comparison.png"
-        plt.savefig(success_chart, dpi=300, bbox_inches="tight")
+        output_path = self.output_dir / "success_and_failure_analysis.png"
+        plt.savefig(output_path, bbox_inches="tight", dpi=150)
         plt.close()
-        files.append(success_chart)
+        output_files.append(output_path)
 
-        return files
+        return output_files
 
-    def _generate_resource_charts(self, aggregated: AggregatedResults) -> list[Path]:
-        """Generate memory and CPU usage charts."""
-        files = []
+    def _create_throughput_charts(self, aggregated: AggregatedResults) -> list[Path]:
+        """Create throughput visualizations."""
+        output_files = []
 
-        # Memory usage data
-        memory_data = [
-            {
-                "Framework": framework.value,
-                "Category": summary.category.value,
-                "Peak Memory (MB)": summary.avg_peak_memory_mb or 0,
-                "Avg CPU (%)": summary.avg_cpu_percent or 0,
-            }
-            for framework, summaries in aggregated.framework_summaries.items()
-            for summary in summaries
-            if summary.avg_peak_memory_mb is not None
-        ]
-
-        if memory_data:
-            df_memory = pd.DataFrame(memory_data)
-
-            # Check if we have meaningful memory data (not all zeros)
-            has_memory_data = df_memory["Peak Memory (MB)"].sum() > 0
-
-            if has_memory_data:
-                # Create memory usage chart
-                fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
-
-                # Memory usage by framework and category
-                df_pivot = df_memory.pivot(index="Framework", columns="Category", values="Peak Memory (MB)")
-                colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
-                df_pivot.plot(kind="bar", ax=ax1, color=colors)
-                ax1.set_title("Peak Memory Usage by Framework and Category", fontsize=14, fontweight="bold")
-                ax1.set_ylabel("Peak Memory (MB)", fontsize=12)
-                ax1.set_xlabel("Framework", fontsize=12)
-                ax1.tick_params(axis="x", rotation=45)
-                ax1.legend(title="Document Category", title_fontsize=10)
-                ax1.grid(axis="y", alpha=0.3)
-
-                # CPU usage chart
-                df_pivot_cpu = df_memory.pivot(index="Framework", columns="Category", values="Avg CPU (%)")
-                df_pivot_cpu.plot(kind="bar", ax=ax2, color=colors)
-                ax2.set_title("Average CPU Usage by Framework and Category", fontsize=14, fontweight="bold")
-                ax2.set_ylabel("Average CPU (%)", fontsize=12)
-                ax2.set_xlabel("Framework", fontsize=12)
-                ax2.tick_params(axis="x", rotation=45)
-                ax2.legend(title="Document Category", title_fontsize=10)
-                ax2.grid(axis="y", alpha=0.3)
-
-                plt.tight_layout()
-                memory_chart = self.output_dir / "memory_usage.png"
-                plt.savefig(memory_chart, dpi=300, bbox_inches="tight")
-                plt.close()
-                files.append(memory_chart)
-            else:
-                # Create placeholder chart indicating no memory data
-                fig = plt.figure(figsize=(12, 8))
-                plt.text(
-                    0.5,
-                    0.5,
-                    "Memory profiling data not available\n(All values are 0.0)",
-                    fontsize=16,
-                    ha="center",
-                    va="center",
-                    transform=plt.gca().transAxes,
-                    bbox={"boxstyle": "round,pad=0.5", "facecolor": "lightgray"},
+        throughput_data = []
+        for summary in aggregated.summaries:
+            if summary.mb_per_second and summary.mb_per_second > 0:
+                throughput_data.append(
+                    {
+                        "Framework": summary.framework,
+                        "Category": summary.category,
+                        "Files/Second": summary.files_per_second,
+                        "MB/Second": summary.mb_per_second,
+                    }
                 )
-                plt.title("Memory Usage Analysis", fontsize=16, fontweight="bold")
-                plt.axis("off")
-                memory_chart = self.output_dir / "memory_usage.png"
-                plt.savefig(memory_chart, dpi=300, bbox_inches="tight")
-                plt.close()
-                files.append(memory_chart)
 
-        return files
+        if not throughput_data:
+            return output_files
 
-    def _generate_throughput_charts(self, aggregated: AggregatedResults) -> list[Path]:
-        """Generate data throughput charts."""
-        files = []
+        df = pd.DataFrame(throughput_data)
 
-        # Data throughput chart
-        throughput_data = [
-            {
-                "Framework": framework.value,
-                "Category": summary.category.value,
-                "Throughput (MB/s)": summary.mb_per_second or 0,
-            }
-            for framework, summaries in aggregated.framework_summaries.items()
-            for summary in summaries
-            if summary.mb_per_second is not None
-        ]
+        # Create comprehensive throughput visualization
+        fig = plt.figure(figsize=(22, 14))
+
+        # Create subplot layout
+        gs = fig.add_gridspec(2, 2, height_ratios=[1, 1], width_ratios=[3, 2])
+        ax1 = fig.add_subplot(gs[0, :])
+        ax2 = fig.add_subplot(gs[1, 0])
+        ax3 = fig.add_subplot(gs[1, 1])
+
+        # Main throughput comparison
+        df_pivot = df.pivot(index="Framework", columns="Category", values="MB/Second")
+        df_pivot.plot(kind="bar", ax=ax1, width=0.8)
+        ax1.set_title("Data Throughput by Framework and Category", fontsize=18, fontweight="bold")
+        ax1.set_ylabel("Throughput (MB/s)", fontsize=14)
+        ax1.set_yscale("log")
+        ax1.grid(True, alpha=0.3, axis="y")
+        ax1.legend(title="Category", bbox_to_anchor=(1.05, 1), loc="upper left")
+        ax1.tick_params(axis="x", rotation=45)
+
+        # Files per second for size categories
+        size_cats = ["tiny", "small", "medium", "large", "huge"]
+        df_sizes = df[df["Category"].isin(size_cats)]
+        if not df_sizes.empty:
+            df_pivot_files = df_sizes.pivot(index="Framework", columns="Category", values="Files/Second")
+            df_pivot_files.plot(kind="bar", ax=ax2, width=0.8)
+            ax2.set_title("Files Processed per Second (Size Categories)", fontsize=16, fontweight="bold")
+            ax2.set_ylabel("Files/Second", fontsize=14)
+            ax2.set_yscale("log")
+            ax2.grid(True, alpha=0.3, axis="y")
+            ax2.tick_params(axis="x", rotation=45)
+            ax2.legend(title="Category")
+
+        # Average throughput summary
+        avg_throughput = df.groupby("Framework")["MB/Second"].mean().sort_values(ascending=False)
+        bars = ax3.barh(
+            avg_throughput.index,
+            avg_throughput.values,
+            color=[FRAMEWORK_COLORS.get(fw, "#999999") for fw in avg_throughput.index],
+        )
+        ax3.set_title("Average Throughput Across All Categories", fontsize=16, fontweight="bold")
+        ax3.set_xlabel("Average MB/Second", fontsize=14)
+        ax3.grid(True, alpha=0.3, axis="x")
+
+        # Add value labels
+        for bar, val in zip(bars, avg_throughput.values, strict=False):
+            ax3.text(
+                bar.get_width() + val * 0.01,
+                bar.get_y() + bar.get_height() / 2,
+                f"{val:.1f}",
+                ha="left",
+                va="center",
+                fontsize=11,
+            )
+
+        plt.tight_layout()
+        output_path = self.output_dir / "throughput_analysis_comprehensive.png"
+        plt.savefig(output_path, bbox_inches="tight", dpi=150)
+        plt.close()
+        output_files.append(output_path)
+
+        return output_files
+
+    def _create_per_file_breakdown(self, aggregated: AggregatedResults) -> list[Path]:
+        """Create per-file performance breakdown charts."""
+        output_files = []
+
+        # Get detailed results for specific categories
+        categories_to_analyze = ["small", "medium", "large"]
+
+        for category in categories_to_analyze:
+            cat_results = []
+
+            for result in aggregated.results:
+                if result.metadata.category == category:
+                    cat_results.append(
+                        {
+                            "Framework": result.metadata.framework,
+                            "File": Path(result.metadata.file_path).name,
+                            "Size (MB)": result.metadata.file_size_bytes / (1024 * 1024),
+                            "Time (s)": result.metrics.extraction_time,
+                            "Memory (MB)": result.metrics.peak_memory_mb or 0,
+                            "Success": result.metadata.status == "success",
+                        }
+                    )
+
+            if not cat_results:
+                continue
+
+            df = pd.DataFrame(cat_results)
+
+            # Create per-file breakdown chart
+            fig, axes = plt.subplots(2, 1, figsize=(20, 16))
+
+            # Top chart: Time comparison
+            df_pivot = df.pivot(index="File", columns="Framework", values="Time (s)")
+            df_pivot.plot(kind="barh", ax=axes[0], width=0.8)
+            axes[0].set_title(f"Extraction Time by File - {category.title()} Category", fontsize=18, fontweight="bold")
+            axes[0].set_xlabel("Time (seconds)", fontsize=14)
+            axes[0].set_xscale("log")
+            axes[0].grid(True, alpha=0.3, axis="x")
+            axes[0].legend(title="Framework", bbox_to_anchor=(1.05, 1), loc="upper left")
+
+            # Bottom chart: Memory usage
+            if df["Memory (MB)"].sum() > 0:
+                df_pivot_mem = df.pivot(index="File", columns="Framework", values="Memory (MB)")
+                df_pivot_mem.plot(kind="barh", ax=axes[1], width=0.8)
+                axes[1].set_title(f"Memory Usage by File - {category.title()} Category", fontsize=18, fontweight="bold")
+                axes[1].set_xlabel("Memory (MB)", fontsize=14)
+                axes[1].grid(True, alpha=0.3, axis="x")
+                axes[1].legend(title="Framework", bbox_to_anchor=(1.05, 1), loc="upper left")
+
+            plt.tight_layout()
+            output_path = self.output_dir / f"per_file_breakdown_{category}.png"
+            plt.savefig(output_path, bbox_inches="tight", dpi=150)
+            plt.close()
+            output_files.append(output_path)
+
+        return output_files
+
+    def _create_category_analysis(self, aggregated: AggregatedResults) -> list[Path]:
+        """Create comprehensive category analysis."""
+        output_files = []
+
+        # Aggregate data by category
+        category_data = {}
+        for summary in aggregated.summaries:
+            cat = summary.category
+            if cat not in category_data:
+                category_data[cat] = {
+                    "frameworks": [],
+                    "avg_times": [],
+                    "success_rates": [],
+                    "throughputs": [],
+                }
+
+            category_data[cat]["frameworks"].append(summary.framework)
+            category_data[cat]["avg_times"].append(summary.avg_extraction_time)
+            category_data[cat]["success_rates"].append(summary.success_rate)
+            category_data[cat]["throughputs"].append(summary.mb_per_second or 0)
+
+        # Create comprehensive category comparison
+        fig = plt.figure(figsize=(24, 20))
+        gs = fig.add_gridspec(3, 2, hspace=0.3, wspace=0.2)
+
+        # 1. Average time by category
+        ax1 = fig.add_subplot(gs[0, :])
+        categories = list(category_data.keys())
+        avg_times_per_cat = [sum(d["avg_times"]) / len(d["avg_times"]) for d in category_data.values()]
+
+        bars = ax1.bar(categories, avg_times_per_cat, color="skyblue", edgecolor="navy")
+        ax1.set_title("Average Extraction Time by Category (All Frameworks)", fontsize=18, fontweight="bold")
+        ax1.set_ylabel("Average Time (seconds)", fontsize=14)
+        ax1.set_yscale("log")
+        ax1.grid(True, alpha=0.3, axis="y")
+        ax1.tick_params(axis="x", rotation=45)
+
+        # Add value labels
+        for bar, val in zip(bars, avg_times_per_cat, strict=False):
+            ax1.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height(),
+                f"{val:.3f}s",
+                ha="center",
+                va="bottom",
+                fontsize=10,
+            )
+
+        # 2. Success rate distribution
+        ax2 = fig.add_subplot(gs[1, 0])
+        success_data = []
+        for cat, data in category_data.items():
+            for rate in data["success_rates"]:
+                success_data.append({"Category": cat, "Success Rate": rate * 100})
+
+        df_success = pd.DataFrame(success_data)
+        df_success.boxplot(column="Success Rate", by="Category", ax=ax2)
+        ax2.set_title("Success Rate Distribution by Category", fontsize=16, fontweight="bold")
+        ax2.set_ylabel("Success Rate (%)", fontsize=14)
+        ax2.set_xlabel("")
+        plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45)
+
+        # 3. Throughput distribution
+        ax3 = fig.add_subplot(gs[1, 1])
+        throughput_data = []
+        for cat, data in category_data.items():
+            for tp in data["throughputs"]:
+                if tp > 0:
+                    throughput_data.append({"Category": cat, "Throughput": tp})
 
         if throughput_data:
             df_throughput = pd.DataFrame(throughput_data)
-            fig = plt.figure(figsize=(12, 8))
-            df_pivot = df_throughput.pivot(index="Framework", columns="Category", values="Throughput (MB/s)")
+            df_throughput.boxplot(column="Throughput", by="Category", ax=ax3)
+            ax3.set_title("Throughput Distribution by Category", fontsize=16, fontweight="bold")
+            ax3.set_ylabel("Throughput (MB/s)", fontsize=14)
+            ax3.set_yscale("log")
+            ax3.set_xlabel("")
+            plt.setp(ax3.xaxis.get_majorticklabels(), rotation=45)
 
-            # Use consistent colors
-            colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
-            ax = df_pivot.plot(kind="bar", ax=plt.gca(), color=colors)
-            plt.title("Data Throughput by Framework and Category", fontsize=16, fontweight="bold")
-            plt.ylabel("Throughput (MB/s)", fontsize=12)
-            plt.xlabel("Framework", fontsize=12)
-            plt.xticks(rotation=45)
-            plt.legend(title="Document Category", title_fontsize=12)
-            plt.grid(axis="y", alpha=0.3)
-            plt.tight_layout()
+        # 4. Framework performance heatmap by category
+        ax4 = fig.add_subplot(gs[2, :])
 
-            throughput_chart = self.output_dir / "data_throughput.png"
-            plt.savefig(throughput_chart, dpi=300, bbox_inches="tight")
-            plt.close()
-            files.append(throughput_chart)
+        # Create performance matrix
+        frameworks = sorted({fw for data in category_data.values() for fw in data["frameworks"]})
+        categories = sorted(category_data.keys())
 
-        return files
-
-    def _generate_heatmaps(self, aggregated: AggregatedResults) -> list[Path]:
-        """Generate framework vs category heatmaps."""
-        files = []
-
-        # Create matrices for different metrics
-        frameworks = list(aggregated.framework_summaries.keys())
-        categories = set()
-        for summaries in aggregated.framework_summaries.values():
-            categories.update(s.category for s in summaries)
-        categories = sorted(categories, key=lambda x: x.value)
-
-        if not frameworks or not categories:
-            return files
-
-        # Performance heatmap
         perf_matrix = []
-        for framework in frameworks:
+        for fw in frameworks:
             row = []
-            summaries = {s.category: s for s in aggregated.framework_summaries[framework]}
-            for category in categories:
-                if category in summaries and summaries[category].avg_extraction_time:
-                    row.append(summaries[category].avg_extraction_time)
+            for cat in categories:
+                if fw in category_data[cat]["frameworks"]:
+                    idx = category_data[cat]["frameworks"].index(fw)
+                    time = category_data[cat]["avg_times"][idx]
+                    row.append(time)
                 else:
-                    row.append(0)
+                    row.append(None)
             perf_matrix.append(row)
 
-        if any(any(row) for row in perf_matrix):
-            fig = plt.figure(figsize=(10, 8))
-            sns.heatmap(
-                perf_matrix,
-                xticklabels=[c.value for c in categories],
-                yticklabels=[f.value for f in frameworks],
-                annot=True,
-                fmt=".2f",
-                cmap="YlOrRd",
-            )
-            plt.title("Average Extraction Time Heatmap (seconds)")
-            plt.xlabel("Document Category")
-            plt.ylabel("Framework")
-            plt.tight_layout()
+        # Convert to numpy array and create heatmap
+        import numpy as np
 
-            heatmap_file = self.output_dir / "performance_heatmap.png"
-            plt.savefig(heatmap_file, dpi=300, bbox_inches="tight")
-            plt.close()
-            files.append(heatmap_file)
+        perf_array = np.array([[x if x is not None else np.nan for x in row] for row in perf_matrix])
 
-        return files
+        sns.heatmap(
+            perf_array,
+            xticklabels=categories,
+            yticklabels=frameworks,
+            annot=True,
+            fmt=".3f",
+            cmap="YlOrRd",
+            cbar_kws={"label": "Average Time (seconds)"},
+            ax=ax4,
+        )
+        ax4.set_title("Framework Performance Heatmap by Category", fontsize=16, fontweight="bold")
 
-    def _generate_category_analysis(self, aggregated: AggregatedResults) -> list[Path]:
-        """Generate detailed category analysis."""
-        files = []
-
-        # Category performance breakdown
-        category_data = [
-            {
-                "Category": category.value,
-                "Framework": summary.framework.value,
-                "Avg Time (s)": summary.avg_extraction_time,
-                "Success Rate (%)": summary.success_rate * 100,
-                "Total Files": summary.total_files,
-            }
-            for category, summaries in aggregated.category_summaries.items()
-            for summary in summaries
-            if summary.avg_extraction_time is not None
-        ]
-
-        if not category_data:
-            return files
-
-        df = pd.DataFrame(category_data)
-
-        # Category analysis by framework
-        fig = plt.figure(figsize=(14, 8))
-
-        # Group by category and framework for proper visualization
-        df_grouped = df.groupby(["Category", "Framework"])["Avg Time (s)"].mean().unstack()
-
-        # Use consistent colors for frameworks
-        framework_colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_grouped.columns]
-        ax = df_grouped.plot(kind="bar", ax=plt.gca(), color=framework_colors, width=0.8)
-
-        plt.title("Average Processing Time by Category and Framework", fontsize=16, fontweight="bold")
-        plt.ylabel("Average Time (seconds)", fontsize=12)
-        plt.xlabel("Document Category", fontsize=12)
-        plt.xticks(rotation=45)
-        plt.legend(title="Framework", title_fontsize=12, bbox_to_anchor=(1.05, 1), loc="upper left")
-        plt.grid(axis="y", alpha=0.3)
+        plt.suptitle("Comprehensive Category Analysis", fontsize=22, fontweight="bold")
         plt.tight_layout()
 
-        category_chart = self.output_dir / "category_analysis.png"
-        plt.savefig(category_chart, dpi=300, bbox_inches="tight")
+        output_path = self.output_dir / "category_analysis_comprehensive.png"
+        plt.savefig(output_path, bbox_inches="tight", dpi=150)
         plt.close()
-        files.append(category_chart)
+        output_files.append(output_path)
 
-        return files
+        return output_files
 
-    def _generate_interactive_dashboard(self, aggregated: AggregatedResults) -> list[Path]:
-        """Generate interactive Plotly dashboard."""
-        files = []
-
-        # Prepare comprehensive data
-        all_data = [
-            {
-                "Framework": framework.value,
-                "Category": summary.category.value,
-                "Avg Time (s)": summary.avg_extraction_time or 0,
-                "Success Rate (%)": summary.success_rate * 100,
-                "Peak Memory (MB)": summary.avg_peak_memory_mb or 0,
-                "CPU Usage (%)": summary.avg_cpu_percent or 0,
-                "Files per Second": summary.files_per_second or 0,
-                "Total Files": summary.total_files,
-                "Successful Files": summary.successful_files,
-                "Failed Files": summary.failed_files,
-            }
-            for framework, summaries in aggregated.framework_summaries.items()
-            for summary in summaries
-        ]
-
-        if not all_data:
-            return files
-
-        df = pd.DataFrame(all_data)
-
-        # Create interactive dashboard
+    def _create_interactive_dashboard(self, aggregated: AggregatedResults) -> Path:
+        """Create an interactive Plotly dashboard."""
+        # Create subplots
         fig = make_subplots(
-            rows=2,
+            rows=3,
             cols=2,
-            subplot_titles=("Performance Comparison", "Success Rates", "Resource Usage", "Throughput Analysis"),
-            specs=[[{"secondary_y": False}, {"secondary_y": False}], [{"secondary_y": False}, {"secondary_y": False}]],
+            subplot_titles=(
+                "Average Extraction Time by Framework",
+                "Memory Usage Distribution",
+                "Success Rate Comparison",
+                "Throughput Analysis",
+                "Category Performance Heatmap",
+                "File Size vs. Extraction Time",
+            ),
+            specs=[
+                [{"type": "bar"}, {"type": "box"}],
+                [{"type": "bar"}, {"type": "scatter"}],
+                [{"type": "heatmap"}, {"type": "scatter"}],
+            ],
+            vertical_spacing=0.12,
+            horizontal_spacing=0.1,
         )
 
-        # Performance comparison
-        for framework in df["Framework"].unique():
-            fw_data = df[df["Framework"] == framework]
+        # Prepare data
+        perf_data = []
+        for summary in aggregated.summaries:
+            perf_data.append(
+                {
+                    "framework": summary.framework,
+                    "category": summary.category,
+                    "avg_time": summary.avg_extraction_time,
+                    "memory": summary.avg_peak_memory_mb or 0,
+                    "success_rate": summary.success_rate * 100,
+                    "throughput": summary.mb_per_second or 0,
+                }
+            )
+
+        df = pd.DataFrame(perf_data)
+
+        # 1. Average extraction time
+        for fw in df["framework"].unique():
+            fw_data = df[df["framework"] == fw]
             fig.add_trace(
                 go.Bar(
-                    x=fw_data["Category"], y=fw_data["Avg Time (s)"], name=f"{framework} (Time)", legendgroup=framework
+                    name=fw,
+                    x=fw_data["category"],
+                    y=fw_data["avg_time"],
+                    marker_color=FRAMEWORK_COLORS.get(fw, "#999999"),
                 ),
                 row=1,
                 col=1,
             )
 
-        # Success rates
-        for framework in df["Framework"].unique():
-            fw_data = df[df["Framework"] == framework]
-            fig.add_trace(
-                go.Bar(
-                    x=fw_data["Category"],
-                    y=fw_data["Success Rate (%)"],
-                    name=f"{framework} (Success)",
-                    legendgroup=framework,
-                    showlegend=False,
-                ),
-                row=1,
-                col=2,
-            )
+        # 2. Memory usage distribution
+        for fw in df["framework"].unique():
+            fw_data = df[df["framework"] == fw]
+            if fw_data["memory"].sum() > 0:
+                fig.add_trace(
+                    go.Box(name=fw, y=fw_data["memory"], marker_color=FRAMEWORK_COLORS.get(fw, "#999999")), row=1, col=2
+                )
 
-        # Memory usage
+        # 3. Success rate comparison
+        fw_success = df.groupby("framework")["success_rate"].mean()
         fig.add_trace(
-            go.Scatter(
-                x=df["Framework"],
-                y=df["Peak Memory (MB)"],
-                mode="markers",
-                marker={"size": df["Total Files"], "sizemode": "diameter", "sizeref": 2},
-                name="Memory Usage",
+            go.Bar(
+                x=fw_success.index,
+                y=fw_success.values,
+                marker_color=[FRAMEWORK_COLORS.get(fw, "#999999") for fw in fw_success.index],
                 showlegend=False,
             ),
             row=2,
             col=1,
         )
 
-        # Throughput
-        for framework in df["Framework"].unique():
-            fw_data = df[df["Framework"] == framework]
-            fig.add_trace(
-                go.Scatter(
-                    x=fw_data["Category"],
-                    y=fw_data["Files per Second"],
-                    mode="lines+markers",
-                    name=f"{framework} (Throughput)",
-                    legendgroup=framework,
-                    showlegend=False,
-                ),
-                row=2,
-                col=2,
-            )
-
-        fig.update_layout(height=800, title_text="Comprehensive Benchmark Dashboard", showlegend=True)
-
-        # Save interactive HTML
-        dashboard_file = self.output_dir / "interactive_dashboard.html"
-        fig.write_html(dashboard_file)
-        files.append(dashboard_file)
-
-        return files
-
-    def _generate_quality_charts(self, aggregated: AggregatedResults) -> list[Path]:
-        """Generate quality assessment visualizations."""
-        files = []
-
-        # Check if we have quality data in the aggregated results
-        # Note: This requires benchmark runs with --enable-quality-assessment flag
-        has_quality_data = False
-        quality_data = []
-
-        # Check if any framework summaries contain quality metrics
-        for framework, summaries in aggregated.framework_summaries.items():
-            for summary in summaries:
-                # Check if summary has quality-related fields
-                if hasattr(summary, "avg_quality_score") and summary.avg_quality_score is not None:
-                    has_quality_data = True
-                    quality_data.append(
-                        {
-                            "Framework": framework.value,
-                            "Category": summary.category.value,
-                            "Avg Quality Score": summary.avg_quality_score,
-                            "Total Files": summary.total_files,
-                        }
-                    )
-
-        if not has_quality_data:
-            # Create informational chart about quality assessment
-            fig = plt.figure(figsize=(12, 8))
-            plt.text(
-                0.5,
-                0.5,
-                "Quality Assessment Not Available\n\n"
-                "To enable quality metrics, run benchmarks with:\n"
-                "uv run python -m src.cli benchmark --enable-quality-assessment\n\n"
-                "Quality metrics include:\n"
-                "• Text completeness and coherence\n"
-                "• Readability scores (Flesch, Gunning Fog)\n"
-                "• Format-specific extraction quality\n"
-                "• Noise and gibberish detection\n"
-                "• Structural preservation metrics",
-                fontsize=14,
-                ha="center",
-                va="center",
-                transform=plt.gca().transAxes,
-                bbox={"boxstyle": "round,pad=0.5", "facecolor": "lightblue", "alpha": 0.7},
-            )
-            plt.title("Text Extraction Quality Assessment", fontsize=16, fontweight="bold")
-            plt.axis("off")
-            quality_chart = self.output_dir / "quality_assessment.png"
-            plt.savefig(quality_chart, dpi=300, bbox_inches="tight")
-            plt.close()
-            files.append(quality_chart)
-            return files
-
-        # If we have quality data, create visualizations
-        df = pd.DataFrame(quality_data)
-
-        # 1. Average quality score by framework
-        fig = plt.figure(figsize=(12, 8))
-        df_pivot = df.pivot(index="Framework", columns="Category", values="Avg Quality Score")
-
-        # Use consistent colors for frameworks
-        colors = [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df_pivot.index]
-        ax = df_pivot.plot(kind="bar", ax=plt.gca(), color=colors)
-        plt.title("Average Text Extraction Quality Score by Framework", fontsize=16, fontweight="bold")
-        plt.ylabel("Quality Score (0-1)", fontsize=12)
-        plt.xlabel("Framework", fontsize=12)
-        plt.xticks(rotation=45)
-        plt.ylim(0, 1.05)
-        plt.legend(title="Document Category", title_fontsize=12)
-        plt.grid(axis="y", alpha=0.3)
-
-        # Add note about quality metrics
-        plt.text(
-            0.02,
-            0.98,
-            "Quality score combines: completeness, coherence, readability,\nformat preservation, and noise detection",
-            transform=plt.gca().transAxes,
-            fontsize=10,
-            verticalalignment="top",
-            bbox={"boxstyle": "round", "facecolor": "lightyellow", "alpha": 0.8},
+        # 4. Throughput scatter
+        fig.add_trace(
+            go.Scatter(
+                x=df["avg_time"],
+                y=df["throughput"],
+                mode="markers",
+                marker={
+                    "size": 10,
+                    "color": [FRAMEWORK_COLORS.get(fw, "#999999") for fw in df["framework"]],
+                    "line": {"width": 1, "color": "white"},
+                },
+                text=df["framework"] + " - " + df["category"],
+                showlegend=False,
+            ),
+            row=2,
+            col=2,
         )
 
-        plt.tight_layout()
-        quality_chart = self.output_dir / "quality_score_comparison.png"
-        plt.savefig(quality_chart, dpi=300, bbox_inches="tight")
-        plt.close()
-        files.append(quality_chart)
-
-        return files
-
-    def generate_summary_metrics(self, aggregated_file: Path) -> dict[str, Any]:
-        """Generate summary metrics for README."""
-        with open(aggregated_file, "rb") as f:
-            aggregated = msgspec.json.decode(f.read(), type=AggregatedResults)
-
-        # Calculate key metrics
-        total_files = aggregated.total_files_processed
-        total_time = aggregated.total_time_seconds
-        frameworks_tested = len(aggregated.framework_summaries)
-        categories_tested = len(aggregated.category_summaries)
-
-        # Find best performing framework
-        best_framework = None
-        best_avg_time = float("inf")
-
-        # Determine expected files per category from the data
-        expected_files_per_category = {}
-        for category, cat_summaries in aggregated.category_summaries.items():
-            max_files = max(s.total_files for s in cat_summaries)
-            expected_files_per_category[category] = max_files
-
-        total_expected_files = sum(expected_files_per_category.values())
-
-        framework_stats = {}
-        for framework, summaries in aggregated.framework_summaries.items():
-            success_fw_files = sum(s.successful_files for s in summaries)
-
-            # Check which categories this framework tested
-            tested_categories = {s.category for s in summaries}
-            all_categories = set(expected_files_per_category.keys())
-            missing_categories = all_categories - tested_categories
-            missing_files = sum(expected_files_per_category[cat] for cat in missing_categories)
-
-            # Calculate fair success rate using all expected files
-            success_rate = (success_fw_files / total_expected_files * 100) if total_expected_files > 0 else 0
-
-            # Calculate average time across all categories
-            times = [s.avg_extraction_time for s in summaries if s.avg_extraction_time is not None]
-            avg_time = sum(times) / len(times) if times else float("inf")
-
-            framework_stats[framework.value] = {
-                "success_rate": success_rate,
-                "avg_time": avg_time,
-                "total_files": sum(s.total_files for s in summaries),
-                "successful_files": success_fw_files,
-                "expected_files": total_expected_files,
-                "missing_files": missing_files,
-            }
-
-            if avg_time < best_avg_time and success_rate > 80:  # Only consider frameworks with good success rate
-                best_avg_time = avg_time
-                best_framework = framework.value
-
-        return {
-            "total_files": total_files,
-            "total_time": total_time,
-            "frameworks_tested": frameworks_tested,
-            "categories_tested": categories_tested,
-            "best_framework": best_framework,
-            "framework_stats": framework_stats,
-            "timestamp": aggregated_file.stat().st_mtime,
-        }
-
-    def generate_installation_size_chart(self, installation_sizes_file: Path) -> Path:
-        """Generate installation size comparison chart."""
-        import json
-
-        # Load installation size data
-        with open(installation_sizes_file) as f:
-            size_data = json.load(f)
-
-        # Filter out failed installations
-        successful_data = {name: data for name, data in size_data.items() if "error" not in data}
-
-        if not successful_data:
-            raise ValueError("No successful installation size data available")
-
-        # Create DataFrame
-        df_data = []
-        for framework, data in successful_data.items():
-            df_data.append(
-                {
-                    "Framework": framework.replace("_", " ").title(),
-                    "Size (MB)": data["size_mb"],
-                    "Dependencies": data["package_count"],
-                    "Description": data["description"],
-                }
-            )
-
-        df = pd.DataFrame(df_data)
-        df = df.sort_values("Size (MB)")
-
-        # Create visualization with 2 subplots
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
-
-        # Size comparison bar chart
-        colors = [FRAMEWORK_COLORS.get(fw.lower().replace(" ", "_"), "#1f77b4") for fw in df["Framework"]]
-
-        bars1 = ax1.bar(df["Framework"], df["Size (MB)"], color=colors, alpha=0.8)
-        ax1.set_title("Installation Size Comparison", fontsize=16, fontweight="bold")
-        ax1.set_xlabel("Framework", fontsize=12)
-        ax1.set_ylabel("Installation Size (MB)", fontsize=12)
-        ax1.tick_params(axis="x", rotation=45)
-
-        # Add value labels on bars
-        for bar, value in zip(bars1, df["Size (MB)"], strict=False):
-            height = bar.get_height()
-            ax1.text(
-                bar.get_x() + bar.get_width() / 2.0,
-                height + height * 0.01,
-                f"{value:.1f} MB",
-                ha="center",
-                va="bottom",
-                fontweight="bold",
-            )
-
-        # Dependencies comparison
-        bars2 = ax2.bar(df["Framework"], df["Dependencies"], color=colors, alpha=0.8)
-        ax2.set_title("Dependency Count Comparison", fontsize=16, fontweight="bold")
-        ax2.set_xlabel("Framework", fontsize=12)
-        ax2.set_ylabel("Number of Dependencies", fontsize=12)
-        ax2.tick_params(axis="x", rotation=45)
-
-        # Add value labels on bars
-        for bar, value in zip(bars2, df["Dependencies"], strict=False):
-            height = bar.get_height()
-            ax2.text(
-                bar.get_x() + bar.get_width() / 2.0,
-                height + height * 0.01,
-                f"{value}",
-                ha="center",
-                va="bottom",
-                fontweight="bold",
-            )
-
-        # Add annotation about size vs dependencies
-        ax2.text(
-            0.5,
-            -0.25,
-            "Note: Kreuzberg has the smallest footprint (71MB) with only 20 dependencies,\n"
-            "while Docling is 14x larger (1GB+) with extensive ML models.",
-            transform=ax2.transAxes,
-            ha="center",
-            fontsize=10,
-            style="italic",
-            bbox={"boxstyle": "round,pad=0.5", "facecolor": "lightyellow", "alpha": 0.8},
+        # 5. Performance heatmap
+        pivot_table = df.pivot_table(values="avg_time", index="framework", columns="category")
+        fig.add_trace(
+            go.Heatmap(
+                z=pivot_table.values, x=pivot_table.columns, y=pivot_table.index, colorscale="YlOrRd", showscale=True
+            ),
+            row=3,
+            col=1,
         )
 
-        plt.tight_layout()
-
-        # Save chart
-        output_file = self.output_dir / "installation_sizes.png"
-        plt.savefig(output_file, dpi=300, bbox_inches="tight")
-        plt.close()
-
-        return output_file
-
-    def _generate_format_breakdown(self, aggregated: AggregatedResults) -> list[Path]:
-        """Generate format breakdown visualization showing success by file type."""
-        files = []
-
-        # Collect data by file type across frameworks
-        format_data = {}
-
-        # Get all file types from the data
-        all_file_types = set()
-        for fw_summaries in aggregated.framework_summaries.values():
-            for summary in fw_summaries:
-                # Extract file type data from detailed results if available
-                all_file_types.add(summary.category.value)
-
-        # For now, let's create a placeholder that shows format support
-        # We'll need to enhance this with actual per-format results
-        from .config import FRAMEWORK_EXCLUSIONS
-
-        # Create format support matrix
-        formats = [
-            ".pdf",
-            ".docx",
-            ".pptx",
-            ".xlsx",
-            ".xls",
-            ".html",
-            ".md",
-            ".txt",
-            ".csv",
-            ".json",
-            ".yaml",
-            ".png",
-            ".jpg",
-            ".jpeg",
-            ".bmp",
-            ".eml",
-            ".msg",
-            ".odt",
-            ".rst",
-            ".org",
-        ]
-
-        frameworks = [
-            "kreuzberg_sync",
-            "docling",
-            "markitdown",
-            "unstructured",
-            "extractous",
-            "pymupdf",
-            "pdfplumber",
-            "playa",
-        ]
-
-        # Create support matrix
-        support_matrix = []
-        for fw in frameworks:
-            fw_support = []
-            exclusions = FRAMEWORK_EXCLUSIONS.get(fw, set())
-            for fmt in formats:
-                if fmt in exclusions:
-                    fw_support.append(0)  # Not supported
-                else:
-                    fw_support.append(1)  # Supported
-            support_matrix.append(fw_support)
-
-        # Create heatmap
-        fig, ax = plt.subplots(figsize=(14, 8))
-
-        # Create the heatmap
-        im = ax.imshow(support_matrix, cmap="RdYlGn", aspect="auto", vmin=0, vmax=1)
-
-        # Set ticks and labels
-        ax.set_xticks(range(len(formats)))
-        ax.set_yticks(range(len(frameworks)))
-        ax.set_xticklabels(formats, rotation=45, ha="right")
-        ax.set_yticklabels([fw.replace("_", " ").title() for fw in frameworks])
-
-        # Add colorbar
-        cbar = plt.colorbar(im, ax=ax)
-        cbar.set_label("Format Support", rotation=270, labelpad=20)
-        cbar.set_ticks([0, 1])
-        cbar.set_ticklabels(["Not Supported", "Supported"])
-
-        # Add text annotations
-        for i in range(len(frameworks)):
-            for j in range(len(formats)):
-                text = ax.text(
-                    j,
-                    i,
-                    "✓" if support_matrix[i][j] else "✗",
-                    ha="center",
-                    va="center",
-                    color="white" if support_matrix[i][j] else "black",
-                    fontsize=10,
-                    fontweight="bold",
+        # 6. File size vs extraction time (from detailed results)
+        scatter_data = []
+        for result in aggregated.results[:500]:  # Limit to 500 points for performance
+            if result.metadata.status == "success":
+                scatter_data.append(
+                    {
+                        "size_mb": result.metadata.file_size_bytes / (1024 * 1024),
+                        "time": result.metrics.extraction_time,
+                        "framework": result.metadata.framework,
+                    }
                 )
 
-        plt.title("File Format Support Matrix by Framework", fontsize=16, fontweight="bold", pad=20)
-        plt.tight_layout()
+        if scatter_data:
+            scatter_df = pd.DataFrame(scatter_data)
+            for fw in scatter_df["framework"].unique():
+                fw_data = scatter_df[scatter_df["framework"] == fw]
+                fig.add_trace(
+                    go.Scatter(
+                        x=fw_data["size_mb"],
+                        y=fw_data["time"],
+                        mode="markers",
+                        name=fw,
+                        marker={"size": 6, "color": FRAMEWORK_COLORS.get(fw, "#999999"), "opacity": 0.6},
+                    ),
+                    row=3,
+                    col=2,
+                )
 
-        # Save chart
-        output_file = self.output_dir / "format_support_matrix.png"
-        plt.savefig(output_file, dpi=300, bbox_inches="tight")
-        plt.close()
+        # Update layout
+        fig.update_layout(
+            height=1800,
+            showlegend=True,
+            title={"text": "Python Text Extraction Benchmarks - Interactive Dashboard", "font": {"size": 24}},
+        )
 
-        files.append(output_file)
-        return files
+        # Update axes
+        fig.update_xaxes(title_text="Category", row=1, col=1)
+        fig.update_yaxes(title_text="Time (s)", type="log", row=1, col=1)
+
+        fig.update_yaxes(title_text="Memory (MB)", row=1, col=2)
+
+        fig.update_xaxes(title_text="Framework", row=2, col=1)
+        fig.update_yaxes(title_text="Success Rate (%)", row=2, col=1)
+
+        fig.update_xaxes(title_text="Avg Time (s)", type="log", row=2, col=2)
+        fig.update_yaxes(title_text="Throughput (MB/s)", type="log", row=2, col=2)
+
+        fig.update_xaxes(title_text="File Size (MB)", type="log", row=3, col=2)
+        fig.update_yaxes(title_text="Extraction Time (s)", type="log", row=3, col=2)
+
+        # Save interactive HTML
+        output_path = self.output_dir / "interactive_dashboard_enhanced.html"
+        fig.write_html(str(output_path), include_plotlyjs="cdn")
+
+        return output_path

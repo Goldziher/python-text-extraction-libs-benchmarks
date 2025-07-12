@@ -16,12 +16,14 @@ import click
 from rich.console import Console
 
 from .benchmark import ComprehensiveBenchmarkRunner
+from .html_report import HTMLReportGenerator
 from .types import (
     BenchmarkConfig,
     DocumentCategory,
     FileType,
     Framework,
 )
+from .visualize import BenchmarkVisualizer
 
 console = Console()
 
@@ -340,8 +342,15 @@ def report(aggregated_file: Path | None, output_dir: Path, output_formats: tuple
                 console.print(f"[green]✓ Generated JSON metrics: {metrics_path}[/green]")
             elif fmt == "html":
                 html_path = output_dir / "benchmark_report.html"
-                generator.generate_html_report(aggregated, html_path)
-                console.print(f"[green]✓ Generated HTML report: {html_path}[/green]")
+                # First generate visualizations
+                visualizer = BenchmarkVisualizer(output_dir / "charts")
+                aggregated_file = output_dir.parent / "aggregated_results.json"
+                if aggregated_file.exists():
+                    visualizer.generate_all_visualizations(aggregated_file)
+                # Then generate HTML report
+                html_generator = HTMLReportGenerator(output_dir / "charts")
+                html_generator.generate_report(aggregated_file, html_path)
+                console.print(f"[green]✓ Generated HTML report with visualizations: {html_path}[/green]")
 
     except Exception as e:
         console.print(f"[red]✗ Report generation failed: {e}[/red]")
