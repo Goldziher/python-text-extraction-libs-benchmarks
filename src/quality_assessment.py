@@ -207,9 +207,23 @@ class TextQualityAssessor:
 
     def _pdf_quality_checks(self, text: str) -> dict[str, Any]:
         """PDF-specific quality assessment."""
-        # Check for common PDF extraction issues
-        has_encoding_issues = bool(re.search(r"[^\x00-\x7F]+", text))
-        has_ocr_artifacts = bool(re.search(r"\b[A-Z]{2,}\b.*\b[A-Z]{2,}\b", text))
+        # Check for ACTUAL encoding issues (not just non-ASCII)
+        # Look for replacement characters, mojibake, or control characters
+        has_encoding_issues = bool(
+            re.search(r"[\ufffd]", text)  # Unicode replacement character
+            or re.search(r"[ï¿½]+", text)  # Common UTF-8 decode error pattern
+            or re.search(r"[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F-\x9F]", text)  # Control chars (except tab/newline/CR)
+        )
+
+        # Check for REAL OCR artifacts
+        # Look for patterns like: |||||, _____, repeated special chars, broken words
+        has_ocr_artifacts = bool(
+            re.search(r"[|]{5,}", text)  # Excessive pipes
+            or re.search(r"[_]{5,}", text)  # Excessive underscores
+            or re.search(r"([^\w\s])\1{4,}", text)  # Any repeated special char 5+ times
+            or re.search(r"\b\w{1,2}\s+\w{1,2}\s+\w{1,2}\s+\w{1,2}\b", text)  # Fragmented words
+        )
+
         preserves_formatting = bool(re.search(r"\n\s*\n", text))
 
         score = 1.0
@@ -296,27 +310,98 @@ class TextQualityAssessor:
         if total_chars == 0:
             return 1.0
 
-        # Count noise characters
-        noise_chars = len(re.findall(r"[^\w\s.!?,-]", text))
-        return min(1.0, noise_chars / total_chars)
+        # More sophisticated noise detection
+        # We're not using allowed_chars anymore - instead check for specific noise patterns
+
+        noise_score = 0.0
+
+        # Check for specific noise patterns
+        # 1. Excessive special character sequences
+        special_sequences = re.findall(r"[^\w\s]{3,}", text)
+        if special_sequences:
+            noise_score += min(0.3, len("".join(special_sequences)) / total_chars * 10)
+
+        # 2. Broken Unicode or encoding artifacts
+        encoding_artifacts = len(re.findall(r"[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F-\x9F]", text))
+        if encoding_artifacts:
+            noise_score += min(0.3, encoding_artifacts / total_chars * 50)
+
+        # 3. Excessive whitespace patterns
+        excessive_spaces = len(re.findall(r"\s{5,}", text))
+        if excessive_spaces:
+            noise_score += min(0.2, excessive_spaces / 100)
+
+        # 4. OCR-specific noise patterns
+        ocr_noise = len(re.findall(r"[|_]{3,}|([^\w\s])\1{2,}", text))
+        if ocr_noise:
+            noise_score += min(0.2, ocr_noise / 50)
+
+        return min(1.0, noise_score)
 
     def _detect_gibberish(self, text: str) -> float:
-        """Detect gibberish text using simple heuristics."""
-        words = text.split()
+        """Detect gibberish text using language-agnostic heuristics."""
+        if not text.strip():
+            return 1.0
+
+        # Detect the script/language type
+        has_latin = bool(re.search(r"[a-zA-Z]", text))
+        has_hebrew = bool(re.search(r"[\u0590-\u05FF]", text))
+        has_chinese = bool(re.search(r"[\u4E00-\u9FFF]", text))
+        has_japanese = bool(re.search(r"[\u3040-\u309F\u30A0-\u30FF]", text))
+        has_korean = bool(re.search(r"[\uAC00-\uD7AF]", text))
+        has_arabic = bool(re.search(r"[\u0600-\u06FF]", text))
+        has_cyrillic = bool(re.search(r"[\u0400-\u04FF]", text))
+
+        # If we have non-Latin scripts, use different detection
+        if has_hebrew or has_chinese or has_japanese or has_korean or has_arabic:
+            # For non-Latin scripts, check for:
+            # 1. Excessive special characters
+            # 2. Replacement characters
+            # 3. Mixed incompatible scripts (e.g., Hebrew mixed with Cyrillic)
+            special_char_ratio = len(re.findall(r"[^\w\s]", text)) / len(text)
+            has_replacement_chars = "�" in text or "\ufffd" in text
+
+            # Check for script mixing that indicates mojibake
+            script_mixing_score = 0
+            if has_hebrew and has_cyrillic:  # Common mojibake pattern
+                script_mixing_score = 0.8
+
+            gibberish_score = 0.0
+            if special_char_ratio > 0.3:
+                gibberish_score += 0.3
+            if has_replacement_chars:
+                gibberish_score += 0.4
+            gibberish_score += script_mixing_score
+
+            return min(1.0, gibberish_score)
+
+        # For Latin-based text, use the original heuristics but improved
+        words = re.findall(r"\b\w+\b", text)
         if not words:
             return 1.0
 
-        # Check for patterns that indicate gibberish
         gibberish_patterns = 0
-        for word in words:
-            if len(word) > 15:  # Very long words
-                gibberish_patterns += 1
-            if re.search(r"[A-Z]{5,}", word):  # Too many capitals
-                gibberish_patterns += 1
-            if len(re.findall(r"[aeiou]", word.lower())) / len(word) < 0.1:  # No vowels
-                gibberish_patterns += 1
+        total_checks = 0
 
-        return min(1.0, gibberish_patterns / len(words))
+        for word in words[:200]:  # Check first 200 words for performance
+            if len(word) > 2:  # Skip very short words
+                total_checks += 1
+
+                # Very long words without hyphens or known patterns
+                if len(word) > 20 and "-" not in word:
+                    gibberish_patterns += 1
+
+                # Words with no vowels (for Latin text only)
+                elif has_latin and len(word) > 3:
+                    vowel_ratio = len(re.findall(r"[aeiouAEIOU]", word)) / len(word)
+                    if vowel_ratio < 0.1:
+                        gibberish_patterns += 1
+
+                # Excessive consonant clusters
+                elif re.search(r"[bcdfghjklmnpqrstvwxyz]{5,}", word.lower()) or re.search(r"(.)\1{4,}", word):
+                    gibberish_patterns += 1
+
+        return min(1.0, gibberish_patterns / max(total_checks, 1))
 
 
 def enhance_benchmark_results_with_quality(results_file: Path, reference_texts_dir: Path | None = None) -> Path:
