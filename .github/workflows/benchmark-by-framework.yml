@@ -15,7 +15,7 @@ on:
       categories:
         description: 'Categories to test (comma-separated or "all")'
         required: false
-        default: 'tiny,small,medium'
+        default: 'tiny,small,medium,large,huge'
         type: string
       iterations:
         description: 'Number of iterations per test'
