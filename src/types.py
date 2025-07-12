@@ -23,6 +23,8 @@ class Framework(str, Enum):
     MARKITDOWN = "markitdown"
     UNSTRUCTURED = "unstructured"
     EXTRACTOUS = "extractous"
+    PYMUPDF = "pymupdf"
+    PDFPLUMBER = "pdfplumber"
 
 
 class FileType(str, Enum):
