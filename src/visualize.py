@@ -79,9 +79,13 @@ class BenchmarkVisualizer:
         """Create performance comparison charts."""
         output_files = []
 
-        # Extract data for visualization
+        # Extract data for visualization - flatten framework summaries
+        all_summaries = []
+        for fw_summaries in aggregated.framework_summaries.values():
+            all_summaries.extend(fw_summaries)
+
         perf_data = []
-        for summary in aggregated.summaries:
+        for summary in all_summaries:
             if summary.total_files > 0:
                 perf_data.append(
                     {
@@ -172,7 +176,12 @@ class BenchmarkVisualizer:
 
         # Extract memory data
         memory_data = []
-        for summary in aggregated.summaries:
+        # Flatten framework summaries
+        all_summaries = []
+        for fw_summaries in aggregated.framework_summaries.values():
+            all_summaries.extend(fw_summaries)
+
+        for summary in all_summaries:
             if summary.avg_peak_memory_mb and summary.avg_peak_memory_mb > 0:
                 memory_data.append(
                     {
@@ -216,7 +225,12 @@ class BenchmarkVisualizer:
 
         # Calculate overall success rates
         framework_stats = {}
-        for summary in aggregated.summaries:
+        # Flatten framework summaries
+        all_summaries = []
+        for fw_summaries in aggregated.framework_summaries.values():
+            all_summaries.extend(fw_summaries)
+
+        for summary in all_summaries:
             if summary.framework not in framework_stats:
                 framework_stats[summary.framework] = {
                     "total": 0,
@@ -309,7 +323,12 @@ class BenchmarkVisualizer:
         output_files = []
 
         throughput_data = []
-        for summary in aggregated.summaries:
+        # Flatten framework summaries
+        all_summaries = []
+        for fw_summaries in aggregated.framework_summaries.values():
+            all_summaries.extend(fw_summaries)
+
+        for summary in all_summaries:
             if summary.mb_per_second and summary.mb_per_second > 0:
                 throughput_data.append(
                     {
@@ -389,60 +408,9 @@ class BenchmarkVisualizer:
 
     def _create_per_file_breakdown(self, aggregated: AggregatedResults) -> list[Path]:
         """Create per-file performance breakdown charts."""
-        output_files = []
-
-        # Get detailed results for specific categories
-        categories_to_analyze = ["small", "medium", "large"]
-
-        for category in categories_to_analyze:
-            cat_results = []
-
-            for result in aggregated.results:
-                if result.metadata.category == category:
-                    cat_results.append(
-                        {
-                            "Framework": result.metadata.framework,
-                            "File": Path(result.metadata.file_path).name,
-                            "Size (MB)": result.metadata.file_size_bytes / (1024 * 1024),
-                            "Time (s)": result.metrics.extraction_time,
-                            "Memory (MB)": result.metrics.peak_memory_mb or 0,
-                            "Success": result.metadata.status == "success",
-                        }
-                    )
-
-            if not cat_results:
-                continue
-
-            df = pd.DataFrame(cat_results)
-
-            # Create per-file breakdown chart
-            fig, axes = plt.subplots(2, 1, figsize=(20, 16))
-
-            # Top chart: Time comparison
-            df_pivot = df.pivot(index="File", columns="Framework", values="Time (s)")
-            df_pivot.plot(kind="barh", ax=axes[0], width=0.8)
-            axes[0].set_title(f"Extraction Time by File - {category.title()} Category", fontsize=18, fontweight="bold")
-            axes[0].set_xlabel("Time (seconds)", fontsize=14)
-            axes[0].set_xscale("log")
-            axes[0].grid(True, alpha=0.3, axis="x")
-            axes[0].legend(title="Framework", bbox_to_anchor=(1.05, 1), loc="upper left")
-
-            # Bottom chart: Memory usage
-            if df["Memory (MB)"].sum() > 0:
-                df_pivot_mem = df.pivot(index="File", columns="Framework", values="Memory (MB)")
-                df_pivot_mem.plot(kind="barh", ax=axes[1], width=0.8)
-                axes[1].set_title(f"Memory Usage by File - {category.title()} Category", fontsize=18, fontweight="bold")
-                axes[1].set_xlabel("Memory (MB)", fontsize=14)
-                axes[1].grid(True, alpha=0.3, axis="x")
-                axes[1].legend(title="Framework", bbox_to_anchor=(1.05, 1), loc="upper left")
-
-            plt.tight_layout()
-            output_path = self.output_dir / f"per_file_breakdown_{category}.png"
-            plt.savefig(output_path, bbox_inches="tight", dpi=150)
-            plt.close()
-            output_files.append(output_path)
-
-        return output_files
+        # Skip - individual results not available in aggregated data
+        # This would require access to the detailed benchmark results
+        return []
 
     def _create_category_analysis(self, aggregated: AggregatedResults) -> list[Path]:
         """Create comprehensive category analysis."""
@@ -450,7 +418,12 @@ class BenchmarkVisualizer:
 
         # Aggregate data by category
         category_data = {}
-        for summary in aggregated.summaries:
+        # Flatten framework summaries
+        all_summaries = []
+        for fw_summaries in aggregated.framework_summaries.values():
+            all_summaries.extend(fw_summaries)
+
+        for summary in all_summaries:
             cat = summary.category
             if cat not in category_data:
                 category_data[cat] = {
@@ -594,7 +567,12 @@ class BenchmarkVisualizer:
 
         # Prepare data
         perf_data = []
-        for summary in aggregated.summaries:
+        # Flatten framework summaries
+        all_summaries = []
+        for fw_summaries in aggregated.framework_summaries.values():
+            all_summaries.extend(fw_summaries)
+
+        for summary in all_summaries:
             perf_data.append(
                 {
                     "framework": summary.framework,
@@ -671,33 +649,8 @@ class BenchmarkVisualizer:
             col=1,
         )
 
-        # 6. File size vs extraction time (from detailed results)
-        scatter_data = []
-        for result in aggregated.results[:500]:  # Limit to 500 points for performance
-            if result.metadata.status == "success":
-                scatter_data.append(
-                    {
-                        "size_mb": result.metadata.file_size_bytes / (1024 * 1024),
-                        "time": result.metrics.extraction_time,
-                        "framework": result.metadata.framework,
-                    }
-                )
-
-        if scatter_data:
-            scatter_df = pd.DataFrame(scatter_data)
-            for fw in scatter_df["framework"].unique():
-                fw_data = scatter_df[scatter_df["framework"] == fw]
-                fig.add_trace(
-                    go.Scatter(
-                        x=fw_data["size_mb"],
-                        y=fw_data["time"],
-                        mode="markers",
-                        name=fw,
-                        marker={"size": 6, "color": FRAMEWORK_COLORS.get(fw, "#999999"), "opacity": 0.6},
-                    ),
-                    row=3,
-                    col=2,
-                )
+        # 6. File size vs extraction time (skip - requires detailed results)
+        # This would require access to individual benchmark results
 
         # Update layout
         fig.update_layout(
@@ -726,3 +679,55 @@ class BenchmarkVisualizer:
         fig.write_html(str(output_path), include_plotlyjs="cdn")
 
         return output_path
+
+    def generate_summary_metrics(self, aggregated_file: Path) -> dict:
+        """Generate summary metrics from aggregated results."""
+        with open(aggregated_file, "rb") as f:
+            aggregated = msgspec.json.decode(f.read(), type=AggregatedResults)
+
+        # Flatten all summaries
+        all_summaries = []
+        for fw_summaries in aggregated.framework_summaries.values():
+            all_summaries.extend(fw_summaries)
+
+        # Calculate overall metrics
+        metrics = {
+            "total_runs": aggregated.total_runs,
+            "total_files_processed": aggregated.total_files_processed,
+            "total_time_seconds": aggregated.total_time_seconds,
+            "frameworks_tested": len(aggregated.framework_summaries),
+            "framework_performance": {},
+            "category_performance": {},
+        }
+
+        # Framework performance
+        for framework, summaries in aggregated.framework_summaries.items():
+            total_files = sum(s.total_files for s in summaries)
+            successful_files = sum(s.successful_files for s in summaries)
+            avg_speed = (
+                sum(s.files_per_second * s.total_files for s in summaries) / total_files if total_files > 0 else 0
+            )
+            avg_memory = (
+                sum(s.avg_peak_memory_mb * s.total_files for s in summaries) / total_files if total_files > 0 else 0
+            )
+
+            metrics["framework_performance"][framework] = {
+                "total_files": total_files,
+                "successful_files": successful_files,
+                "success_rate": successful_files / total_files if total_files > 0 else 0,
+                "avg_files_per_second": avg_speed,
+                "avg_memory_mb": avg_memory,
+            }
+
+        # Category performance
+        for category, summaries in aggregated.category_summaries.items():
+            total_files = sum(s.total_files for s in summaries)
+            successful_files = sum(s.successful_files for s in summaries)
+
+            metrics["category_performance"][category] = {
+                "total_files": total_files,
+                "successful_files": successful_files,
+                "success_rate": successful_files / total_files if total_files > 0 else 0,
+            }
+
+        return metrics
