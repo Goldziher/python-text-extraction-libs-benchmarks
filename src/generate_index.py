@@ -48,24 +48,9 @@ def get_framework_versions() -> dict[str, str]:
     }
 
 
-def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
-    """Generate comprehensive index.html from aggregated results."""
-    # Load aggregated results
-    with open(aggregated_path, "rb") as f:
-        results = msgspec.json.decode(f.read())
-
-    # Get framework versions
-    versions = get_framework_versions()
-
-    # Calculate comprehensive metrics for the summary table
+def calculate_framework_stats(results: dict) -> dict:
+    """Calculate framework statistics from aggregated results."""
     framework_stats = {}
-    dataset_stats = {
-        "total_extractions": 0,
-        "total_frameworks": 0,
-        "total_file_types": set(),
-        "total_categories": set(),
-        "size_ranges": {"tiny": 0, "small": 0, "medium": 0, "large": 0, "huge": 0},
-    }
 
     for framework, summaries in results["framework_summaries"].items():
         if not summaries:
@@ -80,9 +65,15 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         # Success rate on files actually tested
         success_rate = (successful_files / total_files * 100) if total_files > 0 else 0
 
-        # Average speed (files per second) - weighted by successful files
-        speeds = [s.get("files_per_second", 0) for s in summaries if s.get("files_per_second")]
-        avg_speed = sum(speeds) / len(speeds) if speeds else 0
+        # Calculate speed and memory by category
+        category_speeds = {}
+        category_memories = {}
+        for s in summaries:
+            category = s.get("category", "unknown")
+            speed = s.get("files_per_second", 0)
+            memory = s.get("avg_peak_memory_mb", 0)
+            category_speeds[category] = speed
+            category_memories[category] = memory
 
         # Average memory usage - weighted average
         memories = [s["avg_peak_memory_mb"] for s in summaries if s.get("avg_peak_memory_mb")]
@@ -92,24 +83,184 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         throughputs = [s.get("mb_per_second", 0) for s in summaries if s.get("mb_per_second")]
         avg_throughput = sum(throughputs) / len(throughputs) if throughputs else 0
 
+        # Failure breakdown
+        failure_types = []
+        if failed_files > 0:
+            failure_types.append(f"{failed_files} errors")
+        if timeout_files > 0:
+            failure_types.append(f"{timeout_files} timeouts")
+
         framework_stats[framework] = {
             "success_rate": success_rate,
-            "avg_speed": avg_speed,
+            "category_speeds": category_speeds,
+            "category_memories": category_memories,
             "avg_memory": avg_memory,
             "avg_throughput": avg_throughput,
             "total_files": total_files,
+            "failure_breakdown": failure_types,
             "successful_files": successful_files,
             "failed_files": failed_files,
             "timeout_files": timeout_files,
-            "version": versions.get(framework.replace("_sync", "").replace("_async", ""), "Unknown"),
+            "version": get_framework_versions().get(framework.replace("_sync", "").replace("_async", ""), "Unknown"),
         }
 
-        # Update dataset statistics
-        dataset_stats["total_extractions"] += total_files
-        for summary in summaries:
-            dataset_stats["total_categories"].add(summary.get("category", "unknown"))
-            if summary.get("category") in dataset_stats["size_ranges"]:
-                dataset_stats["size_ranges"][summary["category"]] += summary.get("total_files", 0)
+    return framework_stats
+
+
+def generate_performance_table(sorted_frameworks: list, install_sizes: dict, licenses: dict) -> str:
+    """Generate the performance table HTML."""
+    html = """
+        <h3>Framework Performance Rankings</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">Framework</th>
+                    <th rowspan="2">License</th>
+                    <th colspan="5">Speed by Category (files/sec)</th>
+                    <th rowspan="2">Success Rate</th>
+                    <th rowspan="2">Failures</th>
+                    <th rowspan="2">Memory (MB)</th>
+                    <th rowspan="2">Install Size</th>
+                </tr>
+                <tr>
+                    <th>Tiny</th>
+                    <th>Small</th>
+                    <th>Medium</th>
+                    <th>Large</th>
+                    <th>Huge</th>
+                </tr>
+            </thead>
+            <tbody>"""
+
+    for fw_name, stats in sorted_frameworks:
+        # Get speeds for each category
+        categories = ["tiny", "small", "medium", "large", "huge"]
+        category_speeds = stats.get("category_speeds", {})
+
+        speed_cells = ""
+        for cat in categories:
+            if cat in category_speeds:
+                speed = category_speeds[cat]
+                if speed > 0:
+                    speed_cells += f"<td>{speed:.2f}</td>"
+                else:
+                    speed_cells += "<td>-</td>"
+            else:
+                # Check if this category failed/timed out
+                speed_cells += "<td>TIMEOUT</td>"
+
+        # Handle failures display
+        failure_display = ", ".join(stats["failure_breakdown"]) if stats["failure_breakdown"] else "None"
+
+        memory_display = "N/A" if stats["avg_memory"] == 0 else f"{stats['avg_memory']:.1f}"
+        license_display = licenses.get(fw_name, "Unknown")
+
+        # Color code licenses for easy identification
+        if license_display == "AGPL v3.0":
+            license_display = '<span style="color: #dc3545; font-weight: bold;">⚠️ AGPL v3.0</span>'
+        elif license_display in ["MIT", "Apache 2.0"]:
+            license_display = f'<span style="color: #28a745;">✅ {license_display}</span>'
+
+        html += f"""
+                <tr>
+                    <td>{fw_name.replace("_", " ").title()}</td>
+                    <td>{license_display}</td>
+                    {speed_cells}
+                    <td>{stats["success_rate"]:.1f}%</td>
+                    <td>{failure_display}</td>
+                    <td>{memory_display}</td>
+                    <td>{install_sizes.get(fw_name, "N/A")}</td>
+                </tr>"""
+
+    html += """
+            </tbody>
+        </table>
+        <p><small>Success rates calculated on files actually tested by each framework. TIMEOUT indicates categories not tested due to time constraints.</small></p>"""
+
+    return html
+
+
+def generate_memory_table(sorted_frameworks: list) -> str:
+    """Generate the memory usage table HTML."""
+    html = """
+        <h3>Memory Usage by Category</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">Framework</th>
+                    <th colspan="5">Memory Usage by Category (MB)</th>
+                    <th rowspan="2">Avg Memory (MB)</th>
+                </tr>
+                <tr>
+                    <th>Tiny</th>
+                    <th>Small</th>
+                    <th>Medium</th>
+                    <th>Large</th>
+                    <th>Huge</th>
+                </tr>
+            </thead>
+            <tbody>"""
+
+    # Generate memory table rows
+    for fw_name, stats in sorted_frameworks:
+        categories = ["tiny", "small", "medium", "large", "huge"]
+        category_memories = stats.get("category_memories", {})
+
+        memory_cells = ""
+        for cat in categories:
+            if cat in category_memories:
+                memory = category_memories[cat]
+                if memory > 0:
+                    memory_cells += f"<td>{memory:.0f}</td>"
+                else:
+                    memory_cells += "<td>-</td>"
+            else:
+                memory_cells += "<td>-</td>"
+
+        avg_memory_display = f"{stats['avg_memory']:.0f}" if stats["avg_memory"] > 0 else "N/A"
+
+        html += f"""
+                <tr>
+                    <td>{fw_name.replace("_", " ").title()}</td>
+                    {memory_cells}
+                    <td>{avg_memory_display}</td>
+                </tr>"""
+
+    html += """
+            </tbody>
+        </table>
+        <p><small>Memory usage shown as peak RSS (Resident Set Size) in MB during extraction</small></p>"""
+
+    return html
+
+
+def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
+    """Generate comprehensive index.html from aggregated results."""
+    # Load aggregated results
+    with open(aggregated_path, "rb") as f:
+        results = msgspec.json.decode(f.read())
+
+    # Get framework versions
+    versions = get_framework_versions()
+
+    # Calculate comprehensive metrics for the summary table
+    framework_stats = calculate_framework_stats(results)
+
+    dataset_stats = {
+        "total_extractions": 0,
+        "total_frameworks": 0,
+        "total_file_types": set(),
+        "total_categories": set(),
+        "size_ranges": {"tiny": 0, "small": 0, "medium": 0, "large": 0, "huge": 0},
+    }
+
+    # Update dataset statistics
+    for stats in framework_stats.values():
+        dataset_stats["total_extractions"] += stats["total_files"]
+        for category in stats["category_speeds"]:
+            dataset_stats["total_categories"].add(category)
+            if category in dataset_stats["size_ranges"]:
+                dataset_stats["size_ranges"][category] += 1
 
     dataset_stats["total_frameworks"] = len(framework_stats)
     dataset_stats["total_file_types"] = len(results.get("file_types", []))
@@ -196,22 +347,12 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
             <strong>⚠️ Methodology Note:</strong> All frameworks are multi-format text extraction libraries tested across all supported file types for fair comparison.
         </div>
 
-        <h3>Framework Performance Rankings</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Framework</th>
-                    <th>License</th>
-                    <th>Avg Speed (files/sec)</th>
-                    <th>Success Rate</th>
-                    <th>Memory Usage (MB)</th>
-                    <th>Installation Size</th>
-                </tr>
-            </thead>
-            <tbody>"""
+"""
 
-    # Sort frameworks by speed
-    sorted_frameworks = sorted(framework_stats.items(), key=lambda x: x[1]["avg_speed"], reverse=True)
+    # Sort frameworks by success rate then by total successful files
+    sorted_frameworks = sorted(
+        framework_stats.items(), key=lambda x: (x[1]["success_rate"], x[1]["successful_files"]), reverse=True
+    )
 
     # Installation sizes and licenses
     install_sizes = {
@@ -232,31 +373,13 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         "extractous": "Apache 2.0",
     }
 
-    for fw_name, stats in sorted_frameworks:
-        # Handle missing or zero speed data properly
-        speed_display = "Failed/Timeout" if stats["avg_speed"] == 0 else f"{stats['avg_speed']:.2f}"
-        memory_display = "N/A" if stats["avg_memory"] == 0 else f"{stats['avg_memory']:.1f}"
-        license_display = licenses.get(fw_name, "Unknown")
-        # Color code licenses for easy identification
-        if license_display == "AGPL v3.0":
-            license_display = '<span style="color: #dc3545; font-weight: bold;">⚠️ AGPL v3.0</span>'
-        elif license_display in ["MIT", "Apache 2.0"]:
-            license_display = f'<span style="color: #28a745;">✅ {license_display}</span>'
+    # Generate performance table
+    html += generate_performance_table(sorted_frameworks, install_sizes, licenses)
 
-        html += f"""
-                <tr>
-                    <td>{fw_name.replace("_", " ").title()}</td>
-                    <td>{license_display}</td>
-                    <td>{speed_display}</td>
-                    <td>{stats["success_rate"]:.1f}%</td>
-                    <td>{memory_display}</td>
-                    <td>{install_sizes.get(fw_name, "N/A")}</td>
-                </tr>"""
+    # Generate memory table
+    html += generate_memory_table(sorted_frameworks)
 
     html += """
-            </tbody>
-        </table>
-        <p><small>Success rates calculated on files actually tested by each framework</small></p>
     </section>
 
     <section id="performance" class="section">
