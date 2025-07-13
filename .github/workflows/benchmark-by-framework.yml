@@ -5,6 +5,10 @@ on:
     types: [published]
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/benchmark-by-framework.yml'
   workflow_dispatch:
     inputs:
       frameworks:
@@ -58,7 +62,7 @@ jobs:
           fi
 
           # Parse categories
-          INPUT_CATEGORIES="${{ github.event.inputs.categories || 'tiny,small,medium' }}"
+          INPUT_CATEGORIES="${{ github.event.inputs.categories || 'tiny,small,medium,large,huge' }}"
           if [ "$INPUT_CATEGORIES" = "all" ]; then
             CATEGORIES='["tiny","small","medium","large","huge"]'
           else
