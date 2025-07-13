@@ -48,50 +48,11 @@ def get_framework_versions() -> dict[str, str]:
     }
 
 
-def filter_pdf_specialists(results: dict) -> dict:
-    """Filter out PDF specialist frameworks from aggregated results."""
-    pdf_specialists = {"pymupdf", "pdfplumber", "playa"}
-
-    if "framework_summaries" in results:
-        results["framework_summaries"] = {
-            framework: summaries
-            for framework, summaries in results["framework_summaries"].items()
-            if framework.lower() not in pdf_specialists
-        }
-
-    if "framework_category_matrix" in results:
-        results["framework_category_matrix"] = {
-            key: summary
-            for key, summary in results["framework_category_matrix"].items()
-            if not any(specialist in key.lower() for specialist in pdf_specialists)
-        }
-
-    if "performance_over_iterations" in results:
-        results["performance_over_iterations"] = {
-            framework: iterations
-            for framework, iterations in results["performance_over_iterations"].items()
-            if framework.lower() not in pdf_specialists
-        }
-
-    if "platform_results" in results:
-        for platform, platform_data in results["platform_results"].items():
-            results["platform_results"][platform] = {
-                framework: summary
-                for framework, summary in platform_data.items()
-                if framework.lower() not in pdf_specialists
-            }
-
-    return results
-
-
 def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     """Generate comprehensive index.html from aggregated results."""
     # Load aggregated results
     with open(aggregated_path, "rb") as f:
         results = msgspec.json.decode(f.read())
-
-    # Filter out PDF specialist frameworks
-    results = filter_pdf_specialists(results)
 
     # Get framework versions
     versions = get_framework_versions()

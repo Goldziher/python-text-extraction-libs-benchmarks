@@ -31,11 +31,8 @@ class BenchmarkReporter:
             results: List of individual benchmark results.
             summaries: List of benchmark summaries.
         """
-        # Filter out PDF specialist frameworks to focus on multi-format frameworks only
-        pdf_specialists = {"pymupdf", "pdfplumber", "playa"}
-
-        self.results = [result for result in results if result.framework.value.lower() not in pdf_specialists]
-        self.summaries = [summary for summary in summaries if summary.framework.value.lower() not in pdf_specialists]
+        self.results = results
+        self.summaries = summaries
 
     def print_summary_table(self) -> None:
         """Print a summary table to the console."""
@@ -107,26 +104,12 @@ class BenchmarkReporter:
             ".org",
         }
 
-        # Filter out PDF specialist frameworks to focus on multi-format frameworks only
-        pdf_specialists = {"pymupdf", "pdfplumber", "playa"}
-
         for framework, exclusions in FRAMEWORK_EXCLUSIONS.items():
-            if (
-                framework
-                in [
-                    "kreuzberg_sync",
-                    "docling",
-                    "markitdown",
-                    "unstructured",
-                    "extractous",
-                ]
-                and framework not in pdf_specialists
-            ):
-                excluded = ", ".join(sorted(exclusions))
-                supported_count = len(all_formats - exclusions)
-                support_table.add_row(
-                    framework.replace("_", " ").title(), excluded if excluded else "None", f"{supported_count}/20"
-                )
+            excluded = ", ".join(sorted(exclusions))
+            supported_count = len(all_formats - exclusions)
+            support_table.add_row(
+                framework.replace("_", " ").title(), excluded if excluded else "None", f"{supported_count}/20"
+            )
 
         console.print(support_table)
 

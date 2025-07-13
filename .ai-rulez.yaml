@@ -180,7 +180,7 @@ rules:
       - Only create documentation files if explicitly requested by the User
       - NO framework recommendations - present data objectively
       - Focus on benchmarking accuracy and fairness
-      - Filter out PDF specialist frameworks (PyMuPDF, PDFPlumber, Playa) - focus on multi-format frameworks only
+      - Focus on multi-format text extraction frameworks only
 
   - name: "CI/CD and Deployment"
     priority: 7
