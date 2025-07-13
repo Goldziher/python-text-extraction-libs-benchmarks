@@ -146,8 +146,8 @@ def generate_performance_table(sorted_frameworks: list, install_sizes: dict, lic
                 else:
                     speed_cells += "<td>-</td>"
             else:
-                # Check if this category failed/timed out
-                speed_cells += "<td>TIMEOUT</td>"
+                # Category not tested in this benchmark run
+                speed_cells += "<td>—</td>"
 
         # Handle failures display
         failure_display = ", ".join(stats["failure_breakdown"]) if stats["failure_breakdown"] else "None"
@@ -175,7 +175,7 @@ def generate_performance_table(sorted_frameworks: list, install_sizes: dict, lic
     html += """
             </tbody>
         </table>
-        <p><small>Success rates calculated on files actually tested by each framework. TIMEOUT indicates categories not tested due to time constraints.</small></p>"""
+        <p><small>Success rates calculated on files actually tested by each framework. "—" indicates categories not included in this benchmark run.</small></p>"""
 
     return html
 
