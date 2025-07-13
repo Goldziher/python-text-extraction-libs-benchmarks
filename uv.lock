@@ -1301,7 +1301,7 @@ wheels = [
 
 [[package]]
 name = "kreuzberg"
-version = "3.8.0"
+version = "3.8.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1315,9 +1315,9 @@ dependencies = [
     { name = "python-calamine" },
     { name = "python-pptx" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/af/c4/d0e8818dc1e9dd5187064c50b3e813be9adfa2446c2e012eab62ed9c1f85/kreuzberg-3.8.0.tar.gz", hash = "sha256:53e5cdea45c41e3ec8e88acae30cf64c676e220e165b640e40d4b96eb4249239", size = 9826823, upload-time = "2025-07-12T22:51:34.83Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/63/1fdb054786e744eefa958826541e9f44bf224e3609941653d82564c0ac89/kreuzberg-3.8.1.tar.gz", hash = "sha256:cf776dfd6b75b47685fd0303df3369f528237d3c57a13efac77c29c034388536", size = 9818866, upload-time = "2025-07-13T07:50:37.177Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ce/9a/37df169447537511e1d8ff24853516f5b809b1de717528f9b5b8c83af299/kreuzberg-3.8.0-py3-none-any.whl", hash = "sha256:9c36470910e8abcdeba74b947ebed47a5c005e46b12e300e8e0114a6bafaa64c", size = 109236, upload-time = "2025-07-12T22:51:32.601Z" },
+    { url = "https://files.pythonhosted.org/packages/37/97/9851202e260b668a86ecadeb53ecd827e0c0f2ef39e3144c5dd645a46f68/kreuzberg-3.8.1-py3-none-any.whl", hash = "sha256:0ed69cfe6f8a1a1cc00f335c7f3254ae35190724569c1ac89a9ae3c0655e63d6", size = 104360, upload-time = "2025-07-13T07:50:35.315Z" },
 ]
 
 [package.optional-dependencies]
@@ -3264,7 +3264,7 @@ requires-dist = [
     { name = "click", specifier = ">=8.2.1" },
     { name = "docling", specifier = ">=2.41.0" },
     { name = "extractous", specifier = ">=0.1.0" },
-    { name = "kreuzberg", specifier = ">=3.8.0" },
+    { name = "kreuzberg", specifier = ">=3.8.1" },
     { name = "kreuzberg", extras = ["easyocr"], marker = "extra == 'ocr'" },
     { name = "kreuzberg", extras = ["paddleocr"], marker = "extra == 'ocr'" },
     { name = "markitdown", specifier = ">=0.0.1a2" },

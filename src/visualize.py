@@ -18,6 +18,11 @@ from src.types import AggregatedResults
 FRAMEWORK_COLORS = {
     "kreuzberg_sync": "#2E86AB",  # Blue
     "kreuzberg_async": "#A23B72",  # Purple
+    "kreuzberg_tesseract": "#4A7C7E",  # Teal
+    "kreuzberg_easyocr": "#8B5A3C",  # Brown
+    "kreuzberg_easyocr_sync": "#8B5A3C",  # Brown (same as async variant)
+    "kreuzberg_paddleocr": "#6A5ACD",  # Slate Blue
+    "kreuzberg_paddleocr_sync": "#6A5ACD",  # Slate Blue (same as async variant)
     "docling": "#F18F01",  # Orange
     "markitdown": "#C73E1D",  # Red
     "unstructured": "#5B9A8B",  # Green
