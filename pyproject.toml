@@ -53,6 +53,7 @@ scripts.benchmark = "src.cli:main"
 
 [dependency-groups]
 dev = [
+  "ai-rulez>=1.1.4",
   "covdefaults>=2.3.0",
   "mdformat>=0.7.22",
   "mdformat-mkdocs>=4.3.0",

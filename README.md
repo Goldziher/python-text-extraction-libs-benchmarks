@@ -14,7 +14,7 @@
 [![Frameworks](https://img.shields.io/badge/frameworks-6-green.svg)](#tested-frameworks)
 [![Documents](https://img.shields.io/badge/test_documents-94-blue.svg)](#benchmark-dataset)
 
-> **🎯 [📊 VIEW LIVE BENCHMARK RESULTS →](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)**
+> **🎯 [📊 VIEW LIVE BENCHMARK RESULTS →](https://benchmarks.kreuzberg.dev)**
 
 ## 🔍 What is This?
 
@@ -52,8 +52,8 @@ Our GitHub Actions workflow automatically:
 git clone https://github.com/Goldziher/python-text-extraction-libs-benchmarks.git
 cd python-text-extraction-libs-benchmarks
 
-# Install with uv (recommended) or pip
-uv sync --all-extras  # or: pip install -e ".[ocr]"
+# Install with uv
+uv sync --all-extras
 
 # Run benchmarks for all frameworks
 uv run python -m src.cli benchmark
@@ -98,7 +98,7 @@ uv run python -m src.cli benchmark \
 
 ## 📊 Benchmark Results Overview
 
-> **[📈 View Full Interactive Results →](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)**
+> **[📈 View Full Interactive Results →](https://benchmarks.kreuzberg.dev)**
 
 ### What's in the Results?
 

@@ -245,7 +245,7 @@ jobs:
           - Pre-commit hooks applied
 
           ### Benchmarks
-          Comprehensive benchmarks are now running automatically and will be published to [GitHub Pages](https://goldziher.github.io/python-text-extraction-libs-benchmarks/) when complete.
+          Comprehensive benchmarks are now running automatically and will be published to [Kreuzberg Benchmarks](https://benchmarks.kreuzberg.dev) when complete.
 
           ---
           *This release was automatically created by the framework update workflow.*
