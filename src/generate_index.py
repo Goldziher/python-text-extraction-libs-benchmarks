@@ -435,10 +435,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         <!-- Performance heatmap not available in current visualizations -->
 
         <div style="text-align: center; margin: 30px 0;">
-            <a href="visualizations/interactive_dashboard_enhanced.html" style="background: #28a745; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none; margin-right: 15px;">
-                📈 Open Interactive Dashboard
-            </a>
-            <a href="reports/benchmark_report.html#performance" style="background: #6c757d; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none;">
+            <a href="reports/benchmark_report.html" style="background: #6c757d; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none;">
                 📊 View Detailed Performance Report
             </a>
         </div>
@@ -540,10 +537,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         </ul>
 
         <div style="text-align: center; margin: 30px 0;">
-            <a href="visualizations/analysis/interactive_dashboard.html" style="background: #17a2b8; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none; margin-right: 15px;">
-                🔍 Explore Memory Data Interactively
-            </a>
-            <a href="reports/benchmark_report.html#memory" style="background: #6c757d; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none;">
+            <a href="reports/benchmark_report.html" style="background: #6c757d; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none;">
                 📋 View Detailed Memory Report
             </a>
         </div>
@@ -865,14 +859,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         </p>
 
         <h3>🔬 Advanced Analysis</h3>
-        <p>
-            <a href="visualizations/analysis/interactive_dashboard.html" style="background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; margin-right: 10px;">
-                📊 File Type Performance Dashboard
-            </a>
-            <a href="visualizations/analysis/performance_insights.md" style="background: #17a2b8; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; margin-right: 10px;">📝 Per-Format Analysis</a>
-            <a href="visualizations/analysis/metadata/metadata_analysis_summary.md" style="background: #fd7e14; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; margin-right: 10px;">📋 Metadata Analysis</a>
-            <a href="visualizations/analysis/tables/table_extraction_analysis.json" style="background: #6610f2; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">📊 Table Analysis</a>
-        </p>
+        <p><em>Additional analysis modules are available in the detailed reports section above.</em></p>
 
         <h3>📊 Table Extraction Analysis</h3>
         <p>Specialized analysis of table detection and extraction capabilities across frameworks, focusing on structure preservation, cell accuracy, and formatting retention.</p>
@@ -921,17 +908,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         </ul>
 
         <h3>📊 Per-File-Type Performance Analysis</h3>
-        <p>
-            <a href="visualizations/analysis/interactive_dashboard.html" style="background: #6f42c1; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; margin-right: 10px;">
-                📈 Interactive Performance Dashboard
-            </a>
-            <a href="visualizations/analysis/performance_by_file_type.png" style="background: #e83e8c; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; margin-right: 10px;">
-                📊 Performance Charts
-            </a>
-            <a href="visualizations/analysis/file_type_performance_summary.csv" style="background: #20c997; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">
-                📋 Download CSV Data
-            </a>
-        </p>
+        <p><em>Detailed per-file-type performance data is available in the benchmark reports above.</em></p>
 
         <h4>🔬 Performance Methodology by File Type</h4>
         <ul>
