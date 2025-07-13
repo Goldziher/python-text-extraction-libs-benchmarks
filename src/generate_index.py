@@ -1,4 +1,12 @@
-"""Generate dynamic HTML index for GitHub Pages from aggregated results."""
+"""Generate dynamic HTML index for GitHub Pages from aggregated results.
+
+~keep GitHub Pages generation that:
+- Parses aggregated benchmark results into HTML tables
+- Shows speed/memory by category to avoid misleading averages
+- Extracts framework versions from pyproject.toml for accurate reporting
+- Creates downloadable CSV exports and interactive charts
+- Generates deployment-ready static site from benchmark data
+"""
 
 import re
 from pathlib import Path
@@ -7,7 +15,7 @@ import msgspec
 
 
 def get_framework_versions() -> dict[str, str]:
-    """Extract framework versions from pyproject.toml."""
+    """~keep Extract exact framework versions tested for accurate reporting."""
     pyproject_path = Path("pyproject.toml")
     if not pyproject_path.exists():
         pyproject_path = Path("../pyproject.toml")
@@ -49,23 +57,24 @@ def get_framework_versions() -> dict[str, str]:
 
 
 def calculate_framework_stats(results: dict) -> dict:
-    """Calculate framework statistics from aggregated results."""
+    """~keep Calculate statistics avoiding misleading averages across categories."""
     framework_stats = {}
 
     for framework, summaries in results["framework_summaries"].items():
         if not summaries:
             continue
 
-        # Calculate overall metrics
+        # Aggregate file counts across all tested categories
         total_files = sum(s["total_files"] for s in summaries)
         successful_files = sum(s["successful_files"] for s in summaries)
         failed_files = sum(s.get("failed_files", 0) for s in summaries)
         timeout_files = sum(s.get("timeout_files", 0) for s in summaries)
 
-        # Success rate on files actually tested
+        # Success rate: percentage of files successfully processed
         success_rate = (successful_files / total_files * 100) if total_files > 0 else 0
 
-        # Calculate speed and memory by category
+        # Speed and memory BY CATEGORY - prevents misleading averages
+        # (e.g., if framework only tested tiny files, don't average with medium)
         category_speeds = {}
         category_memories = {}
         for s in summaries:
@@ -75,15 +84,15 @@ def calculate_framework_stats(results: dict) -> dict:
             category_speeds[category] = speed
             category_memories[category] = memory
 
-        # Average memory usage - weighted average
+        # Weighted average memory across categories that were actually tested
         memories = [s["avg_peak_memory_mb"] for s in summaries if s.get("avg_peak_memory_mb")]
         avg_memory = sum(memories) / len(memories) if memories else 0
 
-        # Throughput
+        # Data throughput (MB/sec) across categories
         throughputs = [s.get("mb_per_second", 0) for s in summaries if s.get("mb_per_second")]
         avg_throughput = sum(throughputs) / len(throughputs) if throughputs else 0
 
-        # Failure breakdown
+        # Detailed failure breakdown for debugging
         failure_types = []
         if failed_files > 0:
             failure_types.append(f"{failed_files} errors")
@@ -92,8 +101,8 @@ def calculate_framework_stats(results: dict) -> dict:
 
         framework_stats[framework] = {
             "success_rate": success_rate,
-            "category_speeds": category_speeds,
-            "category_memories": category_memories,
+            "category_speeds": category_speeds,  # Key: prevents misleading speed averages
+            "category_memories": category_memories,  # Key: prevents misleading memory averages
             "avg_memory": avg_memory,
             "avg_throughput": avg_throughput,
             "total_files": total_files,

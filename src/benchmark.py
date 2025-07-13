@@ -1,4 +1,12 @@
-"""Enhanced benchmark runner with comprehensive testing capabilities."""
+"""Enhanced benchmark runner with comprehensive testing capabilities.
+
+~keep Core benchmarking logic that:
+- Runs multiple iterations with warmup/cooldown for statistical significance
+- Profiles CPU, memory usage during extraction for each framework
+- Handles both sync/async extractors with timeout protection
+- Categorizes documents by size/type for fair comparison
+- Aggregates results with failure analysis and quality metrics
+"""
 
 from __future__ import annotations
 
@@ -29,18 +37,26 @@ if TYPE_CHECKING:
 
 
 class ComprehensiveBenchmarkRunner:
-    """Enhanced benchmark runner with failure handling and multiple runs."""
+    """~keep Orchestrates multi-iteration benchmarks with resource monitoring.
+
+    Key responsibilities:
+    - Run warmup iterations to eliminate cold-start effects
+    - Execute multiple benchmark iterations for statistical significance
+    - Profile CPU/memory usage during extraction
+    - Handle both sync/async extractors uniformly
+    - Aggregate results with failure analysis
+    """
 
     def __init__(self, config: BenchmarkConfig) -> None:
         self.config = config
         self.console = Console()
-        self.categorizer = DocumentCategorizer()
-        self.executor = ThreadPoolExecutor(max_workers=4)
+        self.categorizer = DocumentCategorizer()  # Categorizes docs by size/type
+        self.executor = ThreadPoolExecutor(max_workers=4)  # For sync extractors
         self.results: list[BenchmarkResult] = []
-        self.failed_files: dict[str, int] = {}  # file -> failure count
+        self.failed_files: dict[str, int] = {}  # Track repeated failures
 
     async def run_benchmark_suite(self) -> list[BenchmarkResult]:
-        """Run complete benchmark suite with multiple iterations."""
+        """~keep Main entry point: run multi-iteration benchmark with warmup/cooldown."""
         self.console.print(
             f"[bold blue]Starting comprehensive benchmark suite[/bold blue]\n"
             f"Iterations: {self.config.iterations}\n"
@@ -48,12 +64,12 @@ class ComprehensiveBenchmarkRunner:
             f"Categories: {', '.join(c.value for c in self.config.categories)}\n"
         )
 
-        # Run warmup if configured
+        # Warmup eliminates JIT compilation and framework initialization overhead
         if self.config.warmup_runs > 0:
             self.console.print("\n[yellow]Running warmup iterations...[/yellow]")
             await self._run_warmup()
 
-        # Main benchmark iterations
+        # Multiple iterations provide statistical significance and detect variance
         for iteration in range(self.config.iterations):
             self.console.print(
                 f"\n[bold green]Starting iteration {iteration + 1}/{self.config.iterations}[/bold green]"
@@ -62,25 +78,26 @@ class ComprehensiveBenchmarkRunner:
             iteration_results = await self._run_single_iteration(iteration)
             self.results.extend(iteration_results)
 
-            # Cooldown between iterations
+            # Cooldown prevents thermal throttling and memory pressure between runs
             if iteration < self.config.iterations - 1:
                 self.console.print(f"[dim]Cooling down for {self.config.cooldown_seconds} seconds...[/dim]")
                 await asyncio.sleep(self.config.cooldown_seconds)
 
-        # Save results
+        # Persist results in structured format for analysis
         await self._save_results()
 
         return self.results
 
     async def _run_warmup(self) -> None:
-        """Run warmup iterations without recording results."""
-        # Select a small subset of files for warmup
+        """~keep Run warmup without recording - eliminates cold-start bias."""
+        # Use small representative files to warm up framework internals
         test_files = await self._get_warmup_files()
 
         for framework in self.config.frameworks:
             for file_path in test_files:
                 try:
                     extractor = get_extractor(framework)
+                    # Handle both sync and async extractors uniformly
                     if asyncio.iscoroutinefunction(extractor.extract_text):
                         await extractor.extract_text(str(file_path))
                     else:
@@ -88,7 +105,7 @@ class ComprehensiveBenchmarkRunner:
                             self.executor, extractor.extract_text, str(file_path)
                         )
                 except Exception:
-                    pass  # Ignore warmup errors
+                    pass  # Ignore warmup errors - just need framework initialization
 
     async def _get_warmup_files(self) -> list[Path]:
         """Get a small set of files for warmup."""

@@ -1,15 +1,22 @@
+# ~keep Distributed benchmark pipeline for fair framework comparison
+#
+# Pipeline strategy:
+# - Each framework runs in isolated jobs to prevent interference
+# - Matrix strategy tests each framework across all document categories
+# - Results are aggregated after all frameworks complete
+# - Artifacts stored for 90 days with GitHub Pages deployment
 name: Benchmark by Framework (General Text Extraction)
 
 on:
   release:
-    types: [published]
+    types: [published]  # Comprehensive benchmarks on releases
   pull_request:
-    branches: [main]
+    branches: [main]  # Quick validation on PRs
   push:
-    branches: [main]
+    branches: [main]  # Full benchmarks on main branch changes
     paths:
-      - '.github/workflows/benchmark-by-framework.yml'
-  workflow_dispatch:
+      - '.github/workflows/benchmark-by-framework.yml'  # Re-run when workflow changes
+  workflow_dispatch:  # Manual triggering with parameters
     inputs:
       frameworks:
         description: 'Frameworks to test (comma-separated or "all")'
@@ -19,17 +26,17 @@ on:
       categories:
         description: 'Categories to test (comma-separated or "all")'
         required: false
-        default: 'tiny,small,medium,large,huge'
+        default: 'tiny,small,medium,large,huge'  # All size categories for complete testing
         type: string
       iterations:
         description: 'Number of iterations per test'
         required: false
-        default: '3'
+        default: '3'  # Multiple iterations for statistical significance
         type: string
       format_tier:
         description: 'Format tier to test (universal, common, or all)'
         required: false
-        default: 'common'
+        default: 'common'  # Balance between coverage and CI time
         type: choice
         options:
           - all
@@ -37,6 +44,7 @@ on:
           - common
 
 jobs:
+  # ~keep Parameter setup job: parse inputs into matrix-compatible JSON arrays
   prepare:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -85,16 +93,17 @@ jobs:
           echo "Iterations: $ITERATIONS"
           echo "Format Tier: $FORMAT_TIER"
 
-  # Separate job for each framework
+  # ~keep Framework isolation: each framework runs in separate job to prevent interference
+  # This ensures fair comparison by eliminating shared memory, dependencies, or caching effects
   benchmark-kreuzberg-sync:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'kreuzberg_sync')
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 360  # 6 hours max per framework/category combination
     strategy:
-      fail-fast: false
+      fail-fast: false  # Continue testing other categories if one fails
       matrix:
-        category: ${{ fromJson(needs.prepare.outputs.categories) }}
+        category: ${{ fromJson(needs.prepare.outputs.categories) }}  # Test each size category
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -111,16 +120,16 @@ jobs:
 
       - name: Clone and install Kreuzberg v4 RC1 Enhanced
         run: |
-          # Clone Kreuzberg repository
+          # Install latest development version for enhanced benchmarking features
           git clone https://github.com/Goldziher/kreuzberg.git kreuzberg-source
           cd kreuzberg-source
           git checkout feature/enhanced-benchmarking
 
-          # Install our benchmark dependencies first
+          # Install benchmark framework dependencies first
           cd ..
           uv sync --all-packages --all-extras --dev
 
-          # Install Kreuzberg from source WITHOUT extractous support
+          # Install Kreuzberg from source with required extras (excluding extractous to avoid conflicts)
           uv add ./kreuzberg-source --extra gmft --extra cli
 
       - name: Install APT packages
@@ -198,16 +207,16 @@ jobs:
 
       - name: Clone and install Kreuzberg v4 RC1 Enhanced
         run: |
-          # Clone Kreuzberg repository
+          # Install latest development version for enhanced benchmarking features
           git clone https://github.com/Goldziher/kreuzberg.git kreuzberg-source
           cd kreuzberg-source
           git checkout feature/enhanced-benchmarking
 
-          # Install our benchmark dependencies first
+          # Install benchmark framework dependencies first
           cd ..
           uv sync --all-packages --all-extras --dev
 
-          # Install Kreuzberg from source WITHOUT extractous support
+          # Install Kreuzberg from source with required extras (excluding extractous to avoid conflicts)
           uv add ./kreuzberg-source --extra gmft --extra cli
 
       - name: Install APT packages
@@ -583,7 +592,8 @@ jobs:
 
 
 
-  # Aggregate all results after benchmarks complete
+  # ~keep Aggregation job: combine results from distributed framework jobs
+  # Runs even if some frameworks fail to provide partial results
   aggregate:
     needs:
       - prepare
@@ -595,7 +605,7 @@ jobs:
       - benchmark-extractous
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    if: always() && needs.prepare.result == 'success'
+    if: always() && needs.prepare.result == 'success'  # Continue even if some frameworks failed
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -617,7 +627,7 @@ jobs:
       - name: Download All Results
         uses: actions/download-artifact@v4
         with:
-          pattern: benchmark-*-${{ github.run_id }}
+          pattern: benchmark-*-${{ github.run_id }}  # Download from all framework jobs
           path: all-results/
 
       - name: List Downloaded Results
@@ -628,19 +638,20 @@ jobs:
 
       - name: Aggregate Results
         run: |
-          # Find all result directories (including those with failure markers)
+          # ~keep Combine distributed results with graceful failure handling
+          # Separate successful results from failure markers for proper aggregation
           RESULT_DIRS=""
           FAILURE_DIRS=""
           for dir in all-results/*/; do
             if [ -f "${dir}benchmark_results.json" ]; then
-              RESULT_DIRS="$RESULT_DIRS $dir"
+              RESULT_DIRS="$RESULT_DIRS $dir"  # Valid benchmark data
             elif [ -f "${dir}benchmark_failure.json" ]; then
-              FAILURE_DIRS="$FAILURE_DIRS $dir"
+              FAILURE_DIRS="$FAILURE_DIRS $dir"  # Framework/category failed
               echo "Found failure marker in: $dir"
             fi
           done
 
-          # Report failures
+          # Report framework failures for transparency
           if [ -n "$FAILURE_DIRS" ]; then
             echo "⚠️ Found $(echo $FAILURE_DIRS | wc -w) failed benchmark runs:"
             for dir in $FAILURE_DIRS; do
@@ -648,6 +659,7 @@ jobs:
             done
           fi
 
+          # Aggregate available results or create empty structure
           if [ -n "$RESULT_DIRS" ]; then
             echo "Aggregating results from: $RESULT_DIRS"
             uv run python -m src.cli aggregate $RESULT_DIRS --output-dir aggregated-results

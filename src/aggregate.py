@@ -1,4 +1,12 @@
-"""Result aggregation for benchmark runs."""
+"""Result aggregation for benchmark runs.
+
+~keep Aggregation pipeline that:
+- Loads results from multiple framework/category benchmark runs
+- Groups by framework/category for statistical analysis
+- Calculates speed (files/sec), memory (MB), success rates
+- Creates comparison matrices for framework evaluation
+- Analyzes failure patterns and performance trends
+"""
 
 from __future__ import annotations
 
@@ -19,22 +27,29 @@ from src.types import (
 
 
 class ResultAggregator:
-    """Aggregate results from multiple benchmark runs."""
+    """~keep Combines benchmark results into statistical summaries.
+
+    Core functions:
+    - Load results from distributed CI framework jobs
+    - Group by framework/category for fair comparison
+    - Calculate speed (files/sec), memory, success rate statistics
+    - Generate framework comparison matrices
+    """
 
     def aggregate_results(self, result_dirs: list[Path]) -> AggregatedResults:
-        """Aggregate results from multiple directories."""
+        """~keep Main aggregation: combine distributed results into unified metrics."""
         all_results: list[BenchmarkResult] = []
 
-        # Load all results
+        # Load results from distributed framework/category jobs
         for result_dir in result_dirs:
             results = self._load_results(result_dir)
             all_results.extend(results)
 
-        # Calculate aggregated metrics
+        # Group and calculate statistical summaries
         return self._calculate_aggregated_metrics(all_results)
 
     def _load_results(self, result_dir: Path) -> list[BenchmarkResult]:
-        """Load results from a directory."""
+        """~keep Load benchmark results with error handling for partial CI failures."""
         results_file = result_dir / "benchmark_results.json"
         if not results_file.exists():
             return []
@@ -45,35 +60,36 @@ class ResultAggregator:
                 if not data or len(data) == 0:
                     print(f"Warning: Empty results file: {results_file}")
                     return []
+                # Deserialize structured benchmark results from CI artifacts
                 return msgspec.json.decode(data, type=list[BenchmarkResult])
         except Exception as e:
             print(f"Error loading {results_file}: {e}")
             return []
 
     def _calculate_aggregated_metrics(self, results: list[BenchmarkResult]) -> AggregatedResults:
-        """Calculate aggregated metrics from all results."""
+        """~keep Core aggregation: transform raw results into statistical summaries."""
         if not results:
             return self._empty_aggregated_results()
 
-        # Group results by various dimensions
-        framework_summaries = self._group_by_framework(results)
-        category_summaries = self._group_by_category(results)
-        framework_category_matrix = self._create_matrix(results)
+        # Group results by framework and category for fair comparison analysis
+        framework_summaries = self._group_by_framework(results)  # Speed/memory by framework
+        category_summaries = self._group_by_category(results)  # Performance by file size
+        framework_category_matrix = self._create_matrix(results)  # Framework vs category grid
 
-        # Analyze failures
+        # Failure analysis for debugging problematic files/frameworks
         failure_patterns = self._analyze_failures(results)
         timeout_files = [r.file_path for r in results if r.status == ExtractionStatus.TIMEOUT]
 
-        # Calculate performance trends
+        # Performance trends across iterations (detect variance/instability)
         performance_trends = self._calculate_performance_trends(results)
 
-        # Group by platform
+        # Platform-specific results (Linux CI vs local testing)
         platform_results = self._group_by_platform(results)
 
-        # Calculate totals
-        total_runs = len({(r.iteration, r.framework) for r in results})
-        total_files = len(results)
-        total_time = sum(r.extraction_time for r in results)
+        # Overall benchmark statistics
+        total_runs = len({(r.iteration, r.framework) for r in results})  # Unique run combinations
+        total_files = len(results)  # Total individual file extractions
+        total_time = sum(r.extraction_time for r in results)  # Cumulative processing time
 
         return AggregatedResults(
             total_runs=total_runs,
@@ -138,44 +154,44 @@ class ResultAggregator:
     def _create_summary(
         self, framework: Framework, category: DocumentCategory, results: list[BenchmarkResult]
     ) -> BenchmarkSummary:
-        """Create summary statistics for a framework/category combination."""
+        """~key Create statistical summary for framework/category - core metrics for comparison."""
         successful = [r for r in results if r.status == ExtractionStatus.SUCCESS]
         failed = [r for r in results if r.status == ExtractionStatus.FAILED]
         partial = [r for r in results if r.status == ExtractionStatus.PARTIAL]
         timeout = [r for r in results if r.status == ExtractionStatus.TIMEOUT]
 
-        # Calculate timing statistics
+        # Timing statistics - only use successful extractions to avoid skewing averages
         if successful:
             times = [r.extraction_time for r in successful]
             avg_time = statistics.mean(times)
-            median_time = statistics.median(times)
+            median_time = statistics.median(times)  # Robust to outliers
             min_time = min(times)
             max_time = max(times)
-            std_time = statistics.stdev(times) if len(times) > 1 else 0
+            std_time = statistics.stdev(times) if len(times) > 1 else 0  # Measure variance
 
-            # Memory statistics
+            # Resource usage statistics
             peak_memories = [r.peak_memory_mb for r in successful]
             avg_peak_memory = statistics.mean(peak_memories)
 
-            # CPU statistics
             avg_cpus = [r.avg_cpu_percent for r in successful]
             avg_cpu = statistics.mean(avg_cpus)
 
-            # Throughput
+            # Key performance metrics for website tables
             total_time = sum(times)
             total_files = len(successful)
             total_mb = sum(r.file_size for r in successful) / (1024 * 1024)
 
-            files_per_second = total_files / total_time if total_time > 0 else 0
-            mb_per_second = total_mb / total_time if total_time > 0 else 0
+            files_per_second = total_files / total_time if total_time > 0 else 0  # Primary speed metric
+            mb_per_second = total_mb / total_time if total_time > 0 else 0  # Data throughput
 
-            # Text statistics
+            # Text extraction quality metrics
             char_counts = [r.character_count for r in successful if r.character_count]
             word_counts = [r.word_count for r in successful if r.word_count]
 
             avg_chars = int(statistics.mean(char_counts)) if char_counts else None
             avg_words = int(statistics.mean(word_counts)) if word_counts else None
         else:
+            # No successful extractions - all metrics are null
             avg_time = median_time = min_time = max_time = std_time = None
             avg_peak_memory = avg_cpu = None
             files_per_second = mb_per_second = None
