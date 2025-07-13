@@ -576,8 +576,218 @@ jobs:
           path: results-extractous-${{ matrix.category }}/
           retention-days: 30
 
+  benchmark-pymupdf:
+    needs: prepare
+    if: contains(needs.prepare.outputs.frameworks, 'pymupdf')
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        category: ${{ fromJson(needs.prepare.outputs.categories) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Dependencies
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Install APT packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pandoc \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            tesseract-ocr-deu \
+            tesseract-ocr-fra \
+            tesseract-ocr-heb \
+            tesseract-ocr-chi-sim \
+            tesseract-ocr-jpn \
+            tesseract-ocr-kor \
+            poppler-utils \
+            libmagic1
+
+      - name: Verify installations
+        run: |
+          echo "PyMuPDF version:"
+          uv run python -c "import fitz; print(fitz.VersionBind)"
+
+      - name: Run Benchmark
+        run: |
+          uv run python -m src.cli benchmark \
+            --framework pymupdf \
+            --category ${{ matrix.category }} \
+            --iterations ${{ needs.prepare.outputs.iterations }} \
+            --warmup-runs 1 \
+            --timeout 300 \
+            --continue-on-error \
+            --format-tier ${{ needs.prepare.outputs.format_tier }} \
+            --enable-quality-assessment \
+            --output-dir "results-pymupdf-${{ matrix.category }}"
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-pymupdf-${{ matrix.category }}-${{ github.run_id }}
+          path: results-pymupdf-${{ matrix.category }}/
+          retention-days: 30
+
+  benchmark-pdfplumber:
+    needs: prepare
+    if: contains(needs.prepare.outputs.frameworks, 'pdfplumber')
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        category: ${{ fromJson(needs.prepare.outputs.categories) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Dependencies
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Install APT packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pandoc \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            tesseract-ocr-deu \
+            tesseract-ocr-fra \
+            tesseract-ocr-heb \
+            tesseract-ocr-chi-sim \
+            tesseract-ocr-jpn \
+            tesseract-ocr-kor \
+            poppler-utils \
+            libmagic1
+
+      - name: Verify installations
+        run: |
+          echo "pdfplumber version:"
+          uv run python -c "import pdfplumber; print('pdfplumber installed')"
+
+      - name: Run Benchmark
+        run: |
+          uv run python -m src.cli benchmark \
+            --framework pdfplumber \
+            --category ${{ matrix.category }} \
+            --iterations ${{ needs.prepare.outputs.iterations }} \
+            --warmup-runs 1 \
+            --timeout 300 \
+            --continue-on-error \
+            --format-tier ${{ needs.prepare.outputs.format_tier }} \
+            --enable-quality-assessment \
+            --output-dir "results-pdfplumber-${{ matrix.category }}"
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-pdfplumber-${{ matrix.category }}-${{ github.run_id }}
+          path: results-pdfplumber-${{ matrix.category }}/
+          retention-days: 30
+
+  benchmark-playa:
+    needs: prepare
+    if: contains(needs.prepare.outputs.frameworks, 'playa')
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        category: ${{ fromJson(needs.prepare.outputs.categories) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Dependencies
+        run: |
+          uv sync --all-packages --all-extras --dev
+
+      - name: Install APT packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pandoc \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            tesseract-ocr-deu \
+            tesseract-ocr-fra \
+            tesseract-ocr-heb \
+            tesseract-ocr-chi-sim \
+            tesseract-ocr-jpn \
+            tesseract-ocr-kor \
+            poppler-utils \
+            libmagic1
+
+      - name: Verify installations
+        run: |
+          echo "playa-pdf version:"
+          uv run python -c "import playa; print('playa-pdf installed')"
+
+      - name: Run Benchmark
+        run: |
+          uv run python -m src.cli benchmark \
+            --framework playa \
+            --category ${{ matrix.category }} \
+            --iterations ${{ needs.prepare.outputs.iterations }} \
+            --warmup-runs 1 \
+            --timeout 300 \
+            --continue-on-error \
+            --format-tier ${{ needs.prepare.outputs.format_tier }} \
+            --enable-quality-assessment \
+            --output-dir "results-playa-${{ matrix.category }}"
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-playa-${{ matrix.category }}-${{ github.run_id }}
+          path: results-playa-${{ matrix.category }}/
+          retention-days: 30
 
   # Aggregate all results after benchmarks complete
   aggregate:
@@ -589,6 +799,9 @@ jobs:
       - benchmark-markitdown
       - benchmark-unstructured
       - benchmark-extractous
+      - benchmark-pymupdf
+      - benchmark-pdfplumber
+      - benchmark-playa
     runs-on: ubuntu-latest
     timeout-minutes: 60
     if: always() && needs.prepare.result == 'success'
@@ -786,7 +999,7 @@ jobs:
           FAILED_COUNT=0
 
           # List which framework jobs completed
-          for framework in kreuzberg_sync kreuzberg_async docling markitdown unstructured extractous; do
+          for framework in kreuzberg_sync kreuzberg_async docling markitdown unstructured extractous pymupdf pdfplumber; do
             if ls all-results/benchmark-${framework}-*/ >/dev/null 2>&1; then
               # Count categories that completed for this framework
               CATEGORIES=$(ls all-results/benchmark-${framework}-*/ | wc -l)

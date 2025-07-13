@@ -640,7 +640,6 @@ jobs:
 
                       <h3>Framework Format Support</h3>
                       <ul>
-                          <li><strong>PDF Specialists:</strong> PyMuPDF, Playa, PDFPlumber - PDF only</li>
                           <li><strong>Kreuzberg 3.8.0:</strong> All formats except MSG (no open source MSG support)</li>
                           <li><strong>Docling:</strong> PDF, DOCX, XLSX, PPTX, HTML, CSV, MD, AsciiDoc, Images (PNG, JPEG, TIFF, BMP, WEBP)</li>
                           <li><strong>Extractous:</strong> 50+ formats via Apache Tika, some gaps in DOCX/JPG</li>
