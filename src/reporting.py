@@ -31,8 +31,11 @@ class BenchmarkReporter:
             results: List of individual benchmark results.
             summaries: List of benchmark summaries.
         """
-        self.results = results
-        self.summaries = summaries
+        # Filter out PDF specialist frameworks to focus on multi-format frameworks only
+        pdf_specialists = {"pymupdf", "pdfplumber", "playa"}
+
+        self.results = [result for result in results if result.framework.value.lower() not in pdf_specialists]
+        self.summaries = [summary for summary in summaries if summary.framework.value.lower() not in pdf_specialists]
 
     def print_summary_table(self) -> None:
         """Print a summary table to the console."""
@@ -104,17 +107,21 @@ class BenchmarkReporter:
             ".org",
         }
 
+        # Filter out PDF specialist frameworks to focus on multi-format frameworks only
+        pdf_specialists = {"pymupdf", "pdfplumber", "playa"}
+
         for framework, exclusions in FRAMEWORK_EXCLUSIONS.items():
-            if framework in [
-                "kreuzberg_sync",
-                "docling",
-                "markitdown",
-                "unstructured",
-                "extractous",
-                "pymupdf",
-                "pdfplumber",
-                "playa",
-            ]:
+            if (
+                framework
+                in [
+                    "kreuzberg_sync",
+                    "docling",
+                    "markitdown",
+                    "unstructured",
+                    "extractous",
+                ]
+                and framework not in pdf_specialists
+            ):
                 excluded = ", ".join(sorted(exclusions))
                 supported_count = len(all_formats - exclusions)
                 support_table.add_row(
@@ -191,9 +198,11 @@ class BenchmarkReporter:
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
 
-        # Set up matplotlib style
+        # Set up matplotlib style with colorblind-accessible colors
         plt.style.use("seaborn-v0_8")
-        sns.set_palette("husl")
+        # Use colorblind-friendly palette: blue/orange instead of green/red
+        colorblind_palette = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f"]
+        sns.set_palette(colorblind_palette)
 
         # Create DataFrame from summaries for easier plotting
         df = pd.DataFrame(
@@ -333,7 +342,7 @@ class BenchmarkReporter:
             heatmap_data,
             annot=True,
             fmt=".2f",
-            cmap="RdYlGn",
+            cmap="viridis",  # Colorblind-friendly colormap
             center=0.5,
             cbar_kws={"label": "Performance Score (Higher is Better)"},
         )

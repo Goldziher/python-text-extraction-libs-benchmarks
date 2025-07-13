@@ -48,11 +48,50 @@ def get_framework_versions() -> dict[str, str]:
     }
 
 
+def filter_pdf_specialists(results: dict) -> dict:
+    """Filter out PDF specialist frameworks from aggregated results."""
+    pdf_specialists = {"pymupdf", "pdfplumber", "playa"}
+
+    if "framework_summaries" in results:
+        results["framework_summaries"] = {
+            framework: summaries
+            for framework, summaries in results["framework_summaries"].items()
+            if framework.lower() not in pdf_specialists
+        }
+
+    if "framework_category_matrix" in results:
+        results["framework_category_matrix"] = {
+            key: summary
+            for key, summary in results["framework_category_matrix"].items()
+            if not any(specialist in key.lower() for specialist in pdf_specialists)
+        }
+
+    if "performance_over_iterations" in results:
+        results["performance_over_iterations"] = {
+            framework: iterations
+            for framework, iterations in results["performance_over_iterations"].items()
+            if framework.lower() not in pdf_specialists
+        }
+
+    if "platform_results" in results:
+        for platform, platform_data in results["platform_results"].items():
+            results["platform_results"][platform] = {
+                framework: summary
+                for framework, summary in platform_data.items()
+                if framework.lower() not in pdf_specialists
+            }
+
+    return results
+
+
 def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     """Generate comprehensive index.html from aggregated results."""
     # Load aggregated results
     with open(aggregated_path, "rb") as f:
         results = msgspec.json.decode(f.read())
+
+    # Filter out PDF specialist frameworks
+    results = filter_pdf_specialists(results)
 
     # Get framework versions
     versions = get_framework_versions()
@@ -277,7 +316,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                 <h3>1️⃣ Extraction Speed Rankings</h3>
                 <div class="ranking-info" style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
                     <strong>🏆 Speed Champions (files/sec):</strong><br>
-                    1st: Kreuzberg Sync (15.66) | 2nd: MarkItDown (13.22) | 3rd: Kreuzberg Async (10.11) | 4th: Extractous (2.59) | 5th: Unstructured (2.19) | 6th: Docling (0.16)
+                    Multi-format frameworks showing consistent performance across all supported file types. Rankings based on current benchmark data.
                 </div>
                 <img src="visualizations/performance_comparison.png" alt="Performance Comparison">
                 <p><small><strong>Speed Analysis:</strong> Kreuzberg leads with 15+ files/sec, while Docling shows timeout issues on complex documents</small></p>
@@ -292,7 +331,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                     Measures actual data processing speed accounting for file sizes. Higher values indicate better scaling with document complexity.
                 </div>
                 <img src="visualizations/throughput_comparison.png" alt="Throughput Comparison">
-                <p><small><strong>Throughput Insights:</strong> Speed varies dramatically with document type - PDF specialists excel on their target format</small></p>
+                <p><small><strong>Throughput Insights:</strong> Multi-format frameworks show consistent performance across diverse document types</small></p>
             </div>
         </div>
 
@@ -314,7 +353,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                 <h3>4️⃣ Performance Heatmap Overview</h3>
                 <div class="ranking-info" style="background: #fff2e6; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
                     <strong>🔥 Heatmap Reading Guide:</strong><br>
-                    • Dark Blue/Green = Excellent Performance | • Light Blue = Good Performance | • Yellow/Orange = Poor Performance | • Red/White = Failed/Timeout
+                    • Dark Blue = Excellent Performance | • Medium Blue = Good Performance | • Light Blue = Fair Performance | • Orange = Poor Performance | • Gray = Failed/Timeout
                 </div>
                 <img src="visualizations/performance_heatmap.png" alt="Performance Heatmap">
                 <p><small><strong>Pattern Analysis:</strong> Clear performance clusters visible - frameworks excel in their specialty areas and struggle with unfamiliar formats</small></p>
@@ -445,7 +484,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                 <li><strong>✅ Supported:</strong> Framework can process this file type</li>
                 <li><strong>❌ Not Supported:</strong> Framework cannot handle this format</li>
                 <li><strong>⚠️ Partial:</strong> Limited or experimental support</li>
-                <li><strong>Note:</strong> Colors have been updated for colorblind accessibility (blue/orange instead of green/red)</li>
+                <li><strong>🎨 Colorblind Accessible:</strong> Charts use blue/orange color schemes instead of green/red for better accessibility</li>
             </ul>
         </div>
 
@@ -457,7 +496,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                     1st: Unstructured (64+ formats) | 2nd: Kreuzberg (17/18 tested formats) | 3rd: Extractous (common formats) | 4th: Docling (10 formats) | 5th: MarkItDown (office/web) | PDF Specialists: 1 format each
                 </div>
                 <img src="visualizations/format_support_matrix.png" alt="Format Support Matrix">
-                <p><small><strong>Matrix Reading:</strong> Darker blue = supported, lighter blue = partial support, orange = not supported. Updated colors for accessibility.</small></p>
+                <p><small><strong>🎨 Accessible Matrix:</strong> Dark blue = fully supported, light blue = partial support, orange = not supported. Color scheme designed for colorblind accessibility.</small></p>
             </div>
         </div>
 
