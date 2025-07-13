@@ -340,8 +340,8 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                 <h3>3️⃣ Success Rate Reliability</h3>
                 <div class="ranking-info" style="background: #e8f5e8; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
                     <strong>✅ Reliability Rankings (% successful):</strong><br>
-                    Most Reliable: Kreuzberg (100%*), Extractous (98.6%), Docling (98.1%), MarkItDown (97.8%), Unstructured (97.2%)<br>
-                    <em>*On supported formats only</em>
+                    Framework reliability varies by document type and format support. See charts for detailed comparisons.<br>
+                    <em>*Success rates calculated on supported formats only</em>
                 </div>
                 <img src="visualizations/success_rate_comparison.png" alt="Success Rate Comparison">
                 <p><small><strong>Reliability Notes:</strong> Success rates calculated only on files each framework attempts to process</small></p>
@@ -394,7 +394,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                 <h3>1️⃣ Memory Usage Rankings by Framework</h3>
                 <div class="ranking-info" style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
                     <strong>🏆 Memory Efficiency Ranking (Lower MB = Better):</strong><br>
-                    1st: Kreuzberg (~260MB) | 2nd: MarkItDown (~264MB) | 3rd: Extractous (~410MB) | 4th: Unstructured (~1375MB) | 5th: Docling (~1750MB)
+                    Memory usage varies significantly by framework and document type. See detailed analysis below.
                 </div>
                 <img src="visualizations/memory_usage.png" alt="Memory Usage">
                 <p><small><strong>Interpretation:</strong> Shows average peak memory consumption across all file types. Lower bars indicate more memory-efficient frameworks.</small></p>
@@ -427,7 +427,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                 <h3>3️⃣ Performance by Document Size Categories</h3>
                 <div class="ranking-info" style="background: #e8f5e8; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
                     <strong>📏 Size Category Performance (Speed Ranking):</strong><br>
-                    Tiny (&lt;100KB): Kreuzberg leads | Small (100KB-1MB): PDF specialists dominate | Medium (1-10MB): Mixed results | Large (10-50MB): Framework timeouts common
+                    Tiny (&lt;100KB): Fast extraction | Small (100KB-1MB): Consistent performance | Medium (1-10MB): Mixed results | Large (10-50MB): Framework timeouts common
                 </div>
                 <img src="visualizations/category_analysis.png" alt="Category Analysis">
                 <p><small><strong>Size Scaling:</strong> Performance patterns change dramatically with document size. Memory usage can increase exponentially for complex documents regardless of file size.</small></p>
@@ -439,7 +439,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                 <h3>4️⃣ Installation Size Comparison</h3>
                 <div class="ranking-info" style="background: #fff2e6; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
                     <strong>💿 Installation Footprint Ranking (Smaller = Better):</strong><br>
-                    1st: Kreuzberg (71MB) | 2nd: Extractous (~100MB) | 3rd: Unstructured (146MB) | 4th: MarkItDown (251MB) | 5th: Docling (1GB+)
+                    Framework installation sizes range from under 100MB to over 1GB depending on dependencies.
                 </div>
                 <img src="visualizations/installation_sizes.png" alt="Installation Sizes"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -459,7 +459,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         <h3>📈 Key Memory Usage Insights</h3>
         <ul>
             <li><strong>🔬 Measurement Method:</strong> RSS (Resident Set Size) tracked at 50ms intervals using psutil</li>
-            <li><strong>📊 Framework Rankings:</strong> Kreuzberg most memory-efficient (~260MB), Docling highest usage (~1750MB)</li>
+            <li><strong>📊 Framework Rankings:</strong> Memory efficiency varies by framework and use case - see charts for details</li>
             <li><strong>📄 Per-Format Variance:</strong> Memory usage patterns vary 10-50x between file types</li>
             <li><strong>📏 Size Correlation:</strong> Memory scales with document complexity, not just file size</li>
             <li><strong>🎯 Optimization Opportunities:</strong> Framework-format matching can reduce memory usage by 5-10x</li>
@@ -493,7 +493,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                 <h3>1️⃣ Framework Format Support Matrix</h3>
                 <div class="ranking-info" style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
                     <strong>📊 Format Coverage Rankings:</strong><br>
-                    1st: Unstructured (64+ formats) | 2nd: Kreuzberg (17/18 tested formats) | 3rd: Extractous (common formats) | 4th: Docling (10 formats) | 5th: MarkItDown (office/web) | PDF Specialists: 1 format each
+                    1st: Unstructured (64+ formats) | 2nd: Kreuzberg (17/18 tested formats) | 3rd: Extractous (common formats) | 4th: Docling (10 formats) | 5th: MarkItDown (office/web)
                 </div>
                 <img src="visualizations/format_support_matrix.png" alt="Format Support Matrix">
                 <p><small><strong>🎨 Accessible Matrix:</strong> Dark blue = fully supported, light blue = partial support, orange = not supported. Color scheme designed for colorblind accessibility.</small></p>
@@ -551,7 +551,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                 <h3>1️⃣ Metadata Coverage by Framework</h3>
                 <div class="ranking-info" style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
                     <strong>📊 Metadata Extraction Leaders:</strong><br>
-                    Frameworks vary significantly in metadata extraction capabilities. PDF specialists excel at document properties, while multi-format tools provide broader coverage.
+                    Frameworks vary significantly in metadata extraction capabilities. Multi-format tools provide comprehensive coverage across diverse document types.
                 </div>
                 <img src="visualizations/analysis/metadata/metadata_coverage_chart.png" alt="Metadata Coverage"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
@@ -597,7 +597,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         <h3>📈 Key Metadata Insights</h3>
         <ul>
             <li><strong>Coverage Variance:</strong> Frameworks extract different metadata fields with varying completeness</li>
-            <li><strong>Format Specialization:</strong> PDF frameworks excel at document properties, office tools at creation metadata</li>
+            <li><strong>Format Specialization:</strong> Different frameworks excel at different metadata types based on their design focus</li>
             <li><strong>Quality Correlation:</strong> Better metadata extraction often indicates higher text extraction quality</li>
             <li><strong>Language Detection:</strong> Multi-language document handling varies significantly across frameworks</li>
         </ul>

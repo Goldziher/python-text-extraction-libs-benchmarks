@@ -351,10 +351,10 @@ def report(aggregated_file: Path | None, output_dir: Path, output_formats: tuple
                     agg_path = Path("aggregated-results/aggregated_results.json")
                     if not agg_path.exists():
                         agg_path = Path("results/aggregated_results.json")
-                
+
                 if agg_path.exists():
                     visualizer.generate_all_visualizations(agg_path)
-                
+
                 # Then generate HTML report
                 html_generator = HTMLReportGenerator(output_dir / "charts")
                 html_generator.generate_report(agg_path, html_path)
