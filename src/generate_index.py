@@ -279,7 +279,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                     <strong>🏆 Speed Champions (files/sec):</strong><br>
                     Multi-format frameworks showing consistent performance across all supported file types. Rankings based on current benchmark data.
                 </div>
-                <img src="visualizations/performance_comparison.png" alt="Performance Comparison">
+                <img src="visualizations/performance_comparison_large.png" alt="Performance Comparison">
                 <p><small><strong>Speed Analysis:</strong> Kreuzberg leads with 15+ files/sec, while Docling shows timeout issues on complex documents</small></p>
             </div>
         </div>
@@ -291,7 +291,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                     <strong>📊 Throughput Performance (MB/sec):</strong><br>
                     Measures actual data processing speed accounting for file sizes. Higher values indicate better scaling with document complexity.
                 </div>
-                <img src="visualizations/throughput_comparison.png" alt="Throughput Comparison">
+                <img src="visualizations/throughput_analysis_comprehensive.png" alt="Throughput Comparison">
                 <p><small><strong>Throughput Insights:</strong> Multi-format frameworks show consistent performance across diverse document types</small></p>
             </div>
         </div>
@@ -304,25 +304,15 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                     Framework reliability varies by document type and format support. See charts for detailed comparisons.<br>
                     <em>*Success rates calculated on supported formats only</em>
                 </div>
-                <img src="visualizations/success_rate_comparison.png" alt="Success Rate Comparison">
+                <img src="visualizations/success_and_failure_analysis.png" alt="Success Rate Comparison">
                 <p><small><strong>Reliability Notes:</strong> Success rates calculated only on files each framework attempts to process</small></p>
             </div>
         </div>
 
-        <div class="chart-single">
-            <div class="chart-item">
-                <h3>4️⃣ Performance Heatmap Overview</h3>
-                <div class="ranking-info" style="background: #fff2e6; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-                    <strong>🔥 Heatmap Reading Guide:</strong><br>
-                    • Dark Blue = Excellent Performance | • Medium Blue = Good Performance | • Light Blue = Fair Performance | • Orange = Poor Performance | • Gray = Failed/Timeout
-                </div>
-                <img src="visualizations/performance_heatmap.png" alt="Performance Heatmap">
-                <p><small><strong>Pattern Analysis:</strong> Clear performance clusters visible - frameworks excel in their specialty areas and struggle with unfamiliar formats</small></p>
-            </div>
-        </div>
+        <!-- Performance heatmap not available in current visualizations -->
 
         <div style="text-align: center; margin: 30px 0;">
-            <a href="visualizations/interactive_dashboard.html" style="background: #28a745; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none; margin-right: 15px;">
+            <a href="visualizations/interactive_dashboard_enhanced.html" style="background: #28a745; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none; margin-right: 15px;">
                 📈 Open Interactive Dashboard
             </a>
             <a href="reports/benchmark_report.html#performance" style="background: #6c757d; color: white; padding: 15px 25px; border-radius: 5px; text-decoration: none;">
@@ -357,7 +347,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                     <strong>🏆 Memory Efficiency Ranking (Lower MB = Better):</strong><br>
                     Memory usage varies significantly by framework and document type. See detailed analysis below.
                 </div>
-                <img src="visualizations/memory_usage.png" alt="Memory Usage">
+                <img src="visualizations/resource_usage_heatmaps.png" alt="Memory Usage">
                 <p><small><strong>Interpretation:</strong> Shows average peak memory consumption across all file types. Lower bars indicate more memory-efficient frameworks.</small></p>
             </div>
         </div>
@@ -390,7 +380,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                     <strong>📏 Size Category Performance (Speed Ranking):</strong><br>
                     Tiny (&lt;100KB): Fast extraction | Small (100KB-1MB): Consistent performance | Medium (1-10MB): Mixed results | Large (10-50MB): Framework timeouts common
                 </div>
-                <img src="visualizations/category_analysis.png" alt="Category Analysis">
+                <img src="visualizations/category_analysis_comprehensive.png" alt="Category Analysis">
                 <p><small><strong>Size Scaling:</strong> Performance patterns change dramatically with document size. Memory usage can increase exponentially for complex documents regardless of file size.</small></p>
             </div>
         </div>
@@ -449,17 +439,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
             </ul>
         </div>
 
-        <div class="chart-single">
-            <div class="chart-item">
-                <h3>1️⃣ Framework Format Support Matrix</h3>
-                <div class="ranking-info" style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-                    <strong>📊 Format Coverage Rankings:</strong><br>
-                    1st: Unstructured (64+ formats) | 2nd: Kreuzberg (17/18 tested formats) | 3rd: Extractous (common formats) | 4th: Docling (10 formats) | 5th: MarkItDown (office/web)
-                </div>
-                <img src="visualizations/format_support_matrix.png" alt="Format Support Matrix">
-                <p><small><strong>🎨 Accessible Matrix:</strong> Dark blue = fully supported, light blue = partial support, orange = not supported. Color scheme designed for colorblind accessibility.</small></p>
-            </div>
-        </div>
+        <!-- Format support matrix visualization not available in current visualizations -->
 
         <div class="chart-single">
             <div class="chart-item">
