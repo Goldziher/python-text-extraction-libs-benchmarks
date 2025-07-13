@@ -11,7 +11,7 @@
 [![Benchmark Pipeline](https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions/workflows/benchmark-by-framework.yml/badge.svg)](https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions/workflows/benchmark-by-framework.yml)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Frameworks](https://img.shields.io/badge/frameworks-9-green.svg)](#-framework-assessment)
+[![Frameworks](https://img.shields.io/badge/frameworks-6-green.svg)](#-framework-assessment)
 [![Documents](https://img.shields.io/badge/test_documents-94-blue.svg)](#-test-coverage)
 
 > **🎯 [📊 VIEW LIVE BENCHMARK RESULTS →](https://goldziher.github.io/python-text-extraction-libs-benchmarks/)**
@@ -20,7 +20,7 @@ Comprehensive automated benchmarking of text extraction frameworks with enhanced
 
 ## 🏆 What You'll Find in the Results
 
-- **⚡ Performance Comparison** - Speed, memory usage, and success rates across 9 frameworks
+- **⚡ Performance Comparison** - Speed, memory usage, and success rates across 6 multi-format frameworks
 - **📊 Interactive Charts** - Visual breakdowns by file type, size category, and framework
 - **🔍 Detailed Metrics** - Per-file results, error analysis, and resource utilization
 - **📈 Trend Analysis** - Performance changes over iterations and time
@@ -51,16 +51,6 @@ Comprehensive automated benchmarking of text extraction frameworks with enhanced
 - Built-in OCR support via Tesseract integration
 - **Format support**: 1000+ formats via Apache Tika
 - **Success rate**: 94.3% across all test documents
-
-### ⚡ **Playa-PDF** (TBD MB, TBD deps)
-
-**Best for: Fast PDF text extraction, speed-optimized workflows**
-
-- **Ultra-fast PDF processing**: Fork of pdfminer.six optimized for speed
-- **Low-level PDF access**: Direct PDF parsing without overhead
-- **Speed-focused design**: Minimal features for maximum performance
-- **PDF specialist**: Only processes PDF documents
-- **Success rate**: TBD% (PDF documents only)
 
 ### 🏢 **Unstructured** (146MB, 54 deps)
 
@@ -99,7 +89,7 @@ Comprehensive automated benchmarking of text extraction frameworks with enhanced
 - **5 Size Categories** - Tiny (\<100KB), Small (100KB-1MB), Medium (1-10MB), Large (10-50MB), Huge (>50MB)
 - **Multi-language** - English, Hebrew, German, Chinese, Japanese, Korean
 - **CPU-only Processing** - No GPU acceleration for fair comparison
-- **9 Frameworks** - Kreuzberg, Extractous, Unstructured, MarkItDown, Docling, PyMuPDF, PDFPlumber, Playa-PDF
+- **6 Multi-Format Frameworks** - Kreuzberg, Extractous, Unstructured, MarkItDown, Docling
 - **Enhanced CI/CD** - 2-hour timeout handling with graceful failure management
 - **Comprehensive Metrics** - Speed, memory usage, success rates, installation sizes
 
@@ -109,7 +99,7 @@ Our comprehensive testing revealed significant differences in format support acr
 
 ### 🎯 Format Support Tiers
 
-#### **Tier 1: Universal Support** (5/9 frameworks)
+#### **Tier 1: Universal Support** (5/6 frameworks)
 
 These 7 formats are supported by ALL frameworks:
 
@@ -121,7 +111,7 @@ These 7 formats are supported by ALL frameworks:
 - `.html` - Web pages
 - `.csv` - Comma-separated values
 
-#### **Tier 2: Common Support** (3/9 frameworks)
+#### **Tier 2: Common Support** (3/6 frameworks)
 
 These 4 additional formats work with most frameworks:
 
@@ -138,9 +128,6 @@ These 4 additional formats work with most frameworks:
 | **Unstructured** | 64+ formats including emails  | Few limitations         |
 | **MarkItDown**   | Common office & web formats   | `.docx`, `.md` issues   |
 | **Kreuzberg**    | 18/20 tested formats          | Email/data formats only |
-| **PyMuPDF**      | 1/20 tested formats           | PDF specialist only     |
-| **PDFPlumber**   | 1/20 tested formats           | PDF specialist only     |
-| **Playa-PDF**    | 1/20 tested formats           | PDF specialist only     |
 | **Docling**      | 10/20 tested formats          | Limited coverage        |
 
 ### 🔄 Tiered Benchmarking Options
@@ -176,8 +163,8 @@ uv run python -m src.cli list-frameworks
 # Run benchmarks - NEW: Extractous framework
 uv run python -m src.cli benchmark --framework extractous --category small
 
-# Compare multiple frameworks including PDF specialists
-uv run python -m src.cli benchmark --framework kreuzberg_sync,extractous,playa --category tiny,small
+# Compare multiple frameworks
+uv run python -m src.cli benchmark --framework kreuzberg_sync,extractous,unstructured --category tiny,small
 
 # Fair comparison mode - test only universally supported formats
 uv run python -m src.cli benchmark --framework all --format-tier universal
@@ -418,11 +405,11 @@ Based on our latest benchmarks:
 
 ### 🎯 **Quick Recommendations**
 
-- **🚀 Maximum performance**: Choose **Extractous** (Rust-based) or **Playa-PDF** (PDF speed specialist)
-- **⚡ High-volume production**: Choose **Kreuzberg** (fast, lightweight) or **PyMuPDF** (PDF focus)
+- **🚀 Maximum performance**: Choose **Extractous** (Rust-based) or **Kreuzberg** (lightweight Python)
+- **⚡ High-volume production**: Choose **Kreuzberg** (fast, lightweight) or **Extractous** (native performance)
 - **🏢 Enterprise/mixed docs**: Choose **Unstructured** (most reliable)
 - **🤖 LLM preprocessing**: Choose **Extractous** or **Kreuzberg**
-- **📄 PDF-only workflows**: Choose **Playa-PDF**, **PyMuPDF**, or **PDFPlumber** (table extraction)
+- **📄 PDF-heavy workflows**: Choose **Extractous** or **Kreuzberg** (both have excellent PDF support)
 - **🔬 Research/ML workflows**: Choose **Extractous** with fallback to **Kreuzberg**
 
 See the [live results](https://goldziher.github.io/python-text-extraction-libs-benchmarks/) for detailed comparisons and failure analysis.

@@ -22,9 +22,6 @@ FRAMEWORK_COLORS = {
     "markitdown": "#C73E1D",  # Red
     "unstructured": "#5B9A8B",  # Green
     "extractous": "#FF6B35",  # Orange-red (Rust color theme)
-    "pymupdf": "#8E44AD",  # Purple
-    "pdfplumber": "#E67E22",  # Orange
-    "playa": "#16A085",  # Teal (speed-focused theme)
 }
 
 
