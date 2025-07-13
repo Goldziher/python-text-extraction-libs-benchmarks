@@ -153,7 +153,7 @@ jobs:
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
-            --timeout 300 \
+            --timeout 1200 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
@@ -240,7 +240,7 @@ jobs:
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
-            --timeout 300 \
+            --timeout 1200 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
@@ -317,7 +317,7 @@ jobs:
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
-            --timeout 300 \
+            --timeout 1200 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
@@ -398,7 +398,7 @@ jobs:
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
-            --timeout 300 \
+            --timeout 1200 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
@@ -478,7 +478,7 @@ jobs:
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
-            --timeout 300 \
+            --timeout 1200 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
@@ -555,7 +555,7 @@ jobs:
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
-            --timeout 300 \
+            --timeout 1200 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \

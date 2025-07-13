@@ -206,7 +206,8 @@ class MarkItDownExtractor:
         metadata = {}
         # MarkItDown has minimal metadata - check for title
         if hasattr(result, "title") and result.title:
-            metadata["title"] = result.title
+            # Convert NavigableString to regular string for serialization
+            metadata["title"] = str(result.title)
         return result.text_content, metadata
 
 

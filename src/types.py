@@ -269,7 +269,7 @@ class BenchmarkConfig(msgspec.Struct, kw_only=True):
     concurrent_files: int = 1  # For async frameworks
 
     # Resource limits
-    timeout_seconds: int = 600  # 10 minutes per file
+    timeout_seconds: int = 1200  # 20 minutes per file
     max_memory_mb: int = 4096  # 4GB limit
     max_cpu_percent: int = 800  # 8 cores at 100%
 
