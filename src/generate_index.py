@@ -295,10 +295,14 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         .section { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
         h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 20px; }
         .alert { padding: 15px; background: #e3f2fd; border-left: 4px solid #2196f3; margin-bottom: 20px; border-radius: 5px; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background: #f8f9fa; font-weight: 600; color: #2c3e50; }
-        tr:hover { background: #f8f9fa; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; table-layout: fixed; }
+        th, td { padding: 12px; text-align: left; border: 1px solid #ddd; }
+        th { background: #f8f9fa; font-weight: 600; color: #2c3e50; white-space: nowrap; }
+        thead tr:first-child th { border-bottom: 2px solid #2c3e50; }
+        tbody tr:hover { background: #f8f9fa; }
+        /* Fix for complex header tables */
+        th[colspan], th[rowspan] { text-align: center; }
+        thead tr:nth-child(2) th { font-size: 0.9em; font-weight: 500; }
         .framework-card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; background: #fafafa; }
         .framework-card h4 { margin-top: 0; color: #2c3e50; }
         .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin: 20px 0; }

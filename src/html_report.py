@@ -508,7 +508,7 @@ class HTMLReportGenerator:
 
             <div class="chart-container">
                 <p>Explore the data interactively with our comprehensive dashboard:</p>
-                <a href="charts/interactive_dashboard_enhanced.html" class="github-link" target="_blank">
+                <a href="charts/interactive_dashboard.html" class="github-link" target="_blank">
                     <i class="fas fa-external-link-alt"></i> Open Interactive Dashboard
                 </a>
             </div>

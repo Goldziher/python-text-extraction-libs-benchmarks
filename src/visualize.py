@@ -89,8 +89,12 @@ class BenchmarkVisualizer:
             if summary.total_files > 0:
                 perf_data.append(
                     {
-                        "Framework": summary.framework,
-                        "Category": summary.category,
+                        "Framework": str(summary.framework.value)
+                        if hasattr(summary.framework, "value")
+                        else str(summary.framework),
+                        "Category": str(summary.category.value)
+                        if hasattr(summary.category, "value")
+                        else str(summary.category),
                         "Avg Time (s)": summary.avg_extraction_time,
                         "Median Time (s)": summary.median_extraction_time,
                         "Files per Second": summary.files_per_second,
@@ -185,8 +189,12 @@ class BenchmarkVisualizer:
             if summary.avg_peak_memory_mb and summary.avg_peak_memory_mb > 0:
                 memory_data.append(
                     {
-                        "Framework": summary.framework,
-                        "Category": summary.category,
+                        "Framework": str(summary.framework.value)
+                        if hasattr(summary.framework, "value")
+                        else str(summary.framework),
+                        "Category": str(summary.category.value)
+                        if hasattr(summary.category, "value")
+                        else str(summary.category),
                         "Avg Memory (MB)": summary.avg_peak_memory_mb,
                         "CPU Usage (%)": summary.avg_cpu_percent,
                     }
@@ -332,8 +340,12 @@ class BenchmarkVisualizer:
             if summary.mb_per_second and summary.mb_per_second > 0:
                 throughput_data.append(
                     {
-                        "Framework": summary.framework,
-                        "Category": summary.category,
+                        "Framework": str(summary.framework.value)
+                        if hasattr(summary.framework, "value")
+                        else str(summary.framework),
+                        "Category": str(summary.category.value)
+                        if hasattr(summary.category, "value")
+                        else str(summary.category),
                         "Files/Second": summary.files_per_second,
                         "MB/Second": summary.mb_per_second,
                     }
@@ -575,8 +587,12 @@ class BenchmarkVisualizer:
         for summary in all_summaries:
             perf_data.append(
                 {
-                    "framework": summary.framework,
-                    "category": summary.category,
+                    "framework": str(summary.framework.value)
+                    if hasattr(summary.framework, "value")
+                    else str(summary.framework),
+                    "category": str(summary.category.value)
+                    if hasattr(summary.category, "value")
+                    else str(summary.category),
                     "avg_time": summary.avg_extraction_time,
                     "memory": summary.avg_peak_memory_mb or 0,
                     "success_rate": summary.success_rate * 100,
