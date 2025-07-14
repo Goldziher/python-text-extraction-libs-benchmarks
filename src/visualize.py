@@ -239,15 +239,16 @@ class BenchmarkVisualizer:
             all_summaries.extend(fw_summaries)
 
         for summary in all_summaries:
-            if summary.framework not in framework_stats:
-                framework_stats[summary.framework] = {
+            framework_key = summary.framework.value if hasattr(summary.framework, "value") else str(summary.framework)
+            if framework_key not in framework_stats:
+                framework_stats[framework_key] = {
                     "total": 0,
                     "successful": 0,
                     "failed": 0,
                     "timeout": 0,
                 }
 
-            stats = framework_stats[summary.framework]
+            stats = framework_stats[framework_key]
             stats["total"] += summary.total_files
             stats["successful"] += summary.successful_files
             stats["failed"] += summary.failed_files
@@ -445,7 +446,9 @@ class BenchmarkVisualizer:
                     "throughputs": [],
                 }
 
-            category_data[cat]["frameworks"].append(summary.framework)
+            category_data[cat]["frameworks"].append(
+                summary.framework.value if hasattr(summary.framework, "value") else str(summary.framework)
+            )
             category_data[cat]["avg_times"].append(summary.avg_extraction_time)
             category_data[cat]["success_rates"].append(summary.success_rate)
             category_data[cat]["throughputs"].append(summary.mb_per_second or 0)
