@@ -116,7 +116,7 @@ def calculate_framework_stats(results: dict) -> dict:
     return framework_stats
 
 
-def generate_performance_table(sorted_frameworks: list, install_sizes: dict, licenses: dict) -> str:
+def generate_performance_table(sorted_frameworks: list, install_sizes: dict) -> str:
     """Generate the performance table HTML."""
     html = """
         <h3>Framework Performance Rankings</h3>
@@ -124,7 +124,6 @@ def generate_performance_table(sorted_frameworks: list, install_sizes: dict, lic
             <thead>
                 <tr>
                     <th rowspan="2">Framework</th>
-                    <th rowspan="2">License</th>
                     <th colspan="5">Speed by Category (files/sec)</th>
                     <th rowspan="2">Success Rate</th>
                     <th rowspan="2">Failures</th>
@@ -162,18 +161,10 @@ def generate_performance_table(sorted_frameworks: list, install_sizes: dict, lic
         failure_display = ", ".join(stats["failure_breakdown"]) if stats["failure_breakdown"] else "None"
 
         memory_display = "N/A" if stats["avg_memory"] == 0 else f"{stats['avg_memory']:.1f}"
-        license_display = licenses.get(fw_name, "Unknown")
-
-        # Color code licenses for easy identification
-        if license_display == "AGPL v3.0":
-            license_display = '<span style="color: #dc3545; font-weight: bold;">⚠️ AGPL v3.0</span>'
-        elif license_display in ["MIT", "Apache 2.0"]:
-            license_display = f'<span style="color: #28a745;">✅ {license_display}</span>'
 
         html += f"""
                 <tr>
                     <td>{fw_name.replace("_", " ").title()}</td>
-                    <td>{license_display}</td>
                     {speed_cells}
                     <td>{stats["success_rate"]:.1f}%</td>
                     <td>{failure_display}</td>
@@ -184,7 +175,7 @@ def generate_performance_table(sorted_frameworks: list, install_sizes: dict, lic
     html += """
             </tbody>
         </table>
-        <p><small>Success rates calculated on files actually tested by each framework. "—" indicates categories not included in this benchmark run.</small></p>"""
+        <p><small>Success rates calculated on files actually tested by each framework. "—" indicates categories not included in this benchmark run. License details available in the <a href="#frameworks">Framework Details</a> section below.</small></p>"""
 
     return html
 
@@ -387,7 +378,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     }
 
     # Generate performance table
-    html += generate_performance_table(sorted_frameworks, install_sizes, licenses)
+    html += generate_performance_table(sorted_frameworks, install_sizes)
 
     # Generate memory table
     html += generate_memory_table(sorted_frameworks)
