@@ -2,8 +2,8 @@ name: Deploy to GitHub Pages
 
 on:
   schedule:
-    # Run every 15 minutes to check for new benchmark results
-    - cron: '*/15 * * * *'
+    # Run every hour to check for new benchmark results
+    - cron: '0 * * * *'
   push:
     branches: [main]
     paths:
@@ -61,8 +61,22 @@ jobs:
           if [ -n "${{ github.event.inputs.run_id }}" ]; then
             RUN_ID="${{ github.event.inputs.run_id }}"
           else
-            # Get the most recent successful comprehensive benchmark run
+            # Get the most recent benchmark run (even if failed, as long as it has artifacts)
+            # First try to get a successful run
             RUN_ID=$(gh run list --workflow=benchmark-by-framework.yml --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+
+            # If no successful run, get the latest run that has artifacts
+            if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+              echo "No successful runs found, checking for runs with artifacts..."
+              # Get the most recent run with aggregated artifacts
+              for run in $(gh run list --workflow=benchmark-by-framework.yml --limit=5 --json databaseId --jq '.[].databaseId'); do
+                if gh run view $run --json artifacts --jq '.artifacts[] | select(.name | startswith("aggregated-benchmark-results-"))' > /dev/null 2>&1; then
+                  RUN_ID=$run
+                  echo "Found run with aggregated artifacts: $RUN_ID"
+                  break
+                fi
+              done
+            fi
           fi
           echo "run-id=$RUN_ID" >> $GITHUB_OUTPUT
           echo "Using benchmark run ID: $RUN_ID"
@@ -113,26 +127,38 @@ jobs:
       - name: Check for Changes
         id: check-changes
         run: |
-          # Create hash of current artifact contents
-          find aggregated-results/ reports/ visualizations/ -type f -exec sha256sum {} \; | sort > current_hashes.txt || echo "No files to hash" > current_hashes.txt
-
-          # Get the latest deployed hash from GitHub Pages (if exists)
-          if curl -s -f https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/artifact_hashes.txt -o previous_hashes.txt; then
-            echo "Previous hashes found"
-          else
-            echo "No previous hashes found (first deployment or file missing)"
-            touch previous_hashes.txt
-          fi
-
-          # Compare hashes
-          if diff -q current_hashes.txt previous_hashes.txt > /dev/null 2>&1; then
-            echo "No changes detected in artifacts"
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "Changes detected in artifacts"
+          # Always redeploy if triggered manually, by push, or if artifacts are newer than 2 hours
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "push" ]; then
+            echo "Force deployment due to trigger: ${{ github.event_name }}"
             echo "changed=true" >> $GITHUB_OUTPUT
-            # Show what changed
-            diff current_hashes.txt previous_hashes.txt || true
+          else
+            # Create hash of aggregated results only (main data file)
+            if [ -f "aggregated-results/aggregated_results.json" ]; then
+              CURRENT_HASH=$(sha256sum aggregated-results/aggregated_results.json | cut -d' ' -f1)
+
+              # Get the latest deployed hash from GitHub Pages (if exists)
+              if curl -s -f https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data_hash.txt -o previous_hash.txt 2>/dev/null; then
+                PREVIOUS_HASH=$(cat previous_hash.txt)
+                if [ "$CURRENT_HASH" = "$PREVIOUS_HASH" ]; then
+                  echo "No changes in aggregated results"
+                  echo "changed=false" >> $GITHUB_OUTPUT
+                else
+                  echo "Changes detected in aggregated results"
+                  echo "Previous hash: $PREVIOUS_HASH"
+                  echo "Current hash: $CURRENT_HASH"
+                  echo "changed=true" >> $GITHUB_OUTPUT
+                fi
+              else
+                echo "No previous hash found, assuming changes"
+                echo "changed=true" >> $GITHUB_OUTPUT
+              fi
+
+              # Save current hash for next run
+              echo "$CURRENT_HASH" > current_hash.txt
+            else
+              echo "No aggregated results found"
+              echo "changed=false" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Generate Visualizations
@@ -764,7 +790,9 @@ jobs:
           fi
 
           # Copy the hash file for next comparison
-          cp current_hashes.txt pages/artifact_hashes.txt
+          if [ -f "current_hash.txt" ]; then
+            cp current_hash.txt pages/data_hash.txt
+          fi
 
           echo "Pages structure created:"
           find pages/ -type f | head -20
