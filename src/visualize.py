@@ -675,7 +675,7 @@ class BenchmarkVisualizer:
         fig.update_yaxes(title_text="Extraction Time (s)", type="log", row=3, col=2)
 
         # Save interactive HTML
-        output_path = self.output_dir / "interactive_dashboard_enhanced.html"
+        output_path = self.output_dir / "interactive_dashboard.html"
         fig.write_html(str(output_path), include_plotlyjs="cdn")
 
         return output_path

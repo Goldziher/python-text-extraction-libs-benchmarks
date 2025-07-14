@@ -411,7 +411,12 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                     <strong>🏆 Speed Champions (files/sec):</strong><br>
                     Multi-format frameworks showing consistent performance across all supported file types. Rankings based on current benchmark data.
                 </div>
-                <img src="visualizations/performance_comparison_large.png" alt="Performance Comparison">
+                <img src="visualizations/performance_comparison_large.png" alt="Performance Comparison"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display:none; text-align:center; padding:40px; background:#f8f9fa; border-radius:8px; border: 2px dashed #dee2e6;">
+                    <h4>📊 Performance Chart Not Available</h4>
+                    <p>Performance comparison data is available in the reports below.</p>
+                </div>
                 <p><small><strong>Speed Analysis:</strong> Kreuzberg leads with 15+ files/sec, while Docling shows timeout issues on complex documents</small></p>
             </div>
         </div>
@@ -423,7 +428,12 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                     <strong>📊 Throughput Performance (MB/sec):</strong><br>
                     Measures actual data processing speed accounting for file sizes. Higher values indicate better scaling with document complexity.
                 </div>
-                <img src="visualizations/throughput_analysis_comprehensive.png" alt="Throughput Comparison">
+                <img src="visualizations/throughput_analysis_comprehensive.png" alt="Throughput Comparison"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display:none; text-align:center; padding:40px; background:#f8f9fa; border-radius:8px; border: 2px dashed #dee2e6;">
+                    <h4>📊 Throughput Chart Not Available</h4>
+                    <p>Throughput analysis data is available in the reports below.</p>
+                </div>
                 <p><small><strong>Throughput Insights:</strong> Multi-format frameworks show consistent performance across diverse document types</small></p>
             </div>
         </div>
@@ -436,7 +446,12 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                     Framework reliability varies by document type and format support. See charts for detailed comparisons.<br>
                     <em>*Success rates calculated on supported formats only</em>
                 </div>
-                <img src="visualizations/success_and_failure_analysis.png" alt="Success Rate Comparison">
+                <img src="visualizations/success_and_failure_analysis.png" alt="Success Rate Comparison"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display:none; text-align:center; padding:40px; background:#f8f9fa; border-radius:8px; border: 2px dashed #dee2e6;">
+                    <h4>📊 Success Rate Chart Not Available</h4>
+                    <p>Success rate data is available in the reports below.</p>
+                </div>
                 <p><small><strong>Reliability Notes:</strong> Success rates calculated only on files each framework attempts to process</small></p>
             </div>
         </div>
@@ -476,7 +491,12 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                     <strong>🏆 Memory Efficiency Ranking (Lower MB = Better):</strong><br>
                     Memory usage varies significantly by framework and document type. See detailed analysis below.
                 </div>
-                <img src="visualizations/resource_usage_heatmaps.png" alt="Memory Usage">
+                <img src="visualizations/resource_usage_heatmaps.png" alt="Memory Usage"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display:none; text-align:center; padding:40px; background:#f8f9fa; border-radius:8px; border: 2px dashed #dee2e6;">
+                    <h4>📊 Memory Usage Chart Not Available</h4>
+                    <p>Memory usage data is available in the reports below.</p>
+                </div>
                 <p><small><strong>Interpretation:</strong> Shows average peak memory consumption across all file types. Lower bars indicate more memory-efficient frameworks.</small></p>
             </div>
         </div>
@@ -509,7 +529,12 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                     <strong>📏 Size Category Performance (Speed Ranking):</strong><br>
                     Tiny (&lt;100KB): Fast extraction | Small (100KB-1MB): Consistent performance | Medium (1-10MB): Mixed results | Large (10-50MB): Framework timeouts common
                 </div>
-                <img src="visualizations/category_analysis_comprehensive.png" alt="Category Analysis">
+                <img src="visualizations/category_analysis_comprehensive.png" alt="Category Analysis"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div style="display:none; text-align:center; padding:40px; background:#f8f9fa; border-radius:8px; border: 2px dashed #dee2e6;">
+                    <h4>📊 Category Analysis Chart Not Available</h4>
+                    <p>Category analysis data is available in the reports below.</p>
+                </div>
                 <p><small><strong>Size Scaling:</strong> Performance patterns change dramatically with document size. Memory usage can increase exponentially for complex documents regardless of file size.</small></p>
             </div>
         </div>

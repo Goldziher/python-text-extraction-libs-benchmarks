@@ -599,19 +599,23 @@ jobs:
                       <div class="chart-grid">
                           <div class="chart-item">
                               <h3>Extraction Speed Comparison</h3>
-                              <img src="visualizations/performance_comparison.png" alt="Performance Comparison">
+                              <img src="visualizations/performance_comparison_large.png" alt="Performance Comparison"
+                                   onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'%3EChart not available%3C/text%3E%3C/svg%3E';">
                           </div>
                           <div class="chart-item">
                               <h3>Throughput Analysis</h3>
-                              <img src="visualizations/throughput_comparison.png" alt="Throughput Comparison">
+                              <img src="visualizations/throughput_analysis_comprehensive.png" alt="Throughput Comparison"
+                                   onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'%3EChart not available%3C/text%3E%3C/svg%3E';">
                           </div>
                           <div class="chart-item">
                               <h3>Success Rate Analysis</h3>
-                              <img src="visualizations/success_rate_comparison.png" alt="Success Rate Comparison">
+                              <img src="visualizations/success_and_failure_analysis.png" alt="Success Rate Comparison"
+                                   onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'%3EChart not available%3C/text%3E%3C/svg%3E';">
                           </div>
                           <div class="chart-item">
                               <h3>Performance Heatmap</h3>
-                              <img src="visualizations/performance_heatmap.png" alt="Performance Heatmap">
+                              <img src="visualizations/performance_heatmap.png" alt="Performance Heatmap"
+                                   onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'%3EChart not available%3C/text%3E%3C/svg%3E';">
                           </div>
                       </div>
 
@@ -629,11 +633,13 @@ jobs:
                       <div class="chart-grid">
                           <div class="chart-item">
                               <h3>Memory Usage by Framework</h3>
-                              <img src="visualizations/memory_usage.png" alt="Memory Usage">
+                              <img src="visualizations/resource_usage_heatmaps.png" alt="Memory Usage"
+                                   onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'%3EChart not available%3C/text%3E%3C/svg%3E';">
                           </div>
                           <div class="chart-item">
                               <h3>Category Performance</h3>
-                              <img src="visualizations/category_analysis.png" alt="Category Analysis">
+                              <img src="visualizations/category_analysis_comprehensive.png" alt="Category Analysis"
+                                   onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'%3EChart not available%3C/text%3E%3C/svg%3E';">
                           </div>
                           <div class="chart-item">
                               <h3>Installation Size Comparison</h3>
@@ -655,7 +661,8 @@ jobs:
                       <div class="chart-grid">
                           <div class="chart-item">
                               <h3>Format Support Matrix</h3>
-                              <img src="visualizations/format_support_matrix.png" alt="Format Support Matrix">
+                              <img src="visualizations/format_support_matrix.png" alt="Format Support Matrix"
+                                   onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\'%3E%3Crect width=\'400\' height=\'300\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\'%3EChart not available%3C/text%3E%3C/svg%3E';">
                           </div>
                           <div class="chart-item">
                               <h3>Format Categories Tested</h3>
