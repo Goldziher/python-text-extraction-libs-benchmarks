@@ -316,7 +316,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Text Extraction Libraries Benchmark Results</title>
+    <title>Python Document Intelligence Framework CPU Benchmarks</title>
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <style>
 {css_styles}
@@ -325,8 +325,8 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
 <body>
     <div class="header">
         <img src="assets/logo.png" alt="Kreuzberg Logo" class="logo">
-        <h1>📊 Python Text Extraction Libraries Benchmark Results</h1>
-        <p class="subtitle">Comprehensive Performance Analysis of Text Extraction Frameworks</p>
+        <h1>📊 Python Document Intelligence Framework CPU Benchmarks</h1>
+        <p class="subtitle">Comprehensive Performance Analysis of Document Intelligence Frameworks</p>
     </div>
 
     <nav class="nav">
@@ -348,7 +348,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         </div>
 
         <div class="alert">
-            <strong>⚠️ Methodology Note:</strong> All frameworks are multi-format text extraction libraries tested across all supported file types for fair comparison.
+            <strong>⚠️ Methodology Note:</strong> All frameworks are multi-format document intelligence libraries tested across all supported file types for fair comparison.
         </div>
 
 """
@@ -611,7 +611,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
                         <p><strong>Total:</strong> 18 different file formats across 6 categories</p>
                     </div>
                 </div>
-                <p><small><strong>Format Diversity:</strong> Comprehensive testing across document types commonly encountered in real-world text extraction scenarios.</small></p>
+                <p><small><strong>Format Diversity:</strong> Comprehensive testing across document types commonly encountered in real-world document intelligence scenarios.</small></p>
             </div>
         </div>
     </section>
@@ -703,7 +703,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         <h2>✨ Quality Assessment Analysis</h2>
 
         <div class="alert">
-            <strong>🎯 ML-Based Quality Metrics:</strong> Comprehensive text extraction quality analysis using sentence transformers, readability metrics, coherence analysis, and document-specific quality checks across all frameworks and file types.
+            <strong>🎯 ML-Based Quality Metrics:</strong> Comprehensive document intelligence quality analysis using sentence transformers, readability metrics, coherence analysis, and document-specific quality checks across all frameworks and file types.
         </div>
 
         <div class="metrics-guide" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
@@ -833,7 +833,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
         <div class="framework-card">
             <h4>Kreuzberg 3.8.0</h4>
             <p><strong>License:</strong> MIT | <strong>Version:</strong> {kreuzberg_version} | <strong>Size:</strong> 71MB base</p>
-            <p>Fast Python text extraction with multiple OCR backends. Supports both sync and async APIs.</p>
+            <p>Fast Python document intelligence with multiple OCR backends. Supports both sync and async APIs.</p>
             <p><strong>Strengths:</strong> Speed, small footprint, async support, comprehensive format coverage</p>
             <p><strong>Format Support:</strong> All tested formats except MSG (no open source support)</p>
             <p><strong>Commercial Use:</strong> ✅ Fully permissive MIT license</p>
@@ -975,7 +975,7 @@ def generate_index_html(aggregated_path: Path, output_path: Path) -> None:
     </section>
 
     <div class="footer">
-        <p>Powered by <a href="https://github.com/Kreuzberg">Kreuzberg</a> • Comprehensive text extraction benchmarking</p>
+        <p>Powered by <a href="https://github.com/Kreuzberg">Kreuzberg</a> • Comprehensive document intelligence benchmarking</p>
         <p>Updated regularly via GitHub Actions • CPU-only processing • Python 3.13+</p>
     </div>
 </body>

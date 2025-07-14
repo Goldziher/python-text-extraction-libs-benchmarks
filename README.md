@@ -1,11 +1,11 @@
-# Python Text Extraction Libraries Benchmarks 2025
+# Python Document Intelligence Framework CPU Benchmarks
 
 <p align="center">
   <img src="docs/assets/logo.png" alt="Kreuzberg Logo" width="200">
 </p>
 
 <p align="center">
-  <strong>Powered by Kreuzberg</strong> • Comprehensive text extraction benchmarking
+  <strong>Powered by Kreuzberg</strong> • Comprehensive document intelligence framework benchmarking
 </p>
 
 [![Benchmark Pipeline](https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions/workflows/benchmark-by-framework.yml/badge.svg)](https://github.com/Goldziher/python-text-extraction-libs-benchmarks/actions/workflows/benchmark-by-framework.yml)
@@ -18,9 +18,9 @@
 
 ## 🔍 What is This?
 
-This repository provides **comprehensive, automated benchmarks** for Python text extraction libraries. We test popular multi-format text extraction frameworks against a diverse dataset of 94 real-world documents, measuring:
+This repository provides **comprehensive, automated benchmarks** for Python document intelligence frameworks. We test popular multi-format document processing libraries against a diverse dataset of 94 real-world documents, measuring:
 
-- **⚡ Performance**: Extraction speed, memory usage, CPU utilization
+- **⚡ Performance**: Document processing speed, memory usage, CPU utilization
 - **✅ Reliability**: Success rates, error handling, timeout behavior
 - **📊 Quality**: Text extraction accuracy and completeness (optional)
 - **🔧 Practicality**: Installation size, dependency count, format support
@@ -112,7 +112,7 @@ uv run python -m src.cli benchmark \
 
 ## 🔬 Tested Frameworks
 
-We benchmark the following multi-format text extraction frameworks:
+We benchmark the following multi-format document intelligence frameworks:
 
 1. **Kreuzberg** (v3.8.0+)
 
@@ -322,7 +322,7 @@ uv run python -m src.cli benchmark --format-tier all
 
 We welcome contributions! Areas of interest:
 
-- **New frameworks**: Add support for emerging text extraction libraries
+- **New frameworks**: Add support for emerging document intelligence libraries
 - **More test documents**: Expand our dataset with edge cases
 - **Performance optimizations**: Improve benchmarking efficiency
 - **Analysis tools**: Enhanced visualization and reporting capabilities
@@ -345,7 +345,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-- Powered by [Kreuzberg](https://github.com/Goldziher/kreuzberg) - Fast Python text extraction
+- Powered by [Kreuzberg](https://github.com/Goldziher/kreuzberg) - Fast Python document intelligence
 - Test documents from various public sources
 - Framework maintainers for their excellent libraries
 - GitHub Actions for CI/CD infrastructure
