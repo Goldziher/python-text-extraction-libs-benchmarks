@@ -83,9 +83,10 @@ rules:
     priority: 10
     content: |
       ### Dependencies
-      - Install dependencies: `uv sync`
-      - Install with all extras: `uv sync --all-extras`
-      - Install OCR backends: `uv sync --extra ocr`
+      - Install base dependencies: `uv sync`
+      - Install specific framework: `uv sync --extra kreuzberg`
+      - Install all compatible: `uv sync --extra all`
+      - Install with OCR: `uv sync --extra kreuzberg-ocr`
 
       ### Running Benchmarks
       - Run all frameworks: `uv run python -m src.cli benchmark`

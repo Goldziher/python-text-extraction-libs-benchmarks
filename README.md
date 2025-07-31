@@ -52,10 +52,21 @@ Our GitHub Actions workflow automatically:
 git clone https://github.com/Goldziher/python-text-extraction-libs-benchmarks.git
 cd python-text-extraction-libs-benchmarks
 
-# Install with uv
-uv sync --all-extras
+# Install base dependencies only
+uv sync
 
-# Run benchmarks for all frameworks
+# Install specific frameworks (recommended due to conflicts)
+uv sync --extra kreuzberg           # Kreuzberg framework
+uv sync --extra kreuzberg-ocr       # Kreuzberg with OCR backends
+uv sync --extra extractous          # Extractous framework
+uv sync --extra unstructured        # Unstructured framework
+uv sync --extra markitdown          # MarkItDown framework
+uv sync --extra docling             # Docling framework (may conflict with kreuzberg)
+
+# Install all compatible frameworks (excludes docling due to conflicts)
+uv sync --extra all
+
+# Run benchmarks for installed frameworks
 uv run python -m src.cli benchmark
 
 # Test specific frameworks
@@ -65,6 +76,13 @@ uv run python -m src.cli benchmark --framework kreuzberg_sync,extractous --categ
 uv run python -m src.cli report --output-format html
 uv run python -m src.cli visualize
 ```
+
+#### Framework Compatibility Notes
+
+Due to dependency conflicts between frameworks:
+- **kreuzberg** (3.10.1+) and **docling** cannot be installed together (lxml version conflict)
+- Install frameworks individually or use `--extra all` for all compatible frameworks
+- The benchmarking tool will gracefully skip frameworks that aren't installed
 
 ### 📋 CLI Commands
 

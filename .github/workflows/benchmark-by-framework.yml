@@ -63,7 +63,9 @@ jobs:
           # Parse frameworks
           INPUT_FRAMEWORKS="${{ github.event.inputs.frameworks || 'all' }}"
           if [ "$INPUT_FRAMEWORKS" = "all" ]; then
-            FRAMEWORKS='["kreuzberg_sync","kreuzberg_async","docling","markitdown","unstructured","extractous"]'
+            # Note: docling excluded from default 'all' due to lxml conflicts with kreuzberg
+            # To test docling, specify it explicitly: --frameworks docling
+            FRAMEWORKS='["kreuzberg_sync","kreuzberg_async","markitdown","unstructured","extractous"]'
           else
             # Convert comma-separated to JSON array
             FRAMEWORKS=$(echo "$INPUT_FRAMEWORKS" | sed 's/,/","/g' | sed 's/^/["/' | sed 's/$/"]/')
@@ -125,9 +127,14 @@ jobs:
           cd kreuzberg-source
           git checkout feature/enhanced-benchmarking
 
-          # Install benchmark framework dependencies first
+          # Install base dependencies and kreuzberg extras
           cd ..
-          uv sync --all-packages --all-extras --dev
+          uv pip install -e .
+          uv pip install -e ".[kreuzberg]"
+          uv pip install -e ".[kreuzberg-ocr]"
+          
+          # Install dev dependencies separately
+          uv pip install pytest pytest-asyncio pytest-timeout
 
           # Install Kreuzberg from source with required extras (excluding extractous to avoid conflicts)
           uv add ./kreuzberg-source --extra gmft --extra cli
@@ -212,9 +219,14 @@ jobs:
           cd kreuzberg-source
           git checkout feature/enhanced-benchmarking
 
-          # Install benchmark framework dependencies first
+          # Install base dependencies and kreuzberg extras
           cd ..
-          uv sync --all-packages --all-extras --dev
+          uv pip install -e .
+          uv pip install -e ".[kreuzberg]"
+          uv pip install -e ".[kreuzberg-ocr]"
+          
+          # Install dev dependencies separately
+          uv pip install pytest pytest-asyncio pytest-timeout
 
           # Install Kreuzberg from source with required extras (excluding extractous to avoid conflicts)
           uv add ./kreuzberg-source --extra gmft --extra cli
@@ -270,6 +282,8 @@ jobs:
           retention-days: 30
 
 
+  # NOTE: Docling has conflicting dependencies with kreuzberg (lxml version)
+  # Run this job separately by specifying: --frameworks docling
   benchmark-docling:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'docling')
@@ -295,7 +309,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          uv sync --all-packages --all-extras --dev
+          uv pip install -e .
+          uv pip install -e ".[docling]"
+          uv pip install pytest pytest-asyncio pytest-timeout
 
       - name: Install APT packages
         run: |
@@ -376,7 +392,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          uv sync --all-packages --all-extras --dev
+          uv pip install -e .
+          uv pip install -e ".[markitdown]"
+          uv pip install pytest pytest-asyncio pytest-timeout
 
       - name: Install APT packages
         run: |
@@ -457,7 +475,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          uv sync --all-packages --all-extras --dev
+          uv pip install -e .
+          uv pip install -e ".[unstructured]"
+          uv pip install pytest pytest-asyncio pytest-timeout
 
       - name: Install APT packages
         run: |
@@ -533,7 +553,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          uv sync --all-packages --all-extras --dev
+          uv pip install -e .
+          uv pip install -e ".[extractous]"
+          uv pip install pytest pytest-asyncio pytest-timeout
 
       - name: Install APT packages
         run: |
@@ -622,7 +644,10 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          uv sync --all-packages --all-extras --dev
+          uv pip install -e .
+          # Install all extras for aggregation/reporting
+          uv pip install -e ".[all]"
+          uv pip install pytest pytest-asyncio pytest-timeout
 
       - name: Download All Results
         uses: actions/download-artifact@v4

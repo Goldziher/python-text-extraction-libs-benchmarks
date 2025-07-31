@@ -30,26 +30,35 @@ classifiers = [
 dependencies = [
   "anyio>=4.9.0",
   "click>=8.2.1",
-  "docling>=2.43.0",
-  "extractous>=0.1.0",
-  "kreuzberg>=3.9.0",
-  "markitdown>=0.0.1a2",
   "matplotlib>=3.8.0",
   "msgspec>=0.18.0",
   "pandas>=2.3.1",
   "plotly>=5.15.0",
   "psutil>=7.0.0",
-  "rich>=14.1.0",
+  "rich>=13.7.0",
   "scikit-learn>=1.7.1",
   "seaborn>=0.13.0",
   "sentence-transformers>=2.2.0",
   "textstat>=0.7.8",
-  "unstructured[all-docs]>=0.18.11",
 ]
 
-optional-dependencies.ocr = [ "kreuzberg[easyocr]", "kreuzberg[paddleocr]" ]
+[project.optional-dependencies]
+kreuzberg = ["kreuzberg>=3.10.1"]
+kreuzberg-ocr = ["kreuzberg[easyocr]>=3.10.1", "kreuzberg[paddleocr]>=3.10.1"]
+extractous = ["extractous>=0.3.0"]
+unstructured = ["unstructured[all-docs]>=0.18.11"]
+markitdown = ["markitdown>=0.1.2"]
+docling = ["docling>=2.43.0"]
+all = [
+  "kreuzberg>=3.10.1",
+  "extractous>=0.3.0",
+  "unstructured[all-docs]>=0.18.11",
+  "markitdown>=0.1.2",
+  # docling excluded from 'all' due to conflicts
+]
 
-scripts.benchmark = "src.cli:main"
+[project.scripts]
+benchmark = "src.cli:main"
 
 [dependency-groups]
 dev = [
