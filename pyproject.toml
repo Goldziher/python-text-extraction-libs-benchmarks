@@ -54,7 +54,8 @@ all = [
   "extractous>=0.3.0",
   "unstructured[all-docs]>=0.18.11",
   "markitdown>=0.1.2",
-  # docling excluded from 'all' due to conflicts
+  # Note: docling excluded from 'all' due to lxml conflicts with kreuzberg
+  # Install separately with: uv sync --extra docling
 ]
 
 [project.scripts]

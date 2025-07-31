@@ -93,6 +93,7 @@ rules:
       - Test specific frameworks: `uv run python -m src.cli benchmark --framework kreuzberg_sync,extractous`
       - Test by category: `uv run python -m src.cli benchmark --category small,medium`
       - List available options: `uv run python -m src.cli list-frameworks`
+      - Note: CLI includes ALL frameworks (including docling) when using --framework all
 
       ### Analysis and Reporting
       - Generate reports: `uv run python -m src.cli report --output-format html`
@@ -182,6 +183,8 @@ rules:
       - NO framework recommendations - present data objectively
       - Focus on benchmarking accuracy and fairness
       - Focus on multi-format text extraction frameworks only
+      - CLI benchmark command includes ALL frameworks by default (including docling)
+      - CI excludes docling from default runs due to conflicts
 
   - name: "CI/CD and Deployment"
     priority: 7
@@ -192,6 +195,7 @@ rules:
       - **Framework Isolation**: Each framework runs in separate job
       - **Timeouts**: 2 hours per framework, 300s per file
       - **Artifacts**: Results stored for 90 days
+      - **Default CI Frameworks**: kreuzberg_sync, kreuzberg_async, markitdown, unstructured, extractous (docling excluded)
 
       ### Deployment Pipeline
       1. Run benchmarks for each framework
