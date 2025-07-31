@@ -189,13 +189,18 @@ rules:
   - name: "CI/CD and Deployment"
     priority: 7
     content: |
-      ### GitHub Actions Workflow
-      - **Schedule**: Every Monday at 6 AM UTC
-      - **Manual Trigger**: Via GitHub Actions UI
+      ### GitHub Actions Workflows
+      #### CI (ci.yml)
+      - **Triggers**: Push to main, PRs
+      - **Purpose**: Code validation, linting, type checking
+      - **No benchmarks**: Only validates code quality
+      
+      #### Benchmarks (benchmark-by-framework.yml)
+      - **Triggers**: Manual dispatch, releases, weekly schedule (Monday 6 AM UTC)
       - **Framework Isolation**: Each framework runs in separate job
       - **Timeouts**: 2 hours per framework, 300s per file
+      - **Default Frameworks**: ALL (kreuzberg_sync, kreuzberg_async, markitdown, unstructured, extractous, docling)
       - **Artifacts**: Results stored for 90 days
-      - **Default CI Frameworks**: kreuzberg_sync, kreuzberg_async, markitdown, unstructured, extractous (docling excluded)
 
       ### Deployment Pipeline
       1. Run benchmarks for each framework

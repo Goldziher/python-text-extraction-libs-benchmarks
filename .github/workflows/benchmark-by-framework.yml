@@ -10,12 +10,8 @@ name: Benchmark by Framework (General Text Extraction)
 on:
   release:
     types: [published]  # Comprehensive benchmarks on releases
-  pull_request:
-    branches: [main]  # Quick validation on PRs
-  push:
-    branches: [main]  # Full benchmarks on main branch changes
-    paths:
-      - '.github/workflows/benchmark-by-framework.yml'  # Re-run when workflow changes
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 6 AM UTC
   workflow_dispatch:  # Manual triggering with parameters
     inputs:
       frameworks:
@@ -63,9 +59,8 @@ jobs:
           # Parse frameworks
           INPUT_FRAMEWORKS="${{ github.event.inputs.frameworks || 'all' }}"
           if [ "$INPUT_FRAMEWORKS" = "all" ]; then
-            # Note: docling excluded from default 'all' due to lxml conflicts with kreuzberg
-            # To test docling, specify it explicitly: --frameworks docling
-            FRAMEWORKS='["kreuzberg_sync","kreuzberg_async","markitdown","unstructured","extractous"]'
+            # All frameworks including docling (runs in isolation)
+            FRAMEWORKS='["kreuzberg_sync","kreuzberg_async","markitdown","unstructured","extractous","docling"]'
           else
             # Convert comma-separated to JSON array
             FRAMEWORKS=$(echo "$INPUT_FRAMEWORKS" | sed 's/,/","/g' | sed 's/^/["/' | sed 's/$/"]/')
