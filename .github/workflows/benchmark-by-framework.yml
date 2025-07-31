@@ -120,26 +120,14 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Clone and install Kreuzberg v4 RC1 Enhanced
+      - name: Install Dependencies
         run: |
-          # Install latest development version for enhanced benchmarking features
-          git clone https://github.com/Goldziher/kreuzberg.git kreuzberg-source
-          cd kreuzberg-source
-          git checkout feature/enhanced-benchmarking
-
-          # Install base dependencies and kreuzberg extras
-          cd ..
           uv venv
           source .venv/bin/activate
           uv pip install -e .
           uv pip install -e ".[kreuzberg]"
           uv pip install -e ".[kreuzberg-ocr]"
-          
-          # Install dev dependencies separately
           uv pip install pytest pytest-asyncio pytest-timeout
-
-          # Install Kreuzberg from source with required extras (excluding extractous to avoid conflicts)
-          uv add ./kreuzberg-source --extra gmft --extra cli
 
       - name: Install APT packages
         run: |
@@ -166,11 +154,13 @@ jobs:
           echo "Available Tesseract languages:"
           tesseract --list-langs | head -10
           echo "Kreuzberg version:"
-          uv run python -c "import kreuzberg; print(kreuzberg.__version__)"
+          source .venv/bin/activate
+          python -c "import kreuzberg; print(kreuzberg.__version__)"
 
-      - name: Run Benchmark (Kreuzberg v4 RC1 Enhanced without Extractous)
+      - name: Run Benchmark
         run: |
-          uv run python -m src.cli benchmark \
+          source .venv/bin/activate
+          python -m src.cli benchmark \
             --framework kreuzberg_sync \
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
@@ -214,26 +204,14 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Clone and install Kreuzberg v4 RC1 Enhanced
+      - name: Install Dependencies
         run: |
-          # Install latest development version for enhanced benchmarking features
-          git clone https://github.com/Goldziher/kreuzberg.git kreuzberg-source
-          cd kreuzberg-source
-          git checkout feature/enhanced-benchmarking
-
-          # Install base dependencies and kreuzberg extras
-          cd ..
           uv venv
           source .venv/bin/activate
           uv pip install -e .
           uv pip install -e ".[kreuzberg]"
           uv pip install -e ".[kreuzberg-ocr]"
-          
-          # Install dev dependencies separately
           uv pip install pytest pytest-asyncio pytest-timeout
-
-          # Install Kreuzberg from source with required extras (excluding extractous to avoid conflicts)
-          uv add ./kreuzberg-source --extra gmft --extra cli
 
       - name: Install APT packages
         run: |
@@ -260,11 +238,13 @@ jobs:
           echo "Available Tesseract languages:"
           tesseract --list-langs | head -10
           echo "Kreuzberg version:"
-          uv run python -c "import kreuzberg; print(kreuzberg.__version__)"
+          source .venv/bin/activate
+          python -c "import kreuzberg; print(kreuzberg.__version__)"
 
-      - name: Run Benchmark (Kreuzberg v4 RC1 Enhanced without Extractous)
+      - name: Run Benchmark
         run: |
-          uv run python -m src.cli benchmark \
+          source .venv/bin/activate
+          python -m src.cli benchmark \
             --framework kreuzberg_async \
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
@@ -347,7 +327,8 @@ jobs:
       - name: Run Benchmark with timeout handling
         run: |
           # Use timeout command to enforce 2-hour limit and create failure results
-          timeout 7200 uv run python -m src.cli benchmark \
+          source .venv/bin/activate
+          timeout 7200 python -m src.cli benchmark \
             --framework docling \
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
@@ -432,7 +413,8 @@ jobs:
       - name: Run Benchmark with timeout handling
         run: |
           # Use timeout command to enforce 2-hour limit and create failure results
-          timeout 7200 uv run python -m src.cli benchmark \
+          source .venv/bin/activate
+          timeout 7200 python -m src.cli benchmark \
             --framework markitdown \
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
@@ -516,7 +498,8 @@ jobs:
 
       - name: Run Benchmark
         run: |
-          uv run python -m src.cli benchmark \
+          source .venv/bin/activate
+          python -m src.cli benchmark \
             --framework unstructured \
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
@@ -597,7 +580,8 @@ jobs:
       - name: Run Benchmark with timeout handling
         run: |
           # Use timeout command to enforce 2-hour limit and create failure results
-          timeout 7200 uv run python -m src.cli benchmark \
+          source .venv/bin/activate
+          timeout 7200 python -m src.cli benchmark \
             --framework extractous \
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
@@ -701,7 +685,8 @@ jobs:
           # Aggregate available results or create empty structure
           if [ -n "$RESULT_DIRS" ]; then
             echo "Aggregating results from: $RESULT_DIRS"
-            uv run python -m src.cli aggregate $RESULT_DIRS --output-dir aggregated-results
+            source .venv/bin/activate
+            python -m src.cli aggregate $RESULT_DIRS --output-dir aggregated-results
             echo "✅ Successfully aggregated $(echo $RESULT_DIRS | wc -w) result directories"
           else
             echo "⚠️ No valid result directories found - creating empty aggregated results"
@@ -717,7 +702,7 @@ jobs:
             mkdir -p final-reports
 
             # Try to generate reports, but continue even if it fails
-            if uv run python -m src.cli report \
+            if python -m src.cli report \
               --aggregated-file aggregated-results/aggregated_results.json \
               --output-dir final-reports \
               --format markdown \
@@ -745,7 +730,7 @@ jobs:
             mkdir -p final-visualizations
 
             # Try to generate visualizations, but continue even if it fails
-            if uv run python -m src.cli visualize \
+            if python -m src.cli visualize \
               --aggregated-file aggregated-results/aggregated_results.json \
               --output-dir final-visualizations; then
               echo "✅ Visualizations generated successfully"
@@ -783,7 +768,7 @@ jobs:
 
           if [ -n "$RESULTS_FILE" ]; then
             echo "Using results file: $RESULTS_FILE"
-            if uv run python -m src.cli metadata-analysis \
+            if python -m src.cli metadata-analysis \
               --results-dir "$(dirname "$RESULTS_FILE")" \
               --output-dir metadata-analysis; then
               echo "✅ Metadata analysis completed successfully"
@@ -817,7 +802,7 @@ jobs:
 
           if [ -n "$RESULTS_FILE" ]; then
             echo "Using results file: $RESULTS_FILE"
-            if uv run python -m src.cli table-analysis \
+            if python -m src.cli table-analysis \
               --results-dir "$(dirname "$RESULTS_FILE")" \
               --output-dir table-analysis; then
               echo "✅ Table analysis completed successfully"
