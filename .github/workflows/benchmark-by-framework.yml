@@ -129,6 +129,8 @@ jobs:
 
           # Install base dependencies and kreuzberg extras
           cd ..
+          uv venv
+          source .venv/bin/activate
           uv pip install -e .
           uv pip install -e ".[kreuzberg]"
           uv pip install -e ".[kreuzberg-ocr]"
@@ -221,6 +223,8 @@ jobs:
 
           # Install base dependencies and kreuzberg extras
           cd ..
+          uv venv
+          source .venv/bin/activate
           uv pip install -e .
           uv pip install -e ".[kreuzberg]"
           uv pip install -e ".[kreuzberg-ocr]"
@@ -309,6 +313,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          uv venv
+          source .venv/bin/activate
           uv pip install -e .
           uv pip install -e ".[docling]"
           uv pip install pytest pytest-asyncio pytest-timeout
@@ -392,6 +398,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          uv venv
+          source .venv/bin/activate
           uv pip install -e .
           uv pip install -e ".[markitdown]"
           uv pip install pytest pytest-asyncio pytest-timeout
@@ -475,6 +483,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          uv venv
+          source .venv/bin/activate
           uv pip install -e .
           uv pip install -e ".[unstructured]"
           uv pip install pytest pytest-asyncio pytest-timeout
@@ -553,6 +563,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          uv venv
+          source .venv/bin/activate
           uv pip install -e .
           uv pip install -e ".[extractous]"
           uv pip install pytest pytest-asyncio pytest-timeout
@@ -644,6 +656,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          uv venv
+          source .venv/bin/activate
           uv pip install -e .
           # Install all extras for aggregation/reporting
           uv pip install -e ".[all]"
