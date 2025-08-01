@@ -152,6 +152,12 @@ jobs:
           source .venv/bin/activate
           python -c "import kreuzberg; print(kreuzberg.__version__)"
 
+      - name: Clear Kreuzberg Cache
+        run: |
+          echo "Clearing Kreuzberg cache directories..."
+          rm -rf ~/.kreuzberg .kreuzberg
+          echo "Cache cleared"
+
       - name: Run Benchmark
         run: |
           source .venv/bin/activate
@@ -235,6 +241,12 @@ jobs:
           echo "Kreuzberg version:"
           source .venv/bin/activate
           python -c "import kreuzberg; print(kreuzberg.__version__)"
+
+      - name: Clear Kreuzberg Cache
+        run: |
+          echo "Clearing Kreuzberg cache directories..."
+          rm -rf ~/.kreuzberg .kreuzberg
+          echo "Cache cleared"
 
       - name: Run Benchmark
         run: |

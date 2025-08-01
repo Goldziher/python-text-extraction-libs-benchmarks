@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import asyncio
+import shutil
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -54,6 +55,21 @@ class ComprehensiveBenchmarkRunner:
         self.executor = ThreadPoolExecutor(max_workers=4)  # For sync extractors
         self.results: list[BenchmarkResult] = []
         self.failed_files: dict[str, int] = {}  # Track repeated failures
+
+    def _clear_kreuzberg_cache(self) -> None:
+        """Clear Kreuzberg cache to ensure fair benchmarking."""
+        cache_paths = [
+            Path.home() / ".kreuzberg",  # User home cache
+            Path.cwd() / ".kreuzberg",  # Local project cache
+        ]
+
+        for cache_path in cache_paths:
+            if cache_path.exists():
+                try:
+                    shutil.rmtree(cache_path)
+                    self.console.print(f"[yellow]Cleared cache: {cache_path}[/yellow]")
+                except Exception as e:
+                    self.console.print(f"[red]Failed to clear cache {cache_path}: {e}[/red]")
 
     async def run_benchmark_suite(self) -> list[BenchmarkResult]:
         """~keep Main entry point: run multi-iteration benchmark with warmup/cooldown."""
@@ -132,6 +148,10 @@ class ComprehensiveBenchmarkRunner:
         ) as progress:
             # Process each framework
             for framework in self.config.frameworks:
+                # Clear Kreuzberg cache before benchmarking to ensure fair comparison
+                if "kreuzberg" in framework.value.lower():
+                    self._clear_kreuzberg_cache()
+
                 framework_task = progress.add_task(f"[cyan]Testing {framework.value}...[/cyan]", total=None)
 
                 # Process each category
