@@ -44,7 +44,7 @@ dependencies = [
 
 optional-dependencies.all = [
   "extractous>=0.3.0",
-  "kreuzberg>=3.10.1",
+  "kreuzberg>=3.11.0",
   "markitdown>=0.1.2",
   "unstructured[all-docs]>=0.18.11",
   # Note: docling excluded from 'all' due to lxml conflicts with kreuzberg
@@ -52,8 +52,8 @@ optional-dependencies.all = [
 ]
 optional-dependencies.docling = [ "docling>=2.43.0" ]
 optional-dependencies.extractous = [ "extractous>=0.3.0" ]
-optional-dependencies.kreuzberg = [ "kreuzberg>=3.10.1" ]
-optional-dependencies.kreuzberg-ocr = [ "kreuzberg[easyocr]>=3.10.2", "kreuzberg[paddleocr]>=3.10.2" ]
+optional-dependencies.kreuzberg = [ "kreuzberg>=3.11.0" ]
+optional-dependencies.kreuzberg-ocr = [ "kreuzberg[easyocr]>=3.11.0", "kreuzberg[paddleocr]>=3.11.0" ]
 optional-dependencies.markitdown = [ "markitdown>=0.1.2" ]
 optional-dependencies.unstructured = [ "unstructured[all-docs]>=0.18.11" ]
 scripts.benchmark = "src.cli:main"

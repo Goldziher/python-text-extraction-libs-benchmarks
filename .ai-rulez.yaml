@@ -235,7 +235,7 @@ sections:
   - title: "Tested Frameworks"
     content: |
       ### Multi-Format Frameworks (6 total)
-      1. **Kreuzberg** (v3.8.0+)
+      1. **Kreuzberg** (v3.11.0+)
          - Sync/async APIs, multiple OCR backends
          - 71MB installation
 
