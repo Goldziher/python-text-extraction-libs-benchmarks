@@ -53,8 +53,12 @@ jobs:
       - name: Install Dependencies
         shell: bash
         run: |
-          # Install all extras except docling to avoid dependency conflicts
-          uv sync --extra kreuzberg --extra kreuzberg-ocr --extra markitdown --extra unstructured --extra extractous --dev
+          # Use uv pip install to avoid dependency resolution conflicts
+          uv venv
+          source .venv/bin/activate
+          uv pip install -e .
+          # Install visualization dependencies only
+          uv pip install plotly pandas matplotlib seaborn
 
       - name: Get Latest Benchmark Run
         id: get-run
