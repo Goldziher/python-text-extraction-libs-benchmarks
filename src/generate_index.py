@@ -210,14 +210,14 @@ def generate_memory_table(sorted_frameworks: list) -> str:
         for cat in categories:
             if cat in category_memories:
                 memory = category_memories[cat]
-                if memory > 0:
+                if memory is not None and memory > 0:
                     memory_cells += f"<td>{memory:.0f}</td>"
                 else:
                     memory_cells += "<td>-</td>"
             else:
                 memory_cells += "<td>-</td>"
 
-        avg_memory_display = f"{stats['avg_memory']:.0f}" if stats["avg_memory"] > 0 else "N/A"
+        avg_memory_display = f"{stats['avg_memory']:.0f}" if stats.get("avg_memory") and stats["avg_memory"] > 0 else "N/A"
 
         html += f"""
                 <tr>
