@@ -149,7 +149,7 @@ def generate_performance_table(sorted_frameworks: list, install_sizes: dict) -> 
         for cat in categories:
             if cat in category_speeds:
                 speed = category_speeds[cat]
-                if speed > 0:
+                if speed is not None and speed > 0:
                     speed_cells += f"<td>{speed:.2f}</td>"
                 else:
                     speed_cells += "<td>-</td>"
