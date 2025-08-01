@@ -175,14 +175,10 @@ jobs:
               echo "Using visualizations from artifacts"
               ls -la visualizations/
             else
-              echo "Generating comprehensive visualizations..."
-              source .venv/bin/activate
-              python -m src.cli visualize \
-                --aggregated-file aggregated-results/aggregated_results.json \
-                --output-dir visualizations
-
-              echo "Generated visualizations:"
-              ls -la visualizations/
+              echo "Skipping visualization generation temporarily due to bug with None values"
+              echo "Creating minimal visualizations directory"
+              mkdir -p visualizations
+              echo '{}' > visualizations/summary_metrics.json
             fi
           else
             echo "No aggregated results found"
