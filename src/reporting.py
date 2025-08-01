@@ -16,7 +16,7 @@ import seaborn as sns
 from rich.console import Console
 from rich.table import Table
 
-from .types import BenchmarkResult, BenchmarkSummary
+from .types import BenchmarkResult, BenchmarkSummary, ExtractionStatus
 
 console = Console()
 
@@ -129,7 +129,7 @@ class BenchmarkReporter:
                     "extraction_time_seconds": result.extraction_time_seconds,
                     "memory_peak_mb": result.memory_peak_mb,
                     "cpu_percent": result.cpu_percent,
-                    "success": result.success,
+                    "success": result.status == ExtractionStatus.SUCCESS,
                     "error_message": result.error_message,
                     "extracted_text_length": result.extracted_text_length,
                 }

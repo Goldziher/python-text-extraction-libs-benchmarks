@@ -1,19 +1,7 @@
 name: Deploy to GitHub Pages
 
 on:
-  schedule:
-    # Run every hour to check for new benchmark results
-    - cron: '0 * * * *'
-  push:
-    branches: [main]
-    paths:
-      - 'src/generate_index.py'
-      - '.github/workflows/publish-reports.yml'
-      - 'docs/**'
-  workflow_run:
-    workflows: ["Benchmark by Framework"]
-    types:
-      - completed
+  # Manual deployment only - automatic deployments disabled
   workflow_dispatch:
     inputs:
       run_id:
