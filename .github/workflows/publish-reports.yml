@@ -176,7 +176,8 @@ jobs:
               ls -la visualizations/
             else
               echo "Generating comprehensive visualizations..."
-              uv run python -m src.cli visualize \
+              source .venv/bin/activate
+              python -m src.cli visualize \
                 --aggregated-file aggregated-results/aggregated_results.json \
                 --output-dir visualizations
 
@@ -199,20 +200,23 @@ jobs:
 
             # 1. File Type Analysis with Interactive Dashboard
             echo "🔍 Generating per-file-type performance analysis..."
-            uv run python -m src.cli file-type-analysis \
+            source .venv/bin/activate
+            python -m src.cli file-type-analysis \
               --results-dir downloads \
               --output-dir file-type-analysis \
               --interactive
 
             # 2. Metadata Analysis
             echo "📋 Generating metadata extraction analysis..."
-            uv run python -m src.cli metadata-analysis \
+            source .venv/bin/activate
+            python -m src.cli metadata-analysis \
               --results-dir downloads \
               --output-dir metadata-analysis
 
             # 3. Table Analysis
             echo "📊 Generating table extraction analysis..."
-            uv run python -m src.cli table-analysis \
+            source .venv/bin/activate
+            python -m src.cli table-analysis \
               --results-dir downloads \
               --output-dir table-analysis
 
@@ -221,7 +225,8 @@ jobs:
             RESULTS_FILE=$(find downloads/ -name "benchmark_results.json" | head -1)
             if [ -n "$RESULTS_FILE" ] && grep -q "quality" "$RESULTS_FILE" 2>/dev/null; then
               echo "Quality data found, generating quality analysis..."
-              uv run python -m src.cli quality-assess \
+              source .venv/bin/activate
+              python -m src.cli quality-assess \
                 --results-file "$RESULTS_FILE" \
                 --output-file quality-enhanced-results.json
             else
@@ -278,7 +283,8 @@ jobs:
           # Generate dynamic index.html from aggregated results
           if [ -f "aggregated-results/aggregated_results.json" ]; then
             echo "Generating dynamic index.html..."
-            uv run python -m src.generate_index aggregated-results/aggregated_results.json pages/index.html
+            source .venv/bin/activate
+            python -m src.generate_index aggregated-results/aggregated_results.json pages/index.html
           else
             echo "No aggregated results found, creating fallback index"
             # Create minimal fallback index
