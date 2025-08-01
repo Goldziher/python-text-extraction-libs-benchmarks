@@ -42,24 +42,21 @@ dependencies = [
   "textstat>=0.7.8",
 ]
 
-[project.optional-dependencies]
-kreuzberg = ["kreuzberg>=3.10.1"]
-kreuzberg-ocr = ["kreuzberg[easyocr]>=3.10.1", "kreuzberg[paddleocr]>=3.10.1"]
-extractous = ["extractous>=0.3.0"]
-unstructured = ["unstructured[all-docs]>=0.18.11"]
-markitdown = ["markitdown>=0.1.2"]
-docling = ["docling>=2.43.0"]
-all = [
-  "kreuzberg>=3.10.1",
+optional-dependencies.all = [
   "extractous>=0.3.0",
-  "unstructured[all-docs]>=0.18.11",
+  "kreuzberg>=3.10.1",
   "markitdown>=0.1.2",
+  "unstructured[all-docs]>=0.18.11",
   # Note: docling excluded from 'all' due to lxml conflicts with kreuzberg
   # Install separately with: uv sync --extra docling
 ]
-
-[project.scripts]
-benchmark = "src.cli:main"
+optional-dependencies.docling = [ "docling>=2.43.0" ]
+optional-dependencies.extractous = [ "extractous>=0.3.0" ]
+optional-dependencies.kreuzberg = [ "kreuzberg>=3.10.1" ]
+optional-dependencies.kreuzberg-ocr = [ "kreuzberg[easyocr]>=3.10.2", "kreuzberg[paddleocr]>=3.10.2" ]
+optional-dependencies.markitdown = [ "markitdown>=0.1.2" ]
+optional-dependencies.unstructured = [ "unstructured[all-docs]>=0.18.11" ]
+scripts.benchmark = "src.cli:main"
 
 [dependency-groups]
 dev = [

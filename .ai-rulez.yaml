@@ -194,7 +194,7 @@ rules:
       - **Triggers**: Push to main, PRs
       - **Purpose**: Code validation, linting, type checking
       - **No benchmarks**: Only validates code quality
-      
+
       #### Benchmarks (benchmark-by-framework.yml)
       - **Triggers**: Manual dispatch, releases, weekly schedule (Monday 6 AM UTC)
       - **Framework Isolation**: Each framework runs in separate job

@@ -122,7 +122,6 @@ jobs:
           uv pip install -e .
           uv pip install -e ".[kreuzberg]"
           uv pip install -e ".[kreuzberg-ocr]"
-          uv pip install 'kreuzberg[auto-classify-document-type]'
           uv pip install pytest pytest-asyncio pytest-timeout
 
       - name: Install APT packages
@@ -207,7 +206,6 @@ jobs:
           uv pip install -e .
           uv pip install -e ".[kreuzberg]"
           uv pip install -e ".[kreuzberg-ocr]"
-          uv pip install 'kreuzberg[auto-classify-document-type]'
           uv pip install pytest pytest-asyncio pytest-timeout
 
       - name: Install APT packages

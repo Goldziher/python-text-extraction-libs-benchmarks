@@ -125,13 +125,13 @@ class BenchmarkReporter:
                     "framework": result.framework.value,
                     "file_type": result.file_type.value,
                     "file_path": result.file_path,
-                    "file_size_bytes": result.file_size_bytes,
-                    "extraction_time_seconds": result.extraction_time_seconds,
-                    "memory_peak_mb": result.memory_peak_mb,
-                    "cpu_percent": result.cpu_percent,
+                    "file_size_bytes": result.file_size,
+                    "extraction_time_seconds": result.extraction_time,
+                    "memory_peak_mb": result.peak_memory_mb,
+                    "cpu_percent": result.avg_cpu_percent,
                     "success": result.status == ExtractionStatus.SUCCESS,
                     "error_message": result.error_message,
-                    "extracted_text_length": result.extracted_text_length,
+                    "extracted_text_length": result.character_count,
                 }
                 for result in self.results
             ]

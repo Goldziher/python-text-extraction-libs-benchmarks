@@ -80,6 +80,7 @@ uv run python -m src.cli visualize
 #### Framework Compatibility Notes
 
 Due to dependency conflicts between frameworks:
+
 - **kreuzberg** (3.10.1+) and **docling** cannot be installed together (lxml version conflict)
 - Install frameworks individually or use `--extra all` for all compatible frameworks
 - The benchmarking tool will gracefully skip frameworks that aren't installed
