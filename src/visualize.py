@@ -98,7 +98,7 @@ class BenchmarkVisualizer:
                         "Avg Time (s)": summary.avg_extraction_time,
                         "Median Time (s)": summary.median_extraction_time,
                         "Files per Second": summary.files_per_second,
-                        "Success Rate (%)": summary.success_rate * 100,
+                        "Success Rate (%)": (summary.success_rate * 100) if summary.success_rate is not None else 0,
                     }
                 )
 
@@ -425,7 +425,7 @@ class BenchmarkVisualizer:
         # This would require access to the detailed benchmark results
         return []
 
-    def _create_category_analysis(self, aggregated: AggregatedResults) -> list[Path]:
+    def _create_category_analysis(self, aggregated: AggregatedResults) -> list[Path]:  # noqa: C901, PLR0912
         """Create comprehensive category analysis."""
         output_files = []
 
@@ -460,7 +460,13 @@ class BenchmarkVisualizer:
         # 1. Average time by category
         ax1 = fig.add_subplot(gs[0, :])
         categories = list(category_data.keys())
-        avg_times_per_cat = [sum(d["avg_times"]) / len(d["avg_times"]) for d in category_data.values()]
+        avg_times_per_cat = []
+        for d in category_data.values():
+            valid_times = [t for t in d["avg_times"] if t is not None]
+            if valid_times:
+                avg_times_per_cat.append(sum(valid_times) / len(valid_times))
+            else:
+                avg_times_per_cat.append(0)
 
         bars = ax1.bar(categories, avg_times_per_cat, color="skyblue", edgecolor="navy")
         ax1.set_title("Average Extraction Time by Category (All Frameworks)", fontsize=18, fontweight="bold")
@@ -485,7 +491,8 @@ class BenchmarkVisualizer:
         success_data = []
         for cat, data in category_data.items():
             for rate in data["success_rates"]:
-                success_data.append({"Category": cat, "Success Rate": rate * 100})
+                if rate is not None:
+                    success_data.append({"Category": cat, "Success Rate": rate * 100})
 
         df_success = pd.DataFrame(success_data)
         df_success.boxplot(column="Success Rate", by="Category", ax=ax2)
@@ -598,7 +605,7 @@ class BenchmarkVisualizer:
                     else str(summary.category),
                     "avg_time": summary.avg_extraction_time,
                     "memory": summary.avg_peak_memory_mb or 0,
-                    "success_rate": summary.success_rate * 100,
+                    "success_rate": (summary.success_rate * 100) if summary.success_rate is not None else 0,
                     "throughput": summary.mb_per_second or 0,
                 }
             )
@@ -724,10 +731,14 @@ class BenchmarkVisualizer:
             total_files = sum(s.total_files for s in summaries)
             successful_files = sum(s.successful_files for s in summaries)
             avg_speed = (
-                sum(s.files_per_second * s.total_files for s in summaries) / total_files if total_files > 0 else 0
+                sum((s.files_per_second or 0) * s.total_files for s in summaries) / total_files
+                if total_files > 0
+                else 0
             )
             avg_memory = (
-                sum(s.avg_peak_memory_mb * s.total_files for s in summaries) / total_files if total_files > 0 else 0
+                sum((s.avg_peak_memory_mb or 0) * s.total_files for s in summaries) / total_files
+                if total_files > 0
+                else 0
             )
 
             metrics["framework_performance"][framework] = {
