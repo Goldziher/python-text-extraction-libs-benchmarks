@@ -16,6 +16,14 @@
 
 > **🎯 [📊 VIEW LIVE BENCHMARK RESULTS →](https://benchmarks.kreuzberg.dev)**
 
+## Support This Project
+
+If you find these benchmarks helpful, please consider sponsoring the development:
+
+<a href="https://github.com/sponsors/Goldziher"><img src="https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github-sponsors" alt="Sponsor on GitHub" height="32"></a>
+
+Your support helps maintain and improve these benchmarks for the community! 🚀
+
 ## 🔍 What is This?
 
 This repository provides **comprehensive, automated benchmarks** for Python document intelligence frameworks. We test popular multi-format document processing libraries against a diverse dataset of 94 real-world documents, measuring:
