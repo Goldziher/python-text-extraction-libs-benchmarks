@@ -49,11 +49,7 @@ jobs:
           python-version-file: "pyproject.toml"
 
       - name: Install dependencies
-        run: |
-          uv venv
-          source .venv/bin/activate
-          uv pip install -e .
-          uv pip install -e ".[docs]"
+        run: uv sync --extra docs
 
       - name: Get benchmark results
         id: get-results
@@ -106,11 +102,9 @@ jobs:
 
       - name: Generate documentation
         run: |
-          source .venv/bin/activate
-
           # Generate results pages from benchmark data
           if [ "${{ steps.get-results.outputs.has-results }}" = "true" ]; then
-            python -m src.docs_generator \
+            uv run python -m src.docs_generator \
               --results-file "${{ steps.get-results.outputs.results-file }}" \
               --charts-dir "${{ steps.get-results.outputs.charts-dir }}" \
               --docs-dir docs
@@ -127,8 +121,7 @@ jobs:
 
       - name: Build with MkDocs
         run: |
-          source .venv/bin/activate
-          mkdocs build --verbose
+          uv run mkdocs build --verbose
 
           echo "✅ Built site with MkDocs"
           ls -la site/
