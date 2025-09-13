@@ -12,6 +12,10 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+from src.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 class FileTypeAnalyzer:
     """Analyze benchmark results by file type for detailed insights."""
@@ -126,7 +130,7 @@ class FileTypeAnalyzer:
         self._create_throughput_analysis(df, output_dir)
         self._create_extraction_quality_analysis(df, output_dir)
 
-        print(f"Generated file type analysis in {output_dir}")
+        logger.info("Generated file type analysis", output_dir=str(output_dir))
 
     def _create_success_rate_heatmap(self, df: pd.DataFrame, output_dir: Path) -> None:
         """Create success rate heatmap by file type and framework."""
@@ -357,12 +361,12 @@ def main():
                 with open(path) as f:
                     data = json.load(f)
                     all_results.extend(data)
-                    print(f"Loaded {len(data)} results from {file_path}")
+                    logger.info("Loaded benchmark results", file=file_path, count=len(data))
             except Exception as e:
-                print(f"Error loading {file_path}: {e}")
+                logger.error("Failed to load results file", file=file_path, error=str(e))
 
     if not all_results:
-        print("No results data found. Please ensure benchmark results exist.")
+        logger.error("No results data found")
         return
 
     analyzer = FileTypeAnalyzer(all_results)
@@ -371,10 +375,12 @@ def main():
     analyzer.generate_file_type_performance_report(output_dir)
     analyzer.generate_insights_report(output_dir)
 
-    print("\n✅ File type analysis complete!")
-    print(f"📁 Results saved in: {output_dir}")
-    print(f"📊 View charts: {output_dir}/*.png")
-    print(f"📈 View insights: {output_dir}/performance_insights.md")
+    logger.info(
+        "File type analysis complete",
+        results_dir=str(output_dir),
+        charts_path=f"{output_dir}/*.png",
+        insights_path=f"{output_dir}/performance_insights.md",
+    )
 
 
 if __name__ == "__main__":

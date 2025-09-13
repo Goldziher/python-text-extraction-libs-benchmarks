@@ -16,6 +16,7 @@ from pathlib import Path
 
 import msgspec
 
+from src.logger import get_logger
 from src.types import (
     AggregatedResults,
     BenchmarkResult,
@@ -24,6 +25,8 @@ from src.types import (
     ExtractionStatus,
     Framework,
 )
+
+logger = get_logger(__name__)
 
 
 class ResultAggregator:
@@ -56,11 +59,11 @@ class ResultAggregator:
             with open(results_file, "rb") as f:
                 data = f.read()
                 if not data or len(data) == 0:
-                    print(f"Warning: Empty results file: {results_file}")
+                    logger.warning("Empty results file found", file=str(results_file))
                     return []
                 return msgspec.json.decode(data, type=list[BenchmarkResult])
         except Exception as e:
-            print(f"Error loading {results_file}: {e}")
+            logger.error("Failed to load results file", file=str(results_file), error=str(e))
             return []
 
     def _calculate_aggregated_metrics(self, results: list[BenchmarkResult]) -> AggregatedResults:

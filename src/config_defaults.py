@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 
 class DefaultValues:
     """Centralized default values for all configuration parameters."""
@@ -36,7 +38,7 @@ class DefaultValues:
 class LanguageMapper:
     """Language mapping configurations for different OCR backends."""
 
-    TESSERACT_MAPPING = {
+    TESSERACT_MAPPING: ClassVar[dict[str, str]] = {
         "eng": "eng",
         "deu": "deu",
         "heb": "heb",
@@ -45,7 +47,7 @@ class LanguageMapper:
         "kor": "kor",
     }
 
-    EASYOCR_MAPPING = {
+    EASYOCR_MAPPING: ClassVar[dict[str, str]] = {
         "eng": "en",
         "deu": "de",
         "heb": "he",
@@ -54,7 +56,7 @@ class LanguageMapper:
         "kor": "ko",
     }
 
-    PADDLEOCR_MAPPING = {
+    PADDLEOCR_MAPPING: ClassVar[dict[str, str]] = {
         "eng": "en",
         "deu": "german",
         "heb": "en",  # Hebrew not supported, fallback to English

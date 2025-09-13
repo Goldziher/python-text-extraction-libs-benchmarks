@@ -7,6 +7,10 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from src.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 def get_package_size(package_name: str, extra_deps: list[str] | None = None) -> dict[str, Any]:
     """Get the installation size of a package in a clean environment."""
@@ -62,6 +66,7 @@ def get_package_size(package_name: str, extra_deps: list[str] | None = None) -> 
         except subprocess.CalledProcessError as e:
             return {"error": str(e)}
         except Exception as e:
+            logger.error("Failed to check package installation size", package=package_name, error=str(e))
             return {"error": str(e)}
 
 

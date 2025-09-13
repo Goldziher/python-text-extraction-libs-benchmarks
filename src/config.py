@@ -66,8 +66,8 @@ def should_test_file(file_path: str, framework: Framework | str, format_tier: st
     if isinstance(framework, str):
         try:
             framework = Framework(framework)
-        except ValueError:
-            raise ValueError(f"Unknown framework: {framework}. Valid frameworks: {[f.value for f in Framework]}")
+        except ValueError as e:
+            raise ValueError(f"Unknown framework: {framework}. Valid frameworks: {[f.value for f in Framework]}") from e
 
     if framework in FRAMEWORK_EXCLUSIONS:
         return ext not in FRAMEWORK_EXCLUSIONS[framework]

@@ -13,7 +13,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from textstat import flesch_reading_ease, gunning_fog
 
+from src.logger import get_logger
 from src.types import BenchmarkResult, ExtractionStatus
+
+logger = get_logger(__name__)
 
 
 class TextQualityAssessor:
@@ -144,13 +147,15 @@ class TextQualityAssessor:
             extracted_embedding = self.sentence_model.encode([extracted])
             reference_embedding = self.sentence_model.encode([reference])
             semantic_sim = cosine_similarity(extracted_embedding, reference_embedding)[0][0]
-        except Exception:
+        except Exception as e:
+            logger.warning("Failed to calculate semantic similarity", error=str(e))
             semantic_sim = 0.0
 
         try:
             tfidf_matrix = self.tfidf.fit_transform([extracted, reference])
             lexical_sim = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
-        except Exception:
+        except Exception as e:
+            logger.warning("Failed to calculate lexical similarity", error=str(e))
             lexical_sim = 0.0
 
         try:
@@ -159,7 +164,8 @@ class TextQualityAssessor:
             intersection = len(extracted_words.intersection(reference_words))
             union = len(extracted_words.union(reference_words))
             jaccard_sim = intersection / union if union > 0 else 0
-        except Exception:
+        except Exception as e:
+            logger.warning("Failed to calculate jaccard similarity", error=str(e))
             jaccard_sim = 0.0
 
         return {

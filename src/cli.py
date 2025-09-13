@@ -17,6 +17,7 @@ from rich.console import Console
 
 from .benchmark import ComprehensiveBenchmarkRunner
 from .config_defaults import DefaultValues
+from .logger import get_logger
 from .types import (
     BenchmarkConfig,
     DocumentCategory,
@@ -26,6 +27,7 @@ from .types import (
 from .visualize import BenchmarkVisualizer
 
 console = Console()
+logger = get_logger(__name__)
 
 
 @click.group()

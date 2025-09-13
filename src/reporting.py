@@ -16,9 +16,12 @@ import seaborn as sns
 from rich.console import Console
 from rich.table import Table
 
+from src.logger import get_logger
+
 from .types import BenchmarkResult, BenchmarkSummary, ExtractionStatus
 
 console = Console()
+logger = get_logger(__name__)
 
 
 class BenchmarkReporter:
@@ -214,17 +217,6 @@ class BenchmarkReporter:
 
         console.print(f"Charts saved to: {output_path}")
 
-
-def generate_console_report(results: list[BenchmarkResult]) -> str:
-    """Generate console report from benchmark results."""
-    # Stub function for test compatibility
-    return "Console report generated"
-
-
-def generate_html_report(results: list[BenchmarkResult], output_path: Path) -> None:
-    """Generate HTML report from benchmark results."""
-    # Stub function for test compatibility
-
     def _create_time_comparison_chart(self, df: pd.DataFrame, output_path: Path) -> None:
         """Create extraction time comparison chart."""
         plt.figure(figsize=(12, 8))
@@ -330,3 +322,14 @@ def generate_html_report(results: list[BenchmarkResult], output_path: Path) -> N
 
         plt.savefig(output_path / "performance_heatmap.png", dpi=300, bbox_inches="tight")
         plt.close()
+
+
+def generate_console_report(results: list[BenchmarkResult]) -> str:  # noqa: ARG001
+    """Generate console report from benchmark results."""
+    # Stub function for test compatibility
+    return "Console report generated"
+
+
+def generate_html_report(results: list[BenchmarkResult], output_path: Path) -> None:
+    """Generate HTML report from benchmark results."""
+    # Stub function for test compatibility
