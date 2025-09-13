@@ -53,8 +53,8 @@ jobs:
           # Parse frameworks
           INPUT_FRAMEWORKS="${{ github.event.inputs.frameworks || 'all' }}"
           if [ "$INPUT_FRAMEWORKS" = "all" ]; then
-            # All frameworks including docling (runs in isolation)
-            FRAMEWORKS='["kreuzberg_sync","kreuzberg_async","markitdown","unstructured","extractous","docling"]'
+            # Primary frameworks for comprehensive benchmarking (excluding Kreuzberg)
+            FRAMEWORKS='["markitdown","unstructured","extractous","docling"]'
           else
             # Convert comma-separated to JSON array
             FRAMEWORKS=$(echo "$INPUT_FRAMEWORKS" | sed 's/,/","/g' | sed 's/^/["/' | sed 's/$/"]/')
@@ -151,10 +151,12 @@ jobs:
           rm -rf ~/.kreuzberg .kreuzberg
           echo "Cache cleared"
 
-      - name: Run Benchmark
+      - name: Run Benchmark with timeout handling
+        continue-on-error: true
         run: |
+          # Use timeout command to enforce 6-hour limit and create failure results
           source .venv/bin/activate
-          python -m src.cli benchmark \
+          timeout 21600 python -m src.cli benchmark \
             --framework kreuzberg_sync \
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
@@ -164,7 +166,12 @@ jobs:
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
-            --output-dir "results-kreuzberg_sync-${{ matrix.category }}"
+            --output-dir "results-kreuzberg_sync-${{ matrix.category }}" || {
+            # If timeout or failure, create empty results directory with failure marker
+            mkdir -p "results-kreuzberg_sync-${{ matrix.category }}"
+            echo '{"framework": "kreuzberg_sync", "category": "${{ matrix.category }}", "status": "timeout_or_failure", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > "results-kreuzberg_sync-${{ matrix.category }}/benchmark_failure.json"
+            echo "Kreuzberg Sync benchmark failed or timed out - recorded as failure"
+          }
         env:
           PYTHONUNBUFFERED: "1"
 
@@ -242,10 +249,12 @@ jobs:
           rm -rf ~/.kreuzberg .kreuzberg
           echo "Cache cleared"
 
-      - name: Run Benchmark
+      - name: Run Benchmark with timeout handling
+        continue-on-error: true
         run: |
+          # Use timeout command to enforce 6-hour limit and create failure results
           source .venv/bin/activate
-          python -m src.cli benchmark \
+          timeout 21600 python -m src.cli benchmark \
             --framework kreuzberg_async \
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
@@ -255,7 +264,12 @@ jobs:
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
-            --output-dir "results-kreuzberg_async-${{ matrix.category }}"
+            --output-dir "results-kreuzberg_async-${{ matrix.category }}" || {
+            # If timeout or failure, create empty results directory with failure marker
+            mkdir -p "results-kreuzberg_async-${{ matrix.category }}"
+            echo '{"framework": "kreuzberg_async", "category": "${{ matrix.category }}", "status": "timeout_or_failure", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > "results-kreuzberg_async-${{ matrix.category }}/benchmark_failure.json"
+            echo "Kreuzberg Async benchmark failed or timed out - recorded as failure"
+          }
         env:
           PYTHONUNBUFFERED: "1"
 
@@ -326,10 +340,11 @@ jobs:
           tesseract --list-langs | head -10
 
       - name: Run Benchmark with timeout handling
+        continue-on-error: true
         run: |
-          # Use timeout command to enforce 2-hour limit and create failure results
+          # Use timeout command to enforce 6-hour limit and create failure results
           source .venv/bin/activate
-          timeout 7200 python -m src.cli benchmark \
+          timeout 21600 python -m src.cli benchmark \
             --framework docling \
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
@@ -343,7 +358,7 @@ jobs:
             # If timeout or failure, create empty results directory with failure marker
             mkdir -p "results-docling-${{ matrix.category }}"
             echo '{"framework": "docling", "category": "${{ matrix.category }}", "status": "timeout_or_failure", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > "results-docling-${{ matrix.category }}/benchmark_failure.json"
-            echo "Docling benchmark failed or timed out after 30 minutes - recorded as failure"
+            echo "Docling benchmark failed or timed out - recorded as failure"
           }
         env:
           PYTHONUNBUFFERED: "1"
@@ -413,10 +428,11 @@ jobs:
           tesseract --list-langs | head -10
 
       - name: Run Benchmark with timeout handling
+        continue-on-error: true
         run: |
-          # Use timeout command to enforce 2-hour limit and create failure results
+          # Use timeout command to enforce 6-hour limit and create failure results
           source .venv/bin/activate
-          timeout 7200 python -m src.cli benchmark \
+          timeout 21600 python -m src.cli benchmark \
             --framework markitdown \
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
@@ -430,7 +446,7 @@ jobs:
             # If timeout or failure, create empty results directory with failure marker
             mkdir -p "results-markitdown-${{ matrix.category }}"
             echo '{"framework": "markitdown", "category": "${{ matrix.category }}", "status": "timeout_or_failure", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > "results-markitdown-${{ matrix.category }}/benchmark_failure.json"
-            echo "MarkItDown benchmark failed or timed out after 30 minutes - recorded as failure"
+            echo "MarkItDown benchmark failed or timed out - recorded as failure"
           }
         env:
           PYTHONUNBUFFERED: "1"
@@ -499,10 +515,12 @@ jobs:
           echo "Available Tesseract languages:"
           tesseract --list-langs | head -10
 
-      - name: Run Benchmark
+      - name: Run Benchmark with timeout handling
+        continue-on-error: true
         run: |
+          # Use timeout command to enforce 6-hour limit and create failure results
           source .venv/bin/activate
-          python -m src.cli benchmark \
+          timeout 21600 python -m src.cli benchmark \
             --framework unstructured \
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
@@ -512,7 +530,12 @@ jobs:
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
-            --output-dir "results-unstructured-${{ matrix.category }}"
+            --output-dir "results-unstructured-${{ matrix.category }}" || {
+            # If timeout or failure, create empty results directory with failure marker
+            mkdir -p "results-unstructured-${{ matrix.category }}"
+            echo '{"framework": "unstructured", "category": "${{ matrix.category }}", "status": "timeout_or_failure", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > "results-unstructured-${{ matrix.category }}/benchmark_failure.json"
+            echo "Unstructured benchmark failed or timed out - recorded as failure"
+          }
         env:
           PYTHONUNBUFFERED: "1"
 
@@ -582,10 +605,11 @@ jobs:
           tesseract --list-langs | head -10
 
       - name: Run Benchmark with timeout handling
+        continue-on-error: true
         run: |
-          # Use timeout command to enforce 2-hour limit and create failure results
+          # Use timeout command to enforce 6-hour limit and create failure results
           source .venv/bin/activate
-          timeout 7200 python -m src.cli benchmark \
+          timeout 21600 python -m src.cli benchmark \
             --framework extractous \
             --category ${{ matrix.category }} \
             --iterations ${{ needs.prepare.outputs.iterations }} \
@@ -599,7 +623,7 @@ jobs:
             # If timeout or failure, create empty results directory with failure marker
             mkdir -p "results-extractous-${{ matrix.category }}"
             echo '{"framework": "extractous", "category": "${{ matrix.category }}", "status": "timeout_or_failure", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > "results-extractous-${{ matrix.category }}/benchmark_failure.json"
-            echo "Extractous benchmark failed or timed out after 30 minutes - recorded as failure"
+            echo "Extractous benchmark failed or timed out - recorded as failure"
           }
         env:
           PYTHONUNBUFFERED: "1"
@@ -619,8 +643,6 @@ jobs:
   aggregate:
     needs:
       - prepare
-      - benchmark-kreuzberg-sync
-      - benchmark-kreuzberg-async
       - benchmark-docling
       - benchmark-markitdown
       - benchmark-unstructured
@@ -830,7 +852,7 @@ jobs:
           FAILED_COUNT=0
 
           # List which framework jobs completed
-          for framework in kreuzberg_sync kreuzberg_async docling markitdown unstructured extractous; do
+          for framework in docling markitdown unstructured extractous; do
             if ls all-results/benchmark-${framework}-*/ >/dev/null 2>&1; then
               # Count categories that completed for this framework
               CATEGORIES=$(ls all-results/benchmark-${framework}-*/ | wc -l)
