@@ -52,42 +52,54 @@ jobs:
         run: |
           uv venv
           source .venv/bin/activate
-          uv pip install -e . --group docs
+          uv pip install -e .
+          uv pip install -e ".[docs]"
 
       - name: Get benchmark results
         id: get-results
+        continue-on-error: true
         run: |
           # Determine which benchmark run to use
           if [ -n "${{ github.event.inputs.run_id }}" ]; then
             RUN_ID="${{ github.event.inputs.run_id }}"
+            echo "Using specified benchmark run: $RUN_ID"
           else
             # Get latest successful benchmark run
-            RUN_ID=$(gh run list --workflow="benchmark-by-framework.yml" --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+            RUN_ID=$(gh run list --workflow="benchmark-by-framework.yml" --status=success --limit=1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || echo "")
+            if [ -n "$RUN_ID" ]; then
+              echo "Using latest benchmark run: $RUN_ID"
+            else
+              echo "No successful benchmark runs found - will generate docs with placeholder data"
+              echo "has-results=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
           fi
 
-          echo "Using benchmark run: $RUN_ID"
           echo "run-id=$RUN_ID" >> $GITHUB_OUTPUT
 
           # Download benchmark artifacts
-          gh run download $RUN_ID --pattern "aggregated-benchmark-results-*" --dir downloads/
-          gh run download $RUN_ID --pattern "benchmark-visualizations-*" --dir downloads/
+          if gh run download $RUN_ID --pattern "aggregated-benchmark-results-*" --dir downloads/ 2>/dev/null; then
+            gh run download $RUN_ID --pattern "benchmark-visualizations-*" --dir downloads/ 2>/dev/null || true
 
-          # Find the aggregated results file
-          RESULTS_FILE=$(find downloads/ -name "aggregated_results.json" | head -1)
-          CHARTS_DIR=$(find downloads/ -name "charts" -type d | head -1)
+            # Find the aggregated results file
+            RESULTS_FILE=$(find downloads/ -name "aggregated_results.json" | head -1)
+            CHARTS_DIR=$(find downloads/ -name "charts" -type d | head -1)
 
-          echo "results-file=$RESULTS_FILE" >> $GITHUB_OUTPUT
-          echo "charts-dir=$CHARTS_DIR" >> $GITHUB_OUTPUT
-
-          # Verify we have the required files
-          if [ ! -f "$RESULTS_FILE" ]; then
-            echo "❌ No aggregated results found"
-            exit 1
-          fi
-
-          echo "✅ Found results: $RESULTS_FILE"
-          if [ -d "$CHARTS_DIR" ]; then
-            echo "✅ Found charts: $CHARTS_DIR ($(ls $CHARTS_DIR | wc -l) files)"
+            if [ -f "$RESULTS_FILE" ]; then
+              echo "results-file=$RESULTS_FILE" >> $GITHUB_OUTPUT
+              echo "charts-dir=$CHARTS_DIR" >> $GITHUB_OUTPUT
+              echo "has-results=true" >> $GITHUB_OUTPUT
+              echo "✅ Found results: $RESULTS_FILE"
+              if [ -d "$CHARTS_DIR" ]; then
+                echo "✅ Found charts: $CHARTS_DIR ($(ls $CHARTS_DIR | wc -l) files)"
+              fi
+            else
+              echo "has-results=false" >> $GITHUB_OUTPUT
+              echo "⚠️ No aggregated results found in artifacts"
+            fi
+          else
+            echo "has-results=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Failed to download benchmark artifacts"
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -97,13 +109,18 @@ jobs:
           source .venv/bin/activate
 
           # Generate results pages from benchmark data
-          python -m src.docs_generator \
-            --results-file "${{ steps.get-results.outputs.results-file }}" \
-            --charts-dir "${{ steps.get-results.outputs.charts-dir }}" \
-            --docs-dir docs
+          if [ "${{ steps.get-results.outputs.has-results }}" = "true" ]; then
+            python -m src.docs_generator \
+              --results-file "${{ steps.get-results.outputs.results-file }}" \
+              --charts-dir "${{ steps.get-results.outputs.charts-dir }}" \
+              --docs-dir docs
+            echo "✅ Generated docs/results/ from benchmark data"
+          else
+            echo "⚠️ No benchmark results available, generating docs with placeholder content"
+            # The static docs will still be available (methodology, framework guides, etc.)
+          fi
 
-          echo "✅ Generated docs/results/ from benchmark data"
-          ls -la docs/results/
+          ls -la docs/results/ 2>/dev/null || echo "No results directory found"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
