@@ -53,8 +53,8 @@ jobs:
           # Parse frameworks
           INPUT_FRAMEWORKS="${{ github.event.inputs.frameworks || 'all' }}"
           if [ "$INPUT_FRAMEWORKS" = "all" ]; then
-            # Primary frameworks for comprehensive benchmarking (excluding Kreuzberg)
-            FRAMEWORKS='["markitdown","unstructured","extractous","docling"]'
+            # All frameworks including Kreuzberg (critical for comparison)
+            FRAMEWORKS='["kreuzberg_sync","kreuzberg_async","markitdown","unstructured","extractous","docling"]'
           else
             # Convert comma-separated to JSON array
             FRAMEWORKS=$(echo "$INPUT_FRAMEWORKS" | sed 's/,/","/g' | sed 's/^/["/' | sed 's/$/"]/')
@@ -643,6 +643,8 @@ jobs:
   aggregate:
     needs:
       - prepare
+      - benchmark-kreuzberg-sync
+      - benchmark-kreuzberg-async
       - benchmark-docling
       - benchmark-markitdown
       - benchmark-unstructured
@@ -852,7 +854,7 @@ jobs:
           FAILED_COUNT=0
 
           # List which framework jobs completed
-          for framework in docling markitdown unstructured extractous; do
+          for framework in kreuzberg_sync kreuzberg_async docling markitdown unstructured extractous; do
             if ls all-results/benchmark-${framework}-*/ >/dev/null 2>&1; then
               # Count categories that completed for this framework
               CATEGORIES=$(ls all-results/benchmark-${framework}-*/ | wc -l)
