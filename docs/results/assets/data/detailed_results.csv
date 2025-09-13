@@ -1,0 +1,6 @@
+framework,file,category,time,memory,success,error
+kreuzberg_sync,test1.pdf,small,2.1,45,true,
+markitdown,test1.pdf,small,1.8,32,true,
+extractous,test1.pdf,small,3.2,41,true,
+unstructured,test1.pdf,small,4.1,89,true,
+docling,test1.pdf,small,12.3,234,true,

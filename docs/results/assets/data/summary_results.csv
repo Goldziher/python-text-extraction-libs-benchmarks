@@ -1,0 +1,7 @@
+framework,speed,memory,success_rate
+kreuzberg_sync,7.04,562,100.0
+kreuzberg_async,6.30,640,98.9
+markitdown,26.56,253,47.3
+extractous,1.45,463,98.8
+unstructured,1.21,1393,97.8
+docling,0.17,4350,98.5

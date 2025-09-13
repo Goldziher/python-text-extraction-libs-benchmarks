@@ -43,19 +43,18 @@ dependencies = [
 ]
 
 optional-dependencies.all = [
+  "docling>=2.52.0",
   "extractous>=0.3.0",
-  "kreuzberg>=3.11.0",
-  "markitdown>=0.1.2",
-  "unstructured[all-docs]>=0.18.11",
-  # Note: docling excluded from 'all' due to lxml conflicts with kreuzberg
-  # Install separately with: uv sync --extra docling
+  "kreuzberg>=3.14.0",
+  "markitdown>=0.1.3",
+  "unstructured[all-docs]>=0.18.14",
 ]
-optional-dependencies.docling = [ "docling>=2.43.0" ]
+optional-dependencies.docling = [ "docling>=2.52.0" ]
 optional-dependencies.extractous = [ "extractous>=0.3.0" ]
-optional-dependencies.kreuzberg = [ "kreuzberg>=3.11.0" ]
-optional-dependencies.kreuzberg-ocr = [ "kreuzberg[easyocr]>=3.11.0", "kreuzberg[paddleocr]>=3.11.0" ]
-optional-dependencies.markitdown = [ "markitdown>=0.1.2" ]
-optional-dependencies.unstructured = [ "unstructured[all-docs]>=0.18.11" ]
+optional-dependencies.kreuzberg = [ "kreuzberg>=3.14.0" ]
+optional-dependencies.kreuzberg-ocr = [ "kreuzberg[easyocr]>=3.14.0", "kreuzberg[paddleocr]>=3.14.0" ]
+optional-dependencies.markitdown = [ "markitdown>=0.1.3" ]
+optional-dependencies.unstructured = [ "unstructured[all-docs]>=0.18.14" ]
 scripts.benchmark = "src.cli:main"
 
 [dependency-groups]
@@ -75,6 +74,12 @@ dev = [
   "ruff>=0.12.7",
   "types-psutil>=7.0.0",
   "uv-bump",
+]
+docs = [
+  "mkdocs>=1.6.1",
+  "mkdocs-git-revision-date-localized-plugin>=1.4.5",
+  "mkdocs-material[imaging]>=9.6.9",
+  "mkdocs-minify-plugin>=0.8.0",
 ]
 
 [tool.ruff]

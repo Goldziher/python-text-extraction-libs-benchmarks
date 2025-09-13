@@ -16,7 +16,7 @@ import click
 from rich.console import Console
 
 from .benchmark import ComprehensiveBenchmarkRunner
-from .html_report import HTMLReportGenerator
+from .config_defaults import DefaultValues
 from .types import (
     BenchmarkConfig,
     DocumentCategory,
@@ -52,7 +52,7 @@ def main() -> None:
     "--iterations",
     "-i",
     type=int,
-    default=3,
+    default=DefaultValues.DEFAULT_ITERATIONS,
     help="Number of benchmark iterations",
 )
 @click.option(
@@ -66,15 +66,21 @@ def main() -> None:
     "--warmup-runs",
     "-w",
     type=int,
-    default=1,
+    default=DefaultValues.DEFAULT_WARMUP_RUNS,
     help="Number of warmup runs",
 )
 @click.option(
     "--timeout",
     "-t",
     type=int,
-    default=600,
+    default=DefaultValues.EXTRACTION_TIMEOUT_SECONDS,
     help="Timeout in seconds for each extraction",
+)
+@click.option(
+    "--max-run-duration",
+    type=int,
+    default=DefaultValues.MAX_RUN_DURATION_MINUTES,
+    help="Maximum duration for entire benchmark run in minutes",
 )
 @click.option(
     "--continue-on-error/--fail-fast",
@@ -112,6 +118,7 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912, PLR0913
     output_dir: Path,
     warmup_runs: int,
     timeout: int,
+    max_run_duration: int,
     continue_on_error: bool,
     enable_quality_assessment: bool,
     common_formats_only: bool,
@@ -121,7 +128,6 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912, PLR0913
     """Run comprehensive benchmarks for text extraction frameworks."""
     console.print("[bold blue]Starting comprehensive benchmark run...[/bold blue]")
 
-    # Parse frameworks
     if framework == "all":
         frameworks = list(Framework)
     else:
@@ -134,7 +140,6 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912, PLR0913
                 console.print(f"[red]Invalid framework: {fw_name_clean}[/red]")
                 sys.exit(1)
 
-    # Parse categories
     if category == "all":
         categories = list(DocumentCategory)
     else:
@@ -147,7 +152,6 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912, PLR0913
                 console.print(f"[red]Invalid category: {cat_name_clean}[/red]")
                 sys.exit(1)
 
-    # Show format tier info if specified
     if format_tier or common_formats_only:
         tier = format_tier or ("universal" if common_formats_only else None)
         if tier:
@@ -160,11 +164,9 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912, PLR0913
             elif tier == "common":
                 console.print(f"[yellow]Testing common formats (4/5 frameworks): {sorted(TIER2_FORMATS)}[/yellow]")
 
-    # Show table extraction mode info
     if table_extraction_only:
         console.print("[yellow]🔢 Table extraction mode: Only testing documents with tables[/yellow]")
 
-    # Create configuration
     config = BenchmarkConfig(
         frameworks=frameworks,
         categories=categories,
@@ -172,6 +174,7 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912, PLR0913
         output_dir=output_dir,
         warmup_runs=warmup_runs,
         timeout_seconds=timeout,
+        max_run_duration_minutes=max_run_duration,
         continue_on_error=continue_on_error,
         save_extracted_text=enable_quality_assessment,
         common_formats_only=common_formats_only,
@@ -179,14 +182,12 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912, PLR0913
         table_extraction_only=table_extraction_only,
     )
 
-    # Run benchmarks
     runner = ComprehensiveBenchmarkRunner(config)
 
     try:
         results = asyncio.run(runner.run_benchmark_suite())
         console.print(f"[green]✓ Completed {len(results)} benchmarks[/green]")
 
-        # Automatically run quality assessment if enabled
         if enable_quality_assessment:
             console.print("[bold blue]Running quality assessment...[/bold blue]")
             results_file = output_dir / "benchmark_results.json"
@@ -198,14 +199,12 @@ def benchmark(  # noqa: PLR0915, C901, PLR0912, PLR0913
             else:
                 console.print("[yellow]Warning: Could not find results file for quality assessment[/yellow]")
 
-        # Run installation size check after benchmarks
         console.print("[bold blue]Collecting installation size information...[/bold blue]")
         try:
             from .check_installation_sizes import main as check_sizes
 
             check_sizes()
 
-            # Move installation_sizes.json to output directory
             import shutil
             from pathlib import Path
 
@@ -246,11 +245,9 @@ def aggregate(input_dirs: tuple[Path, ...], output_dir: Path) -> None:
 
     aggregator = ResultAggregator()
 
-    # If no input dirs provided, use current directory
     if not input_dirs:
         input_dirs = (Path(),)
 
-    # Find all result files from all input directories
     result_files = []
     for input_dir in input_dirs:
         result_files.extend(input_dir.rglob("benchmark_results.json"))
@@ -264,7 +261,6 @@ def aggregate(input_dirs: tuple[Path, ...], output_dir: Path) -> None:
     try:
         aggregated = aggregator.aggregate_results([f.parent for f in result_files])
 
-        # Save aggregated results
         output_dir.mkdir(parents=True, exist_ok=True)
         aggregator.save_results(aggregated, output_dir)
 
@@ -305,7 +301,6 @@ def report(aggregated_file: Path | None, output_dir: Path, output_formats: tuple
     generator = ReportGenerator()
 
     try:
-        # Load aggregated results
         if aggregated_file:
             import msgspec
 
@@ -314,7 +309,6 @@ def report(aggregated_file: Path | None, output_dir: Path, output_formats: tuple
             with open(aggregated_file, "rb") as f:
                 aggregated = msgspec.json.decode(f.read(), type=AggregatedResults)
         else:
-            # Default to looking for aggregated results in current directory
             default_file = Path("aggregated-results/aggregated_results.json")
             if default_file.exists():
                 import msgspec
@@ -327,10 +321,8 @@ def report(aggregated_file: Path | None, output_dir: Path, output_formats: tuple
                 console.print("[red]No aggregated results found. Use --aggregated-file or run aggregate first.[/red]")
                 sys.exit(1)
 
-        # Create output directory
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Generate reports
         for fmt in output_formats:
             if fmt == "markdown":
                 report_path = output_dir / "benchmark_report.md"
@@ -342,9 +334,7 @@ def report(aggregated_file: Path | None, output_dir: Path, output_formats: tuple
                 console.print(f"[green]✓ Generated JSON metrics: {metrics_path}[/green]")
             elif fmt == "html":
                 html_path = output_dir / "benchmark_report.html"
-                # First generate visualizations
                 visualizer = BenchmarkVisualizer(output_dir / "charts")
-                # Use the already loaded aggregated file path
                 if aggregated_file:
                     agg_path = aggregated_file
                 else:
@@ -355,10 +345,11 @@ def report(aggregated_file: Path | None, output_dir: Path, output_formats: tuple
                 if agg_path.exists():
                     visualizer.generate_all_visualizations(agg_path)
 
-                # Then generate HTML report
-                html_generator = HTMLReportGenerator(output_dir / "charts")
-                html_generator.generate_report(agg_path, html_path)
-                console.print(f"[green]✓ Generated HTML report with visualizations: {html_path}[/green]")
+                from .docs_generator import DocsGenerator
+
+                docs_generator = DocsGenerator(output_dir / "docs")
+                docs_generator.generate_from_results(agg_path, output_dir / "charts")
+                console.print(f"[green]✓ Generated markdown documentation: {output_dir}/docs/[/green]")
 
     except Exception as e:
         console.print(f"[red]✗ Report generation failed: {e}[/red]")
@@ -388,7 +379,6 @@ def visualize(aggregated_file: Path | None, output_dir: Path) -> None:
     visualizer = BenchmarkVisualizer(output_dir)
 
     try:
-        # Find aggregated file if not provided
         if not aggregated_file:
             default_file = Path("aggregated-results/aggregated_results.json")
             if default_file.exists():
@@ -397,14 +387,12 @@ def visualize(aggregated_file: Path | None, output_dir: Path) -> None:
                 console.print("[red]No aggregated results found. Use --aggregated-file or run aggregate first.[/red]")
                 sys.exit(1)
 
-        # Generate all visualizations
         generated_files = visualizer.generate_all_visualizations(aggregated_file)
 
         console.print(f"[green]✓ Generated {len(generated_files)} visualizations:[/green]")
         for file_path in generated_files:
             console.print(f"  - {file_path}")
 
-        # Generate summary metrics for README
         import json
 
         summary = visualizer.generate_summary_metrics(aggregated_file)
@@ -413,7 +401,6 @@ def visualize(aggregated_file: Path | None, output_dir: Path) -> None:
             json.dump(summary, f, indent=2)
         console.print(f"[green]✓ Generated summary metrics: {summary_file}[/green]")
 
-        # Generate installation size chart if data exists
         installation_sizes_file = Path("installation_sizes.json")
         if installation_sizes_file.exists():
             try:
@@ -454,17 +441,14 @@ def quality_assess(results_file: Path, reference_dir: Path | None, output_file: 
     try:
         from .quality_assessment import enhance_benchmark_results_with_quality
 
-        # Enhance results with quality metrics
         enhanced_file = enhance_benchmark_results_with_quality(results_file, reference_dir)
 
-        # Move to custom output file if specified
         if output_file:
             enhanced_file.rename(output_file)
             enhanced_file = output_file
 
         console.print(f"[green]✓ Enhanced results saved to: {enhanced_file}[/green]")
 
-        # Show quality summary
         import msgspec
 
         with open(enhanced_file, "rb") as f:
@@ -542,11 +526,9 @@ def installation_sizes(output_file: str | None, include_charts: bool) -> None:
 
     console.print("[bold blue]Checking framework installation sizes...[/bold blue]")
 
-    # Run the size check
     try:
         check_sizes()
 
-        # If output file specified, copy the generated file
         if output_file:
             generated_file = Path("installation_sizes.json")
             if generated_file.exists():
@@ -598,7 +580,6 @@ def _find_benchmark_result_files(results_dir: Path) -> list[Path]:
     for pattern in ["**/benchmark_results.json", "**/results.json", "**/*results*.json"]:
         result_files.extend(results_dir.glob(pattern))
 
-    # Filter out cache and other non-benchmark files
     exclude_patterns = [".mypy_cache", "node_modules", ".git"]
     return [
         file_path for file_path in result_files if not any(exclude in str(file_path) for exclude in exclude_patterns)
@@ -680,7 +661,6 @@ def file_type_analysis(
 
         console.print("[bold blue]🔍 Loading benchmark results...[/bold blue]")
 
-        # Find benchmark result files
         filtered_files = _find_benchmark_result_files(results_dir)
         if not filtered_files:
             console.print(f"[red]✗ No benchmark results found in {results_dir}[/red]")
@@ -688,7 +668,6 @@ def file_type_analysis(
             console.print("   uv run python -m src.cli benchmark --framework extractous --category tiny")
             sys.exit(1)
 
-        # Load all results
         all_results = _load_benchmark_results(filtered_files)
         if not all_results:
             console.print("[red]✗ No valid benchmark data found[/red]")
@@ -696,20 +675,16 @@ def file_type_analysis(
 
         console.print(f"[bold green]📊 Analyzing {len(all_results)} results...[/bold green]")
 
-        # Run analysis
         analyzer = FileTypeAnalyzer(all_results)
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Generate outputs
         if output_format in ["all", "charts", "csv", "insights"]:
             _generate_analysis_outputs(analyzer, output_dir, output_format)
 
-        # Generate interactive dashboard if requested
         if interactive:
             console.print("[cyan]🌐 Generating interactive dashboard...[/cyan]")
             _generate_interactive_dashboard(analyzer, output_dir)
 
-        # Print results
         _print_analysis_results(output_dir, output_format, interactive)
         _print_quick_insights(analyzer)
 
@@ -755,13 +730,11 @@ def metadata_analysis(results_dir: Path, output_dir: Path, exclude_kreuzberg: bo
     console.print("[bold blue]🔍 Metadata Extraction Analysis[/bold blue]")
 
     try:
-        # Find results file
         results_file = results_dir / "results.json"
         if not results_file.exists():
             console.print(f"[red]✗ Results file not found: {results_file}[/red]")
             sys.exit(1)
 
-        # Import and run metadata analysis
         from .metadata_analysis import analyze_metadata_from_results
 
         console.print(f"📊 Analyzing metadata from {results_file}...")
@@ -770,7 +743,6 @@ def metadata_analysis(results_dir: Path, output_dir: Path, exclude_kreuzberg: bo
         console.print("\n[green]✅ Metadata analysis complete![/green]")
         console.print(f"📁 Reports saved to: {output_dir}")
 
-        # List generated files
         console.print("\n[bold cyan]Generated files:[/bold cyan]")
         for file in sorted(output_dir.glob("*")):
             if file.is_file():
@@ -799,17 +771,14 @@ def table_analysis(results_dir: Path, output_dir: Path) -> None:
     console.print("[bold blue]📊 Table Extraction Analysis[/bold blue]")
 
     try:
-        # Find results file
         results_file = results_dir / "results.json"
         if not results_file.exists():
-            # Try benchmark_results.json as fallback
             results_file = results_dir / "benchmark_results.json"
             if not results_file.exists():
                 console.print(f"[red]✗ Results file not found in {results_dir}[/red]")
                 console.print("[yellow]💡 Try running benchmarks first with table documents[/yellow]")
                 sys.exit(1)
 
-        # Import and run table analysis
         from .table_analysis import analyze_table_extraction_from_results
 
         console.print(f"📊 Analyzing table extraction from {results_file}...")
@@ -818,13 +787,11 @@ def table_analysis(results_dir: Path, output_dir: Path) -> None:
         console.print("\n[green]✅ Table analysis complete![/green]")
         console.print(f"📁 Reports saved to: {output_dir}")
 
-        # List generated files
         console.print("\n[bold cyan]Generated files:[/bold cyan]")
         for file in sorted(output_dir.glob("*")):
             if file.is_file():
                 console.print(f"  • {file.name}")
 
-        # Show quick insights
         json_file = output_dir / "table_extraction_analysis.json"
         if json_file.exists():
             import json

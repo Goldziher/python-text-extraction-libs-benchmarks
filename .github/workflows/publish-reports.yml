@@ -1,7 +1,6 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Manual deployment only - automatic deployments disabled
   workflow_dispatch:
     inputs:
       run_id:
@@ -244,7 +243,6 @@ jobs:
             echo "Skipping detailed analysis generation"
           fi
 
-      # README update removed - only publishing results
 
       - name: Setup Pages
         if: steps.check-changes.outputs.changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
@@ -803,7 +801,6 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      # Commit step removed - no README updates
 
       - name: Create Release Summary
         if: steps.check-changes.outputs.changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'

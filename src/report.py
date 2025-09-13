@@ -33,7 +33,6 @@ class ReportGenerator:
             "",
         ]
 
-        # Framework Performance Summary
         lines.extend(
             [
                 "## Framework Performance Summary",
@@ -57,7 +56,6 @@ class ReportGenerator:
                     f"| {framework.value} | {avg_success:.1%} | {avg_time:.2f} | {avg_memory:.1f} | {avg_throughput:.2f} |"
                 )
 
-        # Category Performance
         lines.extend(
             [
                 "",
@@ -89,7 +87,6 @@ class ReportGenerator:
 
                 lines.append("")
 
-        # Failure Analysis
         if results.failure_patterns:
             lines.extend(
                 [
@@ -105,7 +102,6 @@ class ReportGenerator:
 
             lines.append("")
 
-        # Performance Trends
         if results.performance_over_iterations:
             lines.extend(
                 [
@@ -121,7 +117,6 @@ class ReportGenerator:
                         lines.append(f"- Iteration {i}: {avg_time:.2f}s")
                     lines.append("")
 
-        # Platform Comparison
         if results.platform_results:
             lines.extend(
                 [
@@ -147,7 +142,6 @@ class ReportGenerator:
 
                 lines.append("")
 
-        # Write report
         with open(output_path, "w") as f:
             f.write("\n".join(lines))
 
@@ -155,10 +149,8 @@ class ReportGenerator:
         """Generate JSON metrics for GitHub Actions benchmark tracking."""
         metrics = []
 
-        # Create metrics for each framework
         for framework, summaries in results.framework_summaries.items():
             if summaries:
-                # Calculate overall metrics
                 avg_success = sum(s.success_rate for s in summaries) / len(summaries)
                 avg_times = [s.avg_extraction_time for s in summaries if s.avg_extraction_time]
                 avg_time = sum(avg_times) / len(avg_times) if avg_times else 0
@@ -189,7 +181,6 @@ class ReportGenerator:
                     }
                 )
 
-        # Save metrics
         with open(output_path, "w") as f:
             json.dump(metrics, f, indent=2)
 
@@ -294,7 +285,6 @@ class ReportGenerator:
     </table>
 """
 
-        # Failure analysis
         if results.failure_patterns:
             html_content += """
     <h2>Failure Analysis</h2>

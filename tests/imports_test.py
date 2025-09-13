@@ -40,7 +40,6 @@ def test_extractors_import():
         get_extractor,
     )
 
-    # Test that all classes are importable
     assert KreuzbergSyncExtractor is not None
     assert KreuzbergAsyncExtractor is not None
     assert DoclingExtractor is not None

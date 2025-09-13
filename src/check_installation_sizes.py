@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Script to check minimal installation sizes of text extraction libraries."""
 
 import json
@@ -13,16 +12,13 @@ def get_package_size(package_name: str, extra_deps: list[str] | None = None) -> 
     """Get the installation size of a package in a clean environment."""
     print(f"Checking installation size for: {package_name}")
 
-    # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
         venv_path = temp_path / "test_env"
 
         try:
-            # Create virtual environment
             subprocess.run([sys.executable, "-m", "venv", str(venv_path)], check=True, capture_output=True)
 
-            # Get pip path
             if sys.platform == "win32":
                 pip_path = venv_path / "Scripts" / "pip"
                 python_path = venv_path / "Scripts" / "python"
@@ -30,7 +26,6 @@ def get_package_size(package_name: str, extra_deps: list[str] | None = None) -> 
                 pip_path = venv_path / "bin" / "pip"
                 python_path = venv_path / "bin" / "python"
 
-            # Install package
             install_cmd = [str(pip_path), "install", package_name]
             if extra_deps:
                 install_cmd.extend(extra_deps)
@@ -41,19 +36,16 @@ def get_package_size(package_name: str, extra_deps: list[str] | None = None) -> 
                 print(f"Failed to install {package_name}: {result.stderr}")
                 return {"error": result.stderr}
 
-            # Get site-packages size
             site_packages = (
                 venv_path / "lib" / f"python{sys.version_info.major}.{sys.version_info.minor}" / "site-packages"
             )
             if not site_packages.exists():
-                # Try alternative path for some systems
                 site_packages = venv_path / "Lib" / "site-packages"
 
             if site_packages.exists():
                 total_size = sum(f.stat().st_size for f in site_packages.rglob("*") if f.is_file())
                 size_mb = total_size / (1024 * 1024)
 
-                # Get list of installed packages
                 list_result = subprocess.run(
                     [str(pip_path), "list", "--format=json"], check=False, capture_output=True, text=True
                 )
@@ -98,7 +90,6 @@ def main() -> None:
             print(f"✅ Size: {size_info['size_mb']} MB")
             print(f"📦 Dependencies: {size_info['package_count']} packages")
 
-    # Print summary
     print(f"\n{'=' * 70}")
     print("INSTALLATION SIZE SUMMARY")
     print(f"{'=' * 70}")
@@ -112,14 +103,12 @@ def main() -> None:
     for lib_name, data in successful_results:
         print(f"{lib_name:<15} {data['size_mb']:<12} {data['package_count']:<12} {data['description']}")
 
-    # Show errors
     error_results = [(name, data) for name, data in results.items() if "error" in data]
     if error_results:
         print("\n❌ Failed installations:")
         for lib_name, data in error_results:
             print(f"  {lib_name}: {data['error']}")
 
-    # Save detailed results
     with open("installation_sizes.json", "w") as f:
         json.dump(results, f, indent=2)
 

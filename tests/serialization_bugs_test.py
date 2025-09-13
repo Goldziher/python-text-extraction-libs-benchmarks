@@ -41,7 +41,6 @@ class TestBenchmarkResultSerialization:
             word_count=20,
         )
 
-        # This should not exist
         with pytest.raises(AttributeError):
             _ = result.success
 
@@ -84,14 +83,12 @@ class TestBenchmarkResultSerialization:
             word_count=20,
         )
 
-        # Serialize with msgspec
         serialized = msgspec.json.encode(result)
         data = json.loads(serialized)
 
-        # Verify structure
         assert "status" in data
         assert data["status"] == "success"
-        assert "success" not in data  # This field should not exist
+        assert "success" not in data
 
     def test_msgspec_deserialization_of_benchmark_result(self):
         """Test that msgspec correctly deserializes BenchmarkResult."""
@@ -112,7 +109,6 @@ class TestBenchmarkResultSerialization:
             "word_count": 20,
         }
 
-        # Deserialize with msgspec
         result = msgspec.json.decode(json.dumps(data).encode(), type=BenchmarkResult)
 
         assert result.status == ExtractionStatus.SUCCESS
@@ -180,20 +176,17 @@ class TestReportingBugs:
 
         reporter = BenchmarkReporter(results, summaries)
 
-        # Export to CSV
         with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
             output_path = Path(f.name)
 
         try:
             reporter.save_results_csv(output_path)
 
-            # Read back and verify
             df = pd.read_csv(output_path)
 
-            # Check that success column exists and has correct values
             assert "success" in df.columns
-            assert df.iloc[0]["success"]  # First result is SUCCESS
-            assert not df.iloc[1]["success"]  # Second result is FAILED
+            assert df.iloc[0]["success"]
+            assert not df.iloc[1]["success"]
 
         finally:
             output_path.unlink()
@@ -208,11 +201,11 @@ class TestReportingBugs:
             framework=Framework.KREUZBERG_SYNC,
             iteration=1,
             status=ExtractionStatus.FAILED,
-            extraction_time=0.0,  # Required field, can't be None
-            peak_memory_mb=0.0,  # Required field
-            avg_memory_mb=0.0,  # Required field
-            peak_cpu_percent=0.0,  # Required field
-            avg_cpu_percent=0.0,  # Required field
+            extraction_time=0.0,
+            peak_memory_mb=0.0,
+            avg_memory_mb=0.0,
+            peak_cpu_percent=0.0,
+            avg_cpu_percent=0.0,
             error_message="Missing dependency",
         )
 
@@ -226,7 +219,6 @@ class TestReportingBugs:
             reporter.save_results_csv(output_path)
             df = pd.read_csv(output_path)
 
-            # Fields will be 0.0 since we can't have None in required fields
             assert df.iloc[0]["extraction_time_seconds"] == 0.0
             assert df.iloc[0]["memory_peak_mb"] == 0.0
             assert df.iloc[0]["cpu_percent"] == 0.0
@@ -246,7 +238,6 @@ class TestAggregationWithFailedResults:
 
         aggregator = ResultAggregator()
 
-        # Create results where all extractions failed
         results = [
             BenchmarkResult(
                 file_path=f"test{i}.pdf",
@@ -256,7 +247,7 @@ class TestAggregationWithFailedResults:
                 framework=Framework.KREUZBERG_ASYNC,
                 iteration=1,
                 status=ExtractionStatus.FAILED,
-                extraction_time=0.1,  # Required field
+                extraction_time=0.1,
                 peak_memory_mb=10.0,
                 avg_memory_mb=10.0,
                 peak_cpu_percent=5.0,
@@ -267,7 +258,6 @@ class TestAggregationWithFailedResults:
             for i in range(3)
         ]
 
-        # Save results to temp dir and aggregate
         with tempfile.TemporaryDirectory() as tmpdir:
             results_path = Path(tmpdir) / "benchmark_results.json"
             with open(results_path, "wb") as f:
@@ -275,7 +265,6 @@ class TestAggregationWithFailedResults:
 
             aggregated = aggregator.aggregate_results([Path(tmpdir)])
 
-            # Find the kreuzberg_async large summary
             summaries = aggregated.framework_summaries.get(Framework.KREUZBERG_ASYNC, [])
             summary = next(s for s in summaries if s.category == DocumentCategory.LARGE)
 
@@ -332,7 +321,7 @@ class TestAggregationWithFailedResults:
                 framework=Framework.UNSTRUCTURED,
                 iteration=1,
                 status=ExtractionStatus.TIMEOUT,
-                extraction_time=300.0,  # Timed out at limit
+                extraction_time=300.0,
                 peak_memory_mb=200.0,
                 avg_memory_mb=150.0,
                 peak_cpu_percent=90.0,
@@ -340,7 +329,6 @@ class TestAggregationWithFailedResults:
             ),
         ]
 
-        # Save results to temp dir and aggregate
         with tempfile.TemporaryDirectory() as tmpdir:
             results_path = Path(tmpdir) / "benchmark_results.json"
             with open(results_path, "wb") as f:
@@ -348,7 +336,6 @@ class TestAggregationWithFailedResults:
 
             aggregated = aggregator.aggregate_results([Path(tmpdir)])
 
-            # Get unstructured summary
             summaries = aggregated.framework_summaries.get(Framework.UNSTRUCTURED, [])
             summary = summaries[0]
 
@@ -365,15 +352,14 @@ class TestGenerateIndexNoneHandling:
         """Test performance table generation with None speed values."""
         from src.generate_index import generate_performance_table
 
-        # Mock framework stats with None values
         framework_stats = {
             "kreuzberg_async": {
                 "category_speeds": {
                     "tiny": 10.5,
                     "small": 5.2,
-                    "medium": None,  # None value
-                    "large": None,  # None value
-                    "huge": 0.0,  # Zero value
+                    "medium": None,
+                    "large": None,
+                    "huge": 0.0,
                 },
                 "success_rate": 60.0,
                 "failure_breakdown": ["3 timeouts", "2 errors"],
@@ -384,16 +370,14 @@ class TestGenerateIndexNoneHandling:
 
         sorted_frameworks = sorted(framework_stats.items(), key=lambda x: x[1]["success_rate"], reverse=True)
 
-        # Add install sizes dict required by the function
         install_sizes = {"kreuzberg_async": "71MB"}
 
-        # This should not raise TypeError
         html = generate_performance_table(sorted_frameworks, install_sizes)
 
-        assert "<td>10.50</td>" in html  # tiny speed
-        assert "<td>5.20</td>" in html  # small speed
-        assert "<td>-</td>" in html  # None values should show as dash
-        assert html.count("<td>-</td>") >= 2  # At least 2 None values
+        assert "<td>10.50</td>" in html
+        assert "<td>5.20</td>" in html
+        assert "<td>-</td>" in html
+        assert html.count("<td>-</td>") >= 2
 
     def test_generate_memory_table_with_none_values(self):
         """Test memory table generation with None memory values."""
@@ -403,23 +387,22 @@ class TestGenerateIndexNoneHandling:
             "docling": {
                 "category_memories": {
                     "tiny": 1500.0,
-                    "small": None,  # None value
-                    "medium": 0.0,  # Zero value
-                    "large": None,  # None value
-                    "huge": None,  # None value
+                    "small": None,
+                    "medium": 0.0,
+                    "large": None,
+                    "huge": None,
                 },
-                "avg_memory": None,  # None average
+                "avg_memory": None,
             }
         }
 
         sorted_frameworks = list(framework_stats.items())
 
-        # This should not raise TypeError
         html = generate_memory_table(sorted_frameworks)
 
-        assert "<td>1500</td>" in html  # tiny memory
-        assert "<td>-</td>" in html  # None values
-        assert "<td>N/A</td>" in html  # None avg_memory
+        assert "<td>1500</td>" in html
+        assert "<td>-</td>" in html
+        assert "<td>N/A</td>" in html
 
 
 if __name__ == "__main__":

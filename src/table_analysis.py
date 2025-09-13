@@ -54,7 +54,6 @@ class TableExtractionAnalyzer:
             "summary": {},
         }
 
-        # Group results by framework and file
         framework_results = {}
         for result in self.results:
             if result.file_path in self.table_files:
@@ -63,16 +62,13 @@ class TableExtractionAnalyzer:
                     framework_results[framework] = []
                 framework_results[framework].append(result)
 
-        # Analyze each framework
         for framework, results in framework_results.items():
             analysis["framework_analysis"][framework] = self._analyze_framework_tables(results)
 
-        # Analyze each file
         for file_path in self.table_files:
             file_results = [r for r in self.results if r.file_path == file_path]
             analysis["file_analysis"][file_path] = self._analyze_file_tables(file_results)
 
-        # Generate summary
         analysis["summary"] = self._generate_table_summary(analysis["framework_analysis"])
 
         return analysis
@@ -92,13 +88,11 @@ class TableExtractionAnalyzer:
             "format_support": {},
         }
 
-        # Analyze successful extractions
         extraction_times = []
         for result in successful_extractions:
             if result.extraction_time:
                 extraction_times.append(result.extraction_time)
 
-            # Analyze table structure preservation
             if result.extracted_text:
                 structure_score = self._analyze_table_structure(result.extracted_text, result.file_path)
                 analysis["table_structure_scores"].append(structure_score)
@@ -106,7 +100,6 @@ class TableExtractionAnalyzer:
                 detection_score = self._analyze_table_detection(result.extracted_text, result.file_path)
                 analysis["table_detection_scores"].append(detection_score)
 
-            # Track format support
             file_ext = Path(result.file_path).suffix.lower()
             if file_ext not in analysis["format_support"]:
                 analysis["format_support"][file_ext] = {"attempted": 0, "successful": 0}
@@ -162,7 +155,6 @@ class TableExtractionAnalyzer:
                 framework_analysis["table_structure_score"] = structure_score
                 framework_analysis["table_detection_score"] = detection_score
 
-                # Combined score for ranking
                 combined_score = (structure_score + detection_score) / 2
                 if combined_score > best_score:
                     best_score = combined_score
@@ -170,7 +162,6 @@ class TableExtractionAnalyzer:
 
             analysis["framework_results"][framework] = framework_analysis
 
-        # Determine table complexity
         analysis["table_complexity"] = self._determine_table_complexity(results[0].file_path)
 
         return analysis
@@ -183,15 +174,14 @@ class TableExtractionAnalyzer:
         score = 0.0
         file_ext = Path(file_path).suffix.lower()
 
-        # Check for different table representations
         structure_indicators = {
-            "markdown_tables": r"\|.*\|.*\|",  # Markdown table format
-            "html_tables": r"<table.*?>.*?</table>",  # HTML table tags
-            "csv_format": r".*,.*,.*",  # CSV-like comma separation
-            "tab_separated": r".*\t.*\t.*",  # Tab-separated values
-            "aligned_columns": r"  +\w+  +\w+",  # Space-aligned columns
-            "table_headers": r"(Name|Product|Item|Price|Total|Amount|Quantity)",  # Common table headers
-            "numeric_data": r"\$?\d+\.?\d*",  # Numeric data (prices, quantities)
+            "markdown_tables": r"\|.*\|.*\|",
+            "html_tables": r"<table.*?>.*?</table>",
+            "csv_format": r".*,.*,.*",
+            "tab_separated": r".*\t.*\t.*",
+            "aligned_columns": r"  +\w+  +\w+",
+            "table_headers": r"(Name|Product|Item|Price|Total|Amount|Quantity)",
+            "numeric_data": r"\$?\d+\.?\d*",
         }
 
         text_lower = extracted_text.lower()
@@ -209,17 +199,13 @@ class TableExtractionAnalyzer:
                 elif indicator_name == "numeric_data":
                     score += 0.05
 
-        # File-specific scoring adjustments
         if file_ext == ".csv":
-            # CSV files should preserve comma structure
             if "," in extracted_text:
                 score += 0.3
         elif file_ext in [".xlsx", ".xls"]:
-            # Excel files should preserve tabular data
             if "\t" in extracted_text or "," in extracted_text:
                 score += 0.2
         elif file_ext == ".html" and ("<table>" in text_lower or "|" in extracted_text):
-            # HTML should preserve table structure
             score += 0.2
 
         return min(1.0, score)
@@ -232,7 +218,6 @@ class TableExtractionAnalyzer:
         score = 0.0
         file_name = Path(file_path).name.lower()
 
-        # Expected content based on known test files
         expected_content = {}
 
         if "stanley-cups" in file_name:
@@ -254,7 +239,6 @@ class TableExtractionAnalyzer:
                 "totals": ["695", "205", "373", "295"],
             }
 
-        # Check for expected content
         text_lower = extracted_text.lower()
         for items in expected_content.values():
             found_items = sum(1 for item in items if item in text_lower)
@@ -262,12 +246,11 @@ class TableExtractionAnalyzer:
                 category_score = found_items / len(items)
                 score += category_score * 0.3
 
-        # Check for general table indicators
         table_indicators = [
             ("column_headers", r"(product|name|price|total|amount|category|region|quarter)"),
-            ("structured_data", r"\d+\.\d+|\$\d+|[A-Z]{2,3}"),  # Prices, currencies, codes
-            ("table_separators", r"[\|,\t]"),  # Common separators
-            ("row_structure", r"\n.*\n.*\n"),  # Multi-row structure
+            ("structured_data", r"\d+\.\d+|\$\d+|[A-Z]{2,3}"),
+            ("table_separators", r"[\|,\t]"),
+            ("row_structure", r"\n.*\n.*\n"),
         ]
 
         for _indicator_name, pattern in table_indicators:
@@ -306,7 +289,6 @@ class TableExtractionAnalyzer:
             "format_support_matrix": {},
         }
 
-        # Find best frameworks for different metrics
         best_structure_score = -1
         best_detection_score = -1
         best_speed = float("inf")
@@ -328,7 +310,6 @@ class TableExtractionAnalyzer:
                 best_speed = speed
                 summary["best_framework_speed"] = framework
 
-            # Create ranking score (structure + detection + speed factor)
             speed_factor = 1.0 / speed if speed > 0 else 0
             ranking_score = (structure_score + detection_score) / 2 + speed_factor * 0.1
             summary["framework_rankings"][framework] = {
@@ -338,7 +319,6 @@ class TableExtractionAnalyzer:
                 "ranking_score": ranking_score,
             }
 
-        # Create format support matrix
         for framework, analysis in framework_analysis.items():
             for format_ext, support_data in analysis.get("format_support", {}).items():
                 if format_ext not in summary["format_support_matrix"]:
@@ -361,17 +341,14 @@ class TableExtractionAnalyzer:
 
         analysis = self.analyze_table_extraction_quality()
 
-        # Save detailed JSON analysis
         json_file = output_dir / "table_extraction_analysis.json"
         with open(json_file, "w") as f:
             import json
 
             json.dump(analysis, f, indent=2, default=str)
 
-        # Generate markdown report
         self._generate_markdown_report(analysis, output_dir / "table_extraction_report.md")
 
-        # Generate CSV summary
         self._generate_csv_summary(analysis, output_dir / "table_extraction_summary.csv")
 
         print(f"Table analysis reports generated in {output_dir}/")
@@ -381,7 +358,6 @@ class TableExtractionAnalyzer:
         md_content = []
         md_content.append("# Table Extraction Analysis Report\n")
 
-        # Summary section
         summary = analysis.get("summary", {})
         md_content.append("## Executive Summary\n")
         md_content.append(f"- **Total table files analyzed**: {analysis['total_table_files']}")
@@ -391,7 +367,6 @@ class TableExtractionAnalyzer:
         md_content.append(f"- **Best framework for table detection**: {summary.get('best_framework_detection', 'N/A')}")
         md_content.append(f"- **Fastest framework**: {summary.get('best_framework_speed', 'N/A')}\n")
 
-        # Framework rankings
         rankings = summary.get("framework_rankings", {})
         if rankings:
             md_content.append("## Framework Rankings\n")
@@ -408,7 +383,6 @@ class TableExtractionAnalyzer:
                 md_content.append(f"| {framework} | {structure} | {detection} | {speed} | {ranking} |")
             md_content.append("")
 
-        # Format support matrix
         format_matrix = summary.get("format_support_matrix", {})
         if format_matrix:
             md_content.append("## Format Support Matrix\n")
@@ -434,7 +408,6 @@ class TableExtractionAnalyzer:
                 md_content.append(row)
             md_content.append("")
 
-        # File-specific analysis
         md_content.append("## File-Specific Analysis\n")
         for file_path, file_analysis in analysis.get("file_analysis", {}).items():
             file_name = Path(file_path).name
@@ -443,7 +416,6 @@ class TableExtractionAnalyzer:
             md_content.append(f"- **Table complexity**: {file_analysis['table_complexity']}")
             md_content.append(f"- **Best extraction**: {file_analysis.get('best_extraction', 'N/A')}\n")
 
-        # Write the report
         with open(output_file, "w") as f:
             f.write("\n".join(md_content))
 
@@ -462,7 +434,6 @@ class TableExtractionAnalyzer:
                 "Successful_Extractions": framework_analysis.get("successful_extractions", 0),
             }
 
-            # Add format-specific success rates
             for format_ext, support_data in framework_analysis.get("format_support", {}).items():
                 format_key = f"Success_Rate_{format_ext.replace('.', '').upper()}"
                 success_rate = (
@@ -479,10 +450,8 @@ class TableExtractionAnalyzer:
 
 def analyze_table_extraction_from_results(results_file: Path, output_dir: Path) -> None:
     """Analyze table extraction from benchmark results file."""
-    # Load results
     with open(results_file, "rb") as f:
         results = msgspec.json.decode(f.read(), type=list[BenchmarkResult])
 
-    # Run table analysis
     analyzer = TableExtractionAnalyzer(results)
     analyzer.generate_table_analysis_report(output_dir)

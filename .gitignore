@@ -35,3 +35,5 @@ requirements.txt
 site/
 .cache/
 dist/
+.gemini/
+.mcp.json

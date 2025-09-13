@@ -12,16 +12,14 @@ from src.types import DocumentCategory, FileType
 class DocumentCategorizer:
     """Categorize documents for organized testing."""
 
-    # Size thresholds in bytes
     SIZE_THRESHOLDS: ClassVar[dict[DocumentCategory, tuple[int, float]]] = {
-        DocumentCategory.TINY: (0, 100 * 1024),  # < 100KB
-        DocumentCategory.SMALL: (100 * 1024, 1024 * 1024),  # 100KB - 1MB
-        DocumentCategory.MEDIUM: (1024 * 1024, 10 * 1024 * 1024),  # 1MB - 10MB
-        DocumentCategory.LARGE: (10 * 1024 * 1024, 50 * 1024 * 1024),  # 10MB - 50MB
-        DocumentCategory.HUGE: (50 * 1024 * 1024, float("inf")),  # > 50MB
+        DocumentCategory.TINY: (0, 100 * 1024),
+        DocumentCategory.SMALL: (100 * 1024, 1024 * 1024),
+        DocumentCategory.MEDIUM: (1024 * 1024, 10 * 1024 * 1024),
+        DocumentCategory.LARGE: (10 * 1024 * 1024, 50 * 1024 * 1024),
+        DocumentCategory.HUGE: (50 * 1024 * 1024, float("inf")),
     }
 
-    # File type to category mapping
     FORMAT_CATEGORIES: ClassVar[dict[DocumentCategory, list[FileType]]] = {
         DocumentCategory.PDF_STANDARD: [FileType.PDF],
         DocumentCategory.PDF_SCANNED: [FileType.PDF_SCANNED],
@@ -34,14 +32,12 @@ class DocumentCategorizer:
         DocumentCategory.IMAGES: [FileType.IMAGE_PNG, FileType.IMAGE_JPG, FileType.IMAGE_JPEG, FileType.IMAGE_BMP],
     }
 
-    # Patterns for detecting scanned/OCR PDFs
     SCANNED_PDF_PATTERNS: ClassVar[list[re.Pattern[str]]] = [
         re.compile(r"ocr", re.IGNORECASE),
         re.compile(r"scan(ned)?", re.IGNORECASE),
         re.compile(r"rotated", re.IGNORECASE),
     ]
 
-    # Patterns for detecting complex PDFs
     COMPLEX_PDF_PATTERNS: ClassVar[list[re.Pattern[str]]] = [
         re.compile(r"table", re.IGNORECASE),
         re.compile(r"formula", re.IGNORECASE),
@@ -50,17 +46,15 @@ class DocumentCategorizer:
         re.compile(r"complex", re.IGNORECASE),
     ]
 
-    # Language patterns
     UNICODE_PATTERNS: ClassVar[list[re.Pattern[str]]] = [
         re.compile(r"hebrew|german|chinese|japanese|korean", re.IGNORECASE),
         re.compile(r"中国|北京|日本|한국", re.IGNORECASE),
-        re.compile(r"[\u0590-\u05FF]"),  # Hebrew
-        re.compile(r"[\u4E00-\u9FFF]"),  # Chinese
-        re.compile(r"[\u3040-\u309F\u30A0-\u30FF]"),  # Japanese
-        re.compile(r"[\uAC00-\uD7AF]"),  # Korean
+        re.compile(r"[\u0590-\u05FF]"),
+        re.compile(r"[\u4E00-\u9FFF]"),
+        re.compile(r"[\u3040-\u309F\u30A0-\u30FF]"),
+        re.compile(r"[\uAC00-\uD7AF]"),
     ]
 
-    # Patterns for detecting table-related files
     TABLE_FILE_PATTERNS: ClassVar[list[re.Pattern[str]]] = [
         re.compile(r"table", re.IGNORECASE),
         re.compile(r"spreadsheet", re.IGNORECASE),
@@ -70,15 +64,14 @@ class DocumentCategorizer:
         re.compile(r"simple.*table", re.IGNORECASE),
     ]
 
-    # File types that commonly contain tables
     TABLE_FILE_TYPES: ClassVar[list[FileType]] = [
         FileType.CSV,
         FileType.XLSX,
         FileType.XLS,
-        FileType.HTML,  # when contains table in name
-        FileType.MARKDOWN,  # when contains table in name
-        FileType.PDF,  # when contains table in name
-        FileType.DOCX,  # when contains table in name
+        FileType.HTML,
+        FileType.MARKDOWN,
+        FileType.PDF,
+        FileType.DOCX,
     ]
 
     def __init__(self) -> None:
@@ -120,7 +113,6 @@ class DocumentCategorizer:
         extension = file_path.suffix.lower()
         file_type = self._file_type_map.get(extension)
 
-        # Special handling for PDFs
         if file_type == FileType.PDF and self._is_scanned_pdf(file_path):
             return FileType.PDF_SCANNED
 
@@ -154,18 +146,16 @@ class DocumentCategorizer:
 
     def categorize_by_format(self, file_path: Path) -> list[DocumentCategory]:
         """Categorize document by format type."""
-        categories = []
+        categories: list[DocumentCategory] = []
         file_type = self.get_file_type(file_path)
 
         if not file_type:
             return categories
 
-        # Check format categories
         for category, types in self.FORMAT_CATEGORIES.items():
             if file_type in types:
                 categories.append(category)
 
-        # Special handling for PDFs
         if file_type == FileType.PDF:
             if self._is_scanned_pdf(file_path):
                 categories.append(DocumentCategory.PDF_SCANNED)
@@ -180,7 +170,6 @@ class DocumentCategorizer:
         """Categorize document by language content."""
         if self._has_unicode_content(file_path):
             return DocumentCategory.UNICODE
-        # Default to English for now (could be enhanced with content analysis)
         return DocumentCategory.ENGLISH
 
     def categorize_document(self, file_path: Path) -> dict[str, Any]:
@@ -198,22 +187,18 @@ class DocumentCategorizer:
         """Categorize all documents in a test directory."""
         categories: dict[DocumentCategory, list[Path]] = {category: [] for category in DocumentCategory}
 
-        # Find all files recursively
         for file_path in test_dir.rglob("*"):
             if not file_path.is_file():
                 continue
 
             categorization = self.categorize_document(file_path)
 
-            # Add to size category
             if size_cat := categorization["size_category"]:
                 categories[size_cat].append(file_path)
 
-            # Add to format categories
             for format_cat in categorization["format_categories"]:
                 categories[format_cat].append(file_path)
 
-            # Add to language category
             if lang_cat := categorization["language_category"]:
                 categories[lang_cat].append(file_path)
 
@@ -231,7 +216,6 @@ class DocumentCategorizer:
 
             categorization = self.categorize_document(file_path)
 
-            # Check if file belongs to requested category
             belongs = False
 
             if (
@@ -241,7 +225,6 @@ class DocumentCategorizer:
             ):
                 belongs = True
 
-            # Apply table extraction filter if requested
             if belongs and table_extraction_only:
                 belongs = self._is_table_file(file_path, categorization)
 
@@ -255,22 +238,17 @@ class DocumentCategorizer:
         file_name = file_path.name.lower()
         file_type = categorization.get("file_type")
 
-        # Check filename patterns
         for pattern in self.TABLE_FILE_PATTERNS:
             if pattern.search(file_name):
                 return True
 
-        # CSV and Excel files are always table files
         if file_type in [FileType.CSV, FileType.XLSX, FileType.XLS]:
             return True
 
-        # HTML/Markdown files with "table" in name
         if file_type in [FileType.HTML, FileType.MARKDOWN] and "table" in file_name:
             return True
 
-        # DOCX files with "table" in name
         if file_type == FileType.DOCX and "table" in file_name:
             return True
 
-        # PDF files with "table" in name
         return bool(file_type == FileType.PDF and any(keyword in file_name for keyword in ["table", "embedded"]))

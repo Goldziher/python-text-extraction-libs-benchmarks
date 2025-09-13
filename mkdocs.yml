@@ -1,0 +1,132 @@
+site_name: Python Text Extraction Libraries Benchmarks 2025
+site_description: Comprehensive performance analysis and benchmarks for Python text extraction frameworks
+site_url: https://benchmarks.kreuzberg.dev
+site_author: Kreuzberg Contributors
+repo_name: Goldziher/python-text-extraction-libraries-benchmarks-2025
+repo_url: https://github.com/Goldziher/python-text-extraction-libraries-benchmarks-2025
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2025 Kreuzberg Contributors
+
+theme:
+  name: material
+  logo: assets/logo.png
+  favicon: assets/favicon.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: lime
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - content.code.copy
+    - content.code.annotate
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.tracking
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - announce.dismiss
+  icon:
+    repo: fontawesome/brands/github
+  language: en
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+      linenums: true
+      use_pygments: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+
+plugins:
+  - search
+  - social
+  - minify:
+      minify_html: true
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Goldziher/python-text-extraction-libraries-benchmarks-2025
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/kreuzberg/
+  version:
+    provider: mike
+    default: latest
+
+extra_css:
+  - css/extra.css
+
+nav:
+  - Home: index.md
+  - Latest Results:
+      - results/index.md
+      - Performance:
+          - Speed Analysis: results/performance/speed.md
+          - Memory Usage: results/performance/memory.md
+      - Format Analysis:
+          - Document Formats: results/formats/documents.md
+          - Image Extraction: results/formats/images.md
+          - Data Formats: results/formats/data.md
+      - Interactive:
+          - Dashboard: results/interactive/dashboard.md
+  - Framework Guide:
+      - frameworks/index.md
+      - Kreuzberg: frameworks/kreuzberg.md
+      - Docling: frameworks/docling.md
+      - MarkItDown: frameworks/markitdown.md
+      - Unstructured: frameworks/unstructured.md
+      - Extractous: frameworks/extractous.md
+  - Methodology:
+      - methodology/index.md
+      - Test Environment: methodology/environment.md
+      - Metrics & Scoring: methodology/metrics.md
+      - Test Documents: methodology/documents.md

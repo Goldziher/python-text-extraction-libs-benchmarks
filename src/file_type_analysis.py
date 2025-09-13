@@ -62,17 +62,14 @@ class FileTypeAnalyzer:
             elif result["status"] == "timeout":
                 stats[file_type][framework]["timeout_files"] += 1
 
-        # Calculate aggregate metrics
         for file_type in stats:
             for framework in stats[file_type]:
                 fw_stats = stats[file_type][framework]
 
-                # Success rate
                 fw_stats["success_rate"] = (
                     fw_stats["successful_files"] / fw_stats["total_files"] * 100 if fw_stats["total_files"] > 0 else 0
                 )
 
-                # Average metrics (only for successful extractions)
                 fw_stats["avg_extraction_time"] = (
                     np.mean(fw_stats["extraction_times"]) if fw_stats["extraction_times"] else 0
                 )
@@ -82,7 +79,6 @@ class FileTypeAnalyzer:
                     np.mean(fw_stats["file_sizes"]) / (1024 * 1024) if fw_stats["file_sizes"] else 0
                 )
 
-                # Throughput metrics
                 fw_stats["files_per_second"] = (
                     1 / fw_stats["avg_extraction_time"] if fw_stats["avg_extraction_time"] > 0 else 0
                 )
@@ -92,7 +88,6 @@ class FileTypeAnalyzer:
                     else 0
                 )
 
-                # Quality proxies
                 fw_stats["avg_chars_per_file"] = (
                     np.mean(fw_stats["character_counts"]) if fw_stats["character_counts"] else 0
                 )
@@ -104,7 +99,6 @@ class FileTypeAnalyzer:
         """Generate comprehensive per-file-type performance report."""
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Create summary DataFrame
         summary_data = []
         for file_type, frameworks in self.file_type_stats.items():
             for framework, stats in frameworks.items():
@@ -124,10 +118,8 @@ class FileTypeAnalyzer:
 
         df = pd.DataFrame(summary_data)
 
-        # Save CSV report
         df.to_csv(output_dir / "file_type_performance_summary.csv", index=False)
 
-        # Generate visualizations
         self._create_success_rate_heatmap(df, output_dir)
         self._create_performance_by_file_type(df, output_dir)
         self._create_memory_usage_comparison(df, output_dir)
@@ -170,7 +162,6 @@ class FileTypeAnalyzer:
         fig, axes = plt.subplots(2, 2, figsize=(16, 12))
         fig.suptitle("Performance Metrics by File Type", fontsize=16, fontweight="bold")
 
-        # Speed comparison
         ax1 = axes[0, 0]
         speed_data = df.pivot(index="file_type", columns="framework", values="files_per_second")
         speed_data.plot(kind="bar", ax=ax1, width=0.8)
@@ -179,7 +170,6 @@ class FileTypeAnalyzer:
         ax1.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
         ax1.tick_params(axis="x", rotation=45)
 
-        # Memory usage
         ax2 = axes[0, 1]
         memory_data = df.pivot(index="file_type", columns="framework", values="avg_memory_mb")
         memory_data.plot(kind="bar", ax=ax2, width=0.8)
@@ -188,7 +178,6 @@ class FileTypeAnalyzer:
         ax2.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
         ax2.tick_params(axis="x", rotation=45)
 
-        # Success rate
         ax3 = axes[1, 0]
         success_data = df.pivot(index="file_type", columns="framework", values="success_rate")
         success_data.plot(kind="bar", ax=ax3, width=0.8)
@@ -197,7 +186,6 @@ class FileTypeAnalyzer:
         ax3.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
         ax3.tick_params(axis="x", rotation=45)
 
-        # Extraction time
         ax4 = axes[1, 1]
         time_data = df.pivot(index="file_type", columns="framework", values="avg_extraction_time")
         time_data.plot(kind="bar", ax=ax4, width=0.8, logy=True)
@@ -214,7 +202,6 @@ class FileTypeAnalyzer:
         """Create detailed memory usage analysis by file type."""
         plt.figure(figsize=(14, 8))
 
-        # Filter out frameworks with 0 memory usage (kreuzberg_async issue)
         df_filtered = df[df["avg_memory_mb"] > 0]
 
         sns.boxplot(data=df_filtered, x="file_type", y="avg_memory_mb", hue="framework")
@@ -231,7 +218,6 @@ class FileTypeAnalyzer:
         """Create throughput analysis showing framework efficiency per file type."""
         plt.figure(figsize=(14, 10))
 
-        # Create scatter plot: x=avg_extraction_time, y=success_rate, size=total_files, color=framework
         frameworks = df["framework"].unique()
         colors = plt.cm.Set1(np.linspace(0, 1, len(frameworks)))
 
@@ -240,13 +226,12 @@ class FileTypeAnalyzer:
             plt.scatter(
                 fw_data["avg_extraction_time"],
                 fw_data["success_rate"],
-                s=fw_data["total_files"] * 10,  # Size based on number of files
+                s=fw_data["total_files"] * 10,
                 alpha=0.7,
                 color=colors[i],
                 label=framework,
             )
 
-            # Add file type labels
             for _, row in fw_data.iterrows():
                 plt.annotate(
                     row["file_type"],
@@ -271,11 +256,10 @@ class FileTypeAnalyzer:
 
     def _create_extraction_quality_analysis(self, df: pd.DataFrame, output_dir: Path) -> None:
         """Create extraction quality analysis based on character/word counts."""
-        fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+        _fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
-        # Character count analysis
         ax1 = axes[0]
-        df_chars = df[df["avg_chars_per_file"] > 0]  # Filter out zero values
+        df_chars = df[df["avg_chars_per_file"] > 0]
         char_pivot = df_chars.pivot(index="file_type", columns="framework", values="avg_chars_per_file")
         char_pivot.plot(kind="bar", ax=ax1, width=0.8, logy=True)
         ax1.set_title("Average Characters Extracted per File Type", fontweight="bold")
@@ -283,9 +267,8 @@ class FileTypeAnalyzer:
         ax1.tick_params(axis="x", rotation=45)
         ax1.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
 
-        # Word count analysis
         ax2 = axes[1]
-        df_words = df[df["avg_words_per_file"] > 0]  # Filter out zero values
+        df_words = df[df["avg_words_per_file"] > 0]
         word_pivot = df_words.pivot(index="file_type", columns="framework", values="avg_words_per_file")
         word_pivot.plot(kind="bar", ax=ax2, width=0.8, logy=True)
         ax2.set_title("Average Words Extracted per File Type", fontweight="bold")
@@ -316,27 +299,22 @@ class FileTypeAnalyzer:
         """Generate human-readable insights and recommendations."""
         insights = []
 
-        # Top performers by metric
         insights.append("# File Type Performance Analysis - Key Insights\n")
 
-        # Success rate leaders
         success_leaders = self.get_top_performing_frameworks("success_rate")
         insights.append("## 🏆 Success Rate Leaders by File Type\n")
         for file_type, data in success_leaders.items():
             insights.append(f"- **{file_type}**: {data['framework']} ({data['value']:.1f}%)")
 
-        # Speed leaders
         speed_leaders = self.get_top_performing_frameworks("files_per_second")
         insights.append("\n## ⚡ Speed Leaders by File Type\n")
         for file_type, data in speed_leaders.items():
             insights.append(f"- **{file_type}**: {data['framework']} ({data['value']:.2f} files/sec)")
 
-        # Memory efficiency leaders (lowest memory usage)
         memory_leaders = {}
         for file_type, frameworks in self.file_type_stats.items():
             if not frameworks:
                 continue
-            # Find framework with lowest memory usage (excluding 0 values)
             valid_frameworks = {k: v for k, v in frameworks.items() if v.get("avg_memory_mb", 0) > 0}
             if valid_frameworks:
                 best_framework = min(valid_frameworks.items(), key=lambda x: x[1].get("avg_memory_mb", float("inf")))
@@ -349,7 +327,6 @@ class FileTypeAnalyzer:
         for file_type, data in memory_leaders.items():
             insights.append(f"- **{file_type}**: {data['framework']} ({data['value']:.1f} MB)")
 
-        # Framework strengths and weaknesses
         insights.append("\n## 📊 Framework Specializations\n")
 
         framework_strengths = defaultdict(list)
@@ -359,19 +336,16 @@ class FileTypeAnalyzer:
         for framework, file_types in framework_strengths.items():
             insights.append(f"- **{framework}**: Excels at {', '.join(file_types)}")
 
-        # Save insights
         with open(output_dir / "performance_insights.md", "w") as f:
             f.write("\n".join(insights))
 
 
 def main():
     """Main function to run file type analysis on existing benchmark data."""
-    # Load data from existing results
     results_files = [
         "extractous-results/benchmark-extractous-tiny-16215030688/benchmark_results.json",
         "kreuzberg-results/benchmark-kreuzberg_sync-tiny-16215030688/benchmark_results.json",
         "kreuzberg-results/benchmark-kreuzberg_async-tiny-16215030688/benchmark_results.json",
-        # Add more as needed
     ]
 
     all_results = []
@@ -391,7 +365,6 @@ def main():
         print("No results data found. Please ensure benchmark results exist.")
         return
 
-    # Run analysis
     analyzer = FileTypeAnalyzer(all_results)
     output_dir = Path("file_type_analysis")
 

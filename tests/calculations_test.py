@@ -37,12 +37,10 @@ class TestBenchmarkCalculations:
         framework = "kreuzberg_sync"
         metrics = summary_metrics["framework_performance"][framework]
 
-        # Basic sanity checks for speed metric
         files_per_second = metrics["avg_files_per_second"]
         assert files_per_second > 0, "Files per second should be positive"
         assert files_per_second < 1000, "Files per second should be realistic"
 
-        # Exact value validation against known benchmark results
         expected_fps = 20.504910406347275
         assert abs(files_per_second - expected_fps) < 0.001, f"Expected {expected_fps}, got {files_per_second}"
 
@@ -64,7 +62,6 @@ class TestBenchmarkCalculations:
         expected_fps = 0.17797559834766594
         assert abs(files_per_second - expected_fps) < 0.001, f"Expected {expected_fps}, got {files_per_second}"
 
-        # Docling should be slower than Kreuzberg
         kreuzberg_fps = summary_metrics["framework_performance"]["kreuzberg_sync"]["avg_files_per_second"]
         assert files_per_second < kreuzberg_fps, "Docling should be slower than Kreuzberg"
 
@@ -99,17 +96,14 @@ class TestBenchmarkCalculations:
         """Test that speed calculations are consistent across frameworks."""
         frameworks = summary_metrics["framework_performance"]
 
-        # All frameworks should have positive speed
         for framework, metrics in frameworks.items():
             files_per_second = metrics["avg_files_per_second"]
             assert files_per_second > 0, f"{framework} should have positive speed"
 
-        # Verify relative performance ordering based on known data
         kreuzberg_sync_fps = frameworks["kreuzberg_sync"]["avg_files_per_second"]
         markitdown_fps = frameworks["markitdown"]["avg_files_per_second"]
         docling_fps = frameworks["docling"]["avg_files_per_second"]
 
-        # Kreuzberg sync should be fastest among these
         assert kreuzberg_sync_fps > markitdown_fps, "Kreuzberg sync should be faster than MarkItDown"
         assert kreuzberg_sync_fps > docling_fps, "Kreuzberg sync should be faster than Docling"
         assert markitdown_fps > docling_fps, "MarkItDown should be faster than Docling"
@@ -123,7 +117,6 @@ class TestBenchmarkCalculations:
         expected_memory = 353.78355135658916
         assert abs(avg_memory - expected_memory) < 0.001, f"Expected {expected_memory}MB, got {avg_memory}MB"
 
-        # Memory should be reasonable (between 100MB and 10GB)
         assert 100 < avg_memory < 10000, f"Memory usage {avg_memory}MB should be realistic"
 
     def test_memory_calculations_docling(self, summary_metrics):  # type: ignore[misc]
@@ -135,7 +128,6 @@ class TestBenchmarkCalculations:
         expected_memory = 1764.0135008321006
         assert abs(avg_memory - expected_memory) < 0.001, f"Expected {expected_memory}MB, got {avg_memory}MB"
 
-        # Docling should use more memory than Kreuzberg
         kreuzberg_memory = summary_metrics["framework_performance"]["kreuzberg_sync"]["avg_memory_mb"]
         assert avg_memory > kreuzberg_memory, "Docling should use more memory than Kreuzberg"
 
@@ -143,7 +135,6 @@ class TestBenchmarkCalculations:
         """Test that memory calculations are consistent across frameworks."""
         frameworks = summary_metrics["framework_performance"]
 
-        # All frameworks should have positive memory usage
         for framework, metrics in frameworks.items():
             avg_memory = metrics["avg_memory_mb"]
             assert avg_memory > 0, f"{framework} should have positive memory usage"
@@ -158,16 +149,13 @@ class TestBenchmarkCalculations:
             successful_files = metrics["successful_files"]
             success_rate = metrics["success_rate"]
 
-            # Test fundamental success rate calculation
             expected_rate = successful_files / total_files if total_files > 0 else 0
             assert abs(success_rate - expected_rate) < 0.001, (
                 f"{framework}: Expected {expected_rate}, got {success_rate}"
             )
 
-            # Boundary validation - success rate must be valid percentage
             assert 0 <= success_rate <= 1, f"{framework} success rate {success_rate} should be between 0 and 1"
 
-            # Logic validation - successful cannot exceed total
             assert successful_files <= total_files, (
                 f"{framework}: Successful files {successful_files} should not exceed total {total_files}"
             )
@@ -181,13 +169,11 @@ class TestBenchmarkCalculations:
             successful_files = metrics["successful_files"]
             success_rate = metrics["success_rate"]
 
-            # Verify success rate calculation
             expected_rate = successful_files / total_files if total_files > 0 else 0
             assert abs(success_rate - expected_rate) < 0.001, (
                 f"{category}: Expected {expected_rate}, got {success_rate}"
             )
 
-            # All test categories should have files
             assert total_files > 0, f"{category} should have test files"
 
     def test_overall_totals_consistency(self, summary_metrics):  # type: ignore[misc]
@@ -196,12 +182,10 @@ class TestBenchmarkCalculations:
         total_files_processed = summary_metrics["total_files_processed"]
         frameworks_tested = summary_metrics["frameworks_tested"]
 
-        # Should have reasonable numbers
         assert total_runs > 0, "Should have at least one run"
         assert total_files_processed > 0, "Should have processed files"
         assert frameworks_tested > 0, "Should have tested frameworks"
 
-        # Expected values from the data
         assert total_runs == 18, f"Expected 18 runs, got {total_runs}"
         assert total_files_processed == 1353, f"Expected 1353 files processed, got {total_files_processed}"
         assert frameworks_tested == 6, f"Expected 6 frameworks, got {frameworks_tested}"
@@ -210,10 +194,8 @@ class TestBenchmarkCalculations:
         """Test that framework file counts are consistent."""
         frameworks = summary_metrics["framework_performance"]
 
-        # Sum up all framework file counts
         total_framework_files = sum(metrics["total_files"] for metrics in frameworks.values())
 
-        # This should match the total files processed
         expected_total = summary_metrics["total_files_processed"]
         assert total_framework_files == expected_total, (
             f"Framework totals {total_framework_files} should match overall total {expected_total}"
@@ -224,12 +206,10 @@ class TestBenchmarkCalculations:
         frameworks = summary_metrics["framework_performance"]
 
         for framework, metrics in frameworks.items():
-            # Test that floating point calculations are precise enough
             files_per_second = metrics["avg_files_per_second"]
             avg_memory = metrics["avg_memory_mb"]
             success_rate = metrics["success_rate"]
 
-            # Should not be NaN or infinite
             assert not math.isnan(files_per_second), f"{framework} files_per_second should not be NaN"
             assert not math.isinf(files_per_second), f"{framework} files_per_second should not be infinite"
             assert not math.isnan(avg_memory), f"{framework} avg_memory should not be NaN"

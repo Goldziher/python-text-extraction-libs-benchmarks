@@ -19,7 +19,6 @@ on:
         default: '3'
         type: string
   schedule:
-    # Run comprehensive benchmarks weekly on Sundays at 2 AM UTC
     - cron: '0 2 * * 0'
 
 jobs:

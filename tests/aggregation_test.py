@@ -99,13 +99,11 @@ def temp_results_dirs(sample_results: list[BenchmarkResult]) -> "Generator[list[
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
 
-        # Create separate result directories
         dirs = []
         for i, result in enumerate(sample_results):
             result_dir = temp_path / f"result_{i}"
             result_dir.mkdir()
 
-            # Write benchmark results
             results_file = result_dir / "benchmark_results.json"
             with open(results_file, "wb") as f:
                 f.write(msgspec.json.encode([result]))
@@ -136,7 +134,6 @@ class TestResultAggregator:
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
 
-        # Check that matrix has string keys
         matrix = aggregated.framework_category_matrix
         assert isinstance(matrix, dict)
 
@@ -144,7 +141,6 @@ class TestResultAggregator:
             assert isinstance(key, str), f"Matrix key {key} is not a string"
             assert "_" in key, f"Matrix key {key} doesn't follow 'framework_category' format"
 
-        # Check specific expected keys
         expected_keys = {"kreuzberg_sync_tiny", "kreuzberg_sync_small", "markitdown_tiny"}
 
         for expected_key in expected_keys:
@@ -156,15 +152,12 @@ class TestResultAggregator:
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
 
-        # This should not raise an exception
         serialized = msgspec.json.encode(aggregated)
         assert isinstance(serialized, bytes)
 
-        # Should be able to decode back
         decoded = msgspec.json.decode(serialized)
         assert isinstance(decoded, dict)
 
-        # Verify matrix keys are strings in the decoded data
         matrix = decoded["framework_category_matrix"]
         for key in matrix:
             assert isinstance(key, str)
@@ -178,23 +171,18 @@ class TestResultAggregator:
         with tempfile.TemporaryDirectory() as temp_dir:
             output_dir = Path(temp_dir)
 
-            # Save results
             aggregator.save_results(aggregated, output_dir)
 
-            # Check files exist
             assert (output_dir / "aggregated_results.json").exists()
             assert (output_dir / "all_summaries.json").exists()
 
-            # Load and verify
             with open(output_dir / "aggregated_results.json", "rb") as f:
                 loaded_data = msgspec.json.decode(f.read())
 
-            # Verify structure
             assert "framework_category_matrix" in loaded_data
             assert "framework_summaries" in loaded_data
             assert "category_summaries" in loaded_data
 
-            # Verify matrix keys are strings
             matrix = loaded_data["framework_category_matrix"]
             for key in matrix:
                 assert isinstance(key, str)
@@ -205,15 +193,12 @@ class TestResultAggregator:
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
 
-        # Check framework summaries
         fw_summaries = aggregated.framework_summaries
         assert isinstance(fw_summaries, dict)
 
-        # Should have Framework enum keys
         for framework in fw_summaries:
             assert isinstance(framework, Framework)
 
-        # Check that we have expected frameworks
         assert Framework.KREUZBERG_SYNC in fw_summaries
         assert Framework.MARKITDOWN in fw_summaries
 
@@ -223,15 +208,12 @@ class TestResultAggregator:
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
 
-        # Check category summaries
         cat_summaries = aggregated.category_summaries
         assert isinstance(cat_summaries, dict)
 
-        # Should have DocumentCategory enum keys
         for category in cat_summaries:
             assert isinstance(category, DocumentCategory)
 
-        # Check that we have expected categories
         assert DocumentCategory.TINY in cat_summaries
         assert DocumentCategory.SMALL in cat_summaries
 
@@ -241,7 +223,6 @@ class TestResultAggregator:
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
 
-        # Should have failure patterns
         failures = aggregated.failure_patterns
         assert isinstance(failures, dict)
         assert "ImportError" in failures
@@ -263,7 +244,6 @@ class TestResultAggregator:
         """Test that matrix keys follow the expected format."""
         aggregator = ResultAggregator()
 
-        # Test the matrix creation directly
         matrix = aggregator._create_matrix(sample_results)  # noqa: SLF001
 
         expected_keys = ["kreuzberg_sync_tiny", "kreuzberg_sync_small", "markitdown_tiny"]
@@ -271,11 +251,9 @@ class TestResultAggregator:
         for key in expected_keys:
             assert key in matrix, f"Expected key {key} not found"
 
-        # Verify key format
         for key in matrix:
             parts = key.split("_")
             assert len(parts) >= 2, f"Key {key} doesn't have expected format"
-            # Last part should be a valid category
             category_part = parts[-1]
             assert any(cat.value == category_part for cat in DocumentCategory)
 
@@ -287,23 +265,18 @@ class TestResultAggregator:
         """
         aggregator = ResultAggregator()
 
-        # Step 1: Aggregate results and save them
         aggregated = aggregator.aggregate_results(temp_results_dirs)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             output_dir = Path(temp_dir)
             aggregator.save_results(aggregated, output_dir)
 
-            # Step 2: Simulate CLI loading of aggregated results for report generation
             aggregated_file = output_dir / "aggregated_results.json"
             assert aggregated_file.exists()
 
-            # Step 3: Load the file the same way CLI does and verify it's properly typed
             with open(aggregated_file, "rb") as f:
-                # This is the critical fix - must specify type to get proper AggregatedResults object
                 loaded_results = msgspec.json.decode(f.read(), type=AggregatedResults)
 
-            # Step 4: Verify this is properly typed and has all expected attributes
             assert isinstance(loaded_results, AggregatedResults)
             assert hasattr(loaded_results, "total_runs")
             assert hasattr(loaded_results, "total_files_processed")
@@ -311,11 +284,9 @@ class TestResultAggregator:
             assert hasattr(loaded_results, "category_summaries")
             assert hasattr(loaded_results, "framework_category_matrix")
 
-            # Step 5: Verify the attributes work correctly (no AttributeError)
             assert loaded_results.total_runs > 0
             assert loaded_results.total_files_processed > 0
 
-            # Step 6: Verify enum objects are preserved correctly
             for framework in loaded_results.framework_summaries:
                 assert isinstance(framework, Framework)
 
@@ -334,22 +305,17 @@ class TestResultAggregator:
             output_dir = Path(temp_dir)
             aggregator.save_results(aggregated, output_dir)
 
-            # Test loading without type specification (what caused the bug)
             aggregated_file = output_dir / "aggregated_results.json"
             with open(aggregated_file, "rb") as f:
-                # This returns a plain dict - the source of the bug
                 plain_dict = msgspec.json.decode(f.read())
 
             assert isinstance(plain_dict, dict)
-            # This would fail: plain_dict.total_runs (AttributeError)
-            assert "total_runs" in plain_dict  # But this works
+            assert "total_runs" in plain_dict
 
-            # Test loading with type specification (the fix)
             with open(aggregated_file, "rb") as f:
                 typed_results = msgspec.json.decode(f.read(), type=AggregatedResults)
 
             assert isinstance(typed_results, AggregatedResults)
-            # This works: typed_results.total_runs
             assert typed_results.total_runs == plain_dict["total_runs"]
 
     def test_cli_report_command_integration(self, temp_results_dirs: list[Path]) -> None:
@@ -368,12 +334,9 @@ class TestResultAggregator:
             report_dir = output_dir / "reports"
             report_dir.mkdir()
 
-            # Save aggregated results
             aggregator.save_results(aggregated, output_dir)
             aggregated_file = output_dir / "aggregated_results.json"
 
-            # Test CLI report command using the same code path as GitHub Actions
-            # Skip the program name and module flag, just pass the command args
             test_args = [
                 "report",
                 "--aggregated-file",
@@ -386,22 +349,16 @@ class TestResultAggregator:
 
             with patch.object(sys, "argv", ["python", *test_args]):
                 try:
-                    # This should not raise the 'dict' object has no attribute 'total_runs' error
                     cli_main()
                 except SystemExit as e:
-                    # CLI commands typically exit with 0 for success
                     if e.code != 0:
-                        # Print any error for debugging
                         print(f"CLI failed with exit code {e.code}")
                         raise
 
-            # Verify report was generated - check what files were actually created
             report_files = list(report_dir.glob("*.json"))
             assert len(report_files) > 0, f"No JSON reports found in {report_dir}. Files: {list(report_dir.iterdir())}"
 
-            # The important thing is that the CLI command succeeded without the msgspec error
-            # Check for the specific file that should be created
-            expected_files = ["benchmark_metrics.json"]  # Based on the actual output
+            expected_files = ["benchmark_metrics.json"]
             for expected_file in expected_files:
                 assert (report_dir / expected_file).exists(), (
                     f"Expected {expected_file} not found. Available files: {[f.name for f in report_files]}"

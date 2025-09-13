@@ -1,18 +1,12 @@
 # ~keep Distributed benchmark pipeline for fair framework comparison
-#
-# Pipeline strategy:
-# - Each framework runs in isolated jobs to prevent interference
-# - Matrix strategy tests each framework across all document categories
-# - Results are aggregated after all frameworks complete
-# - Artifacts stored for 90 days with GitHub Pages deployment
 name: Benchmark by Framework (General Text Extraction)
 
 on:
   release:
-    types: [published]  # Comprehensive benchmarks on releases
+    types: [published]
   schedule:
-    - cron: '0 6 * * 1'  # Every Monday at 6 AM UTC
-  workflow_dispatch:  # Manual triggering with parameters
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
     inputs:
       frameworks:
         description: 'Frameworks to test (comma-separated or "all")'
@@ -22,17 +16,17 @@ on:
       categories:
         description: 'Categories to test (comma-separated or "all")'
         required: false
-        default: 'tiny,small,medium,large,huge'  # All size categories for complete testing
+        default: 'tiny,small,medium,large,huge'
         type: string
       iterations:
         description: 'Number of iterations per test'
         required: false
-        default: '3'  # Multiple iterations for statistical significance
+        default: '3'
         type: string
       format_tier:
         description: 'Format tier to test (universal, common, or all)'
         required: false
-        default: 'common'  # Balance between coverage and CI time
+        default: 'common'
         type: choice
         options:
           - all
@@ -91,16 +85,15 @@ jobs:
           echo "Format Tier: $FORMAT_TIER"
 
   # ~keep Framework isolation: each framework runs in separate job to prevent interference
-  # This ensures fair comparison by eliminating shared memory, dependencies, or caching effects
   benchmark-kreuzberg-sync:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'kreuzberg_sync')
     runs-on: ubuntu-latest
-    timeout-minutes: 360  # 6 hours max per framework/category combination
+    timeout-minutes: 360
     strategy:
-      fail-fast: false  # Continue testing other categories if one fails
+      fail-fast: false
       matrix:
-        category: ${{ fromJson(needs.prepare.outputs.categories) }}  # Test each size category
+        category: ${{ fromJson(needs.prepare.outputs.categories) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -167,6 +160,7 @@ jobs:
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
             --timeout 1200 \
+            --max-run-duration 30 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
@@ -257,6 +251,7 @@ jobs:
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
             --timeout 1200 \
+            --max-run-duration 30 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
@@ -274,7 +269,6 @@ jobs:
 
 
   # NOTE: Docling has conflicting dependencies with kreuzberg (lxml version)
-  # Run this job separately by specifying: --frameworks docling
   benchmark-docling:
     needs: prepare
     if: contains(needs.prepare.outputs.frameworks, 'docling')
@@ -341,6 +335,7 @@ jobs:
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
             --timeout 1200 \
+            --max-run-duration 30 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
@@ -348,7 +343,7 @@ jobs:
             # If timeout or failure, create empty results directory with failure marker
             mkdir -p "results-docling-${{ matrix.category }}"
             echo '{"framework": "docling", "category": "${{ matrix.category }}", "status": "timeout_or_failure", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > "results-docling-${{ matrix.category }}/benchmark_failure.json"
-            echo "Docling benchmark failed or timed out after 2 hours - recorded as failure"
+            echo "Docling benchmark failed or timed out after 30 minutes - recorded as failure"
           }
         env:
           PYTHONUNBUFFERED: "1"
@@ -427,6 +422,7 @@ jobs:
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
             --timeout 1200 \
+            --max-run-duration 30 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
@@ -434,7 +430,7 @@ jobs:
             # If timeout or failure, create empty results directory with failure marker
             mkdir -p "results-markitdown-${{ matrix.category }}"
             echo '{"framework": "markitdown", "category": "${{ matrix.category }}", "status": "timeout_or_failure", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > "results-markitdown-${{ matrix.category }}/benchmark_failure.json"
-            echo "MarkItDown benchmark failed or timed out after 2 hours - recorded as failure"
+            echo "MarkItDown benchmark failed or timed out after 30 minutes - recorded as failure"
           }
         env:
           PYTHONUNBUFFERED: "1"
@@ -512,6 +508,7 @@ jobs:
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
             --timeout 1200 \
+            --max-run-duration 30 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
@@ -594,6 +591,7 @@ jobs:
             --iterations ${{ needs.prepare.outputs.iterations }} \
             --warmup-runs 1 \
             --timeout 1200 \
+            --max-run-duration 30 \
             --continue-on-error \
             --format-tier ${{ needs.prepare.outputs.format_tier }} \
             --enable-quality-assessment \
@@ -601,7 +599,7 @@ jobs:
             # If timeout or failure, create empty results directory with failure marker
             mkdir -p "results-extractous-${{ matrix.category }}"
             echo '{"framework": "extractous", "category": "${{ matrix.category }}", "status": "timeout_or_failure", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > "results-extractous-${{ matrix.category }}/benchmark_failure.json"
-            echo "Extractous benchmark failed or timed out after 2 hours - recorded as failure"
+            echo "Extractous benchmark failed or timed out after 30 minutes - recorded as failure"
           }
         env:
           PYTHONUNBUFFERED: "1"
@@ -618,7 +616,6 @@ jobs:
 
 
   # ~keep Aggregation job: combine results from distributed framework jobs
-  # Runs even if some frameworks fail to provide partial results
   aggregate:
     needs:
       - prepare
@@ -630,7 +627,7 @@ jobs:
       - benchmark-extractous
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    if: always() && needs.prepare.result == 'success'  # Continue even if some frameworks failed
+    if: always() && needs.prepare.result == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -657,7 +654,7 @@ jobs:
       - name: Download All Results
         uses: actions/download-artifact@v4
         with:
-          pattern: benchmark-*-${{ github.run_id }}  # Download from all framework jobs
+          pattern: benchmark-*-${{ github.run_id }}
           path: all-results/
 
       - name: List Downloaded Results

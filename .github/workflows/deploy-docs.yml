@@ -1,0 +1,139 @@
+name: Deploy Documentation
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Benchmark run ID to publish (leave empty for latest)'
+        required: false
+        default: ''
+
+  workflow_run:
+    workflows: ["Benchmark by Framework"]
+    types: [completed]
+    branches: [main]
+
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/deploy-docs.yml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv pip install -e . --group docs
+
+      - name: Get benchmark results
+        id: get-results
+        run: |
+          # Determine which benchmark run to use
+          if [ -n "${{ github.event.inputs.run_id }}" ]; then
+            RUN_ID="${{ github.event.inputs.run_id }}"
+          else
+            # Get latest successful benchmark run
+            RUN_ID=$(gh run list --workflow="benchmark-by-framework.yml" --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+          fi
+
+          echo "Using benchmark run: $RUN_ID"
+          echo "run-id=$RUN_ID" >> $GITHUB_OUTPUT
+
+          # Download benchmark artifacts
+          gh run download $RUN_ID --pattern "aggregated-benchmark-results-*" --dir downloads/
+          gh run download $RUN_ID --pattern "benchmark-visualizations-*" --dir downloads/
+
+          # Find the aggregated results file
+          RESULTS_FILE=$(find downloads/ -name "aggregated_results.json" | head -1)
+          CHARTS_DIR=$(find downloads/ -name "charts" -type d | head -1)
+
+          echo "results-file=$RESULTS_FILE" >> $GITHUB_OUTPUT
+          echo "charts-dir=$CHARTS_DIR" >> $GITHUB_OUTPUT
+
+          # Verify we have the required files
+          if [ ! -f "$RESULTS_FILE" ]; then
+            echo "❌ No aggregated results found"
+            exit 1
+          fi
+
+          echo "✅ Found results: $RESULTS_FILE"
+          if [ -d "$CHARTS_DIR" ]; then
+            echo "✅ Found charts: $CHARTS_DIR ($(ls $CHARTS_DIR | wc -l) files)"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate documentation
+        run: |
+          source .venv/bin/activate
+
+          # Generate results pages from benchmark data
+          python -m src.docs_generator \
+            --results-file "${{ steps.get-results.outputs.results-file }}" \
+            --charts-dir "${{ steps.get-results.outputs.charts-dir }}" \
+            --docs-dir docs
+
+          echo "✅ Generated docs/results/ from benchmark data"
+          ls -la docs/results/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Build with MkDocs
+        run: |
+          source .venv/bin/activate
+          mkdocs build --verbose
+
+          echo "✅ Built site with MkDocs"
+          ls -la site/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Create deployment summary
+        run: |
+          echo "## 📊 Documentation Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Benchmark Run**: ${{ steps.get-results.outputs.run-id }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Site URL**: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📈 Available Pages" >> $GITHUB_STEP_SUMMARY
+          echo "- [Latest Results](${{ steps.deployment.outputs.page_url }}results/)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Framework Guide](${{ steps.deployment.outputs.page_url }}frameworks/)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Interactive Dashboard](${{ steps.deployment.outputs.page_url }}results/interactive/dashboard/)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Methodology](${{ steps.deployment.outputs.page_url }}methodology/)" >> $GITHUB_STEP_SUMMARY

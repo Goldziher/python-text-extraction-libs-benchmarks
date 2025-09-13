@@ -11,10 +11,14 @@ from typing import TYPE_CHECKING, Any
 
 import psutil
 
+from src.logger import get_logger
 from src.types import ResourceMetrics
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+# Module logger
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -67,7 +71,6 @@ class EnhancedResourceMonitor:
         """Background monitoring loop."""
         while self.monitoring:
             try:
-                # Collect metrics
                 cpu_percent = self.process.cpu_percent(interval=None)
                 mem_info = self.process.memory_info()
 
@@ -104,24 +107,31 @@ class EnhancedResourceMonitor:
         self.metrics_buffer.clear()
         self._baseline_io = self._get_io_counters()
 
-        # Initialize CPU measurement
         self.process.cpu_percent(interval=None)
 
-        # Collect initial baseline sample
         try:
             baseline_metric = ResourceMetrics(
                 timestamp=time.time(),
-                cpu_percent=0.0,  # First CPU sample is always 0
+                cpu_percent=0.0,
                 memory_rss=self.process.memory_info().rss,
                 memory_vms=self.process.memory_info().vms,
                 num_threads=self.process.num_threads(),
                 open_files=self._get_open_files_count(),
             )
             self.metrics_buffer.append(baseline_metric)
-        except Exception:
-            pass  # Continue if baseline fails
+        except Exception as e:
+            # Create emergency baseline metric to avoid empty buffer
+            emergency_metric = ResourceMetrics(
+                timestamp=time.time(),
+                cpu_percent=0.0,
+                memory_rss=1024 * 1024,  # 1MB fallback
+                memory_vms=1024 * 1024,
+                num_threads=1,
+                open_files=10,  # Conservative fallback
+            )
+            self.metrics_buffer.append(emergency_metric)
+            logger.warning("Failed to collect baseline metric", error=str(e))
 
-        # Start monitoring task
         self._monitor_task = asyncio.create_task(self._monitor_loop())
 
     async def stop(self) -> PerformanceMetrics:
@@ -136,7 +146,6 @@ class EnhancedResourceMonitor:
     def _calculate_metrics(self) -> PerformanceMetrics:
         """Calculate aggregate metrics from samples."""
         if not self.metrics_buffer:
-            # Fallback: collect one emergency sample
             try:
                 mem_info = self.process.memory_info()
                 emergency_sample = ResourceMetrics(
@@ -148,35 +157,32 @@ class EnhancedResourceMonitor:
                     open_files=self._get_open_files_count(),
                 )
                 self.metrics_buffer.append(emergency_sample)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Failed to create emergency sample", error=str(e))
+                # Continue with absolute fallback metrics below
 
             if not self.metrics_buffer:
                 return PerformanceMetrics(
                     extraction_time=0,
-                    peak_memory_mb=1.0,  # Default 1MB
+                    peak_memory_mb=1.0,
                     avg_memory_mb=1.0,
                     peak_cpu_percent=0,
                     avg_cpu_percent=0,
                     samples=[],
                 )
 
-        # Calculate time
         start_time = self.metrics_buffer[0].timestamp
         end_time = self.metrics_buffer[-1].timestamp
-        extraction_time = max(end_time - start_time, 0.001)  # Minimum 1ms
+        extraction_time = max(end_time - start_time, 0.001)
 
-        # Memory metrics (convert to MB)
         memory_samples = [m.memory_rss / (1024 * 1024) for m in self.metrics_buffer]
         peak_memory_mb = max(memory_samples)
         avg_memory_mb = sum(memory_samples) / len(memory_samples)
 
-        # CPU metrics - include all samples even if 0
         cpu_samples = [m.cpu_percent for m in self.metrics_buffer]
         peak_cpu_percent = max(cpu_samples) if cpu_samples else 0
         avg_cpu_percent = sum(cpu_samples) / len(cpu_samples) if cpu_samples else 0
 
-        # I/O metrics
         total_io_read_mb = None
         total_io_write_mb = None
         if self.metrics_buffer and self.metrics_buffer[-1].io_read_bytes is not None:
@@ -199,14 +205,12 @@ class EnhancedResourceMonitor:
 @contextmanager
 def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceMetrics]:  # noqa: ARG001, PLR0915, C901
     """Context manager for synchronous performance profiling."""
-    # Force garbage collection before profiling
     gc.collect()
 
     process = psutil.Process()
     start_time = time.time()
 
-    # Get baseline measurements
-    process.cpu_percent(interval=None)  # Initialize CPU measurement
+    process.cpu_percent(interval=None)
     baseline_memory = process.memory_info().rss
     baseline_io = None
 
@@ -215,10 +219,8 @@ def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceM
     except (AttributeError, psutil.AccessDenied):
         pass
 
-    # Collect samples during execution
     samples = []
 
-    # Always collect at least one baseline sample before execution
     def collect_sample() -> ResourceMetrics | None:
         try:
             cpu = process.cpu_percent(interval=None)
@@ -254,38 +256,33 @@ def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceM
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             return None
 
-    # Create metrics object that will be updated
     metrics = PerformanceMetrics(
         extraction_time=0,
         peak_memory_mb=0,
         avg_memory_mb=0,
         peak_cpu_percent=0,
         avg_cpu_percent=0,
-        samples=samples,  # Share the samples list
+        samples=samples,
     )
 
-    # Collect baseline sample
     if baseline_sample := collect_sample():
         samples.append(baseline_sample)
 
     try:
         yield metrics
 
-        # Collect final sample
         if final_sample := collect_sample():
             samples.append(final_sample)
 
-        # For very fast operations, collect additional samples during execution
         if len(samples) < 3:
             for _ in range(3):
                 if sample := collect_sample():
                     samples.append(sample)
-                time.sleep(0.01)  # Small delay between samples
+                time.sleep(0.01)
 
     finally:
         end_time = time.time()
 
-        # Calculate metrics and update the shared object
         if samples:
             memory_samples = [s.memory_rss / (1024 * 1024) for s in samples]
             cpu_samples = [s.cpu_percent for s in samples if s.cpu_percent > 0]
@@ -301,20 +298,17 @@ def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceM
             if samples and samples[-1].io_write_bytes is not None:
                 metrics.total_io_write_mb = samples[-1].io_write_bytes / (1024 * 1024)
         else:
-            # Fallback to basic metrics
             try:
                 final_memory = process.memory_info().rss
                 metrics.extraction_time = end_time - start_time
                 metrics.peak_memory_mb = final_memory / (1024 * 1024)
                 metrics.avg_memory_mb = (baseline_memory + final_memory) / 2 / (1024 * 1024)
-                # Create fallback sample
                 fallback_sample = collect_sample()
                 if fallback_sample:
                     samples.append(fallback_sample)
             except Exception:
-                # Ultimate fallback
                 metrics.extraction_time = end_time - start_time
-                metrics.peak_memory_mb = 1.0  # Default 1MB
+                metrics.peak_memory_mb = 1.0
                 metrics.avg_memory_mb = 1.0
 
 
@@ -328,21 +322,18 @@ class AsyncPerformanceProfiler:
 
     async def __aenter__(self) -> PerformanceMetrics:
         """Enter the profiling context."""
-        # Force garbage collection before profiling
         gc.collect()
 
         self._start_time = time.time()
         await self.monitor.start()
 
-        # Return metrics object that shares the monitor's buffer
-        # This ensures samples are available immediately
         self.metrics = PerformanceMetrics(
             extraction_time=0,
             peak_memory_mb=0,
             avg_memory_mb=0,
             peak_cpu_percent=0,
             avg_cpu_percent=0,
-            samples=self.monitor.metrics_buffer,  # Share the buffer directly
+            samples=self.monitor.metrics_buffer,
         )
         return self.metrics
 
@@ -350,7 +341,6 @@ class AsyncPerformanceProfiler:
         """Exit the profiling context and update metrics."""
         result = await self.monitor.stop()
 
-        # Update the metrics object that was returned
         if self.metrics:
             self.metrics.extraction_time = result.extraction_time
             self.metrics.peak_memory_mb = result.peak_memory_mb
@@ -359,5 +349,4 @@ class AsyncPerformanceProfiler:
             self.metrics.avg_cpu_percent = result.avg_cpu_percent
             self.metrics.total_io_read_mb = result.total_io_read_mb
             self.metrics.total_io_write_mb = result.total_io_write_mb
-            # Don't copy samples - they're already shared via the buffer
             self.metrics.startup_time = result.startup_time
