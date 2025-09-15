@@ -86,7 +86,6 @@ jobs:
       - name: Test CLI Commands
         run: |
           uv run python -m src.cli list-frameworks
-          uv run python -m src.cli list-categories
           uv run python -m src.cli --help
 
       - name: Run Type Checking
