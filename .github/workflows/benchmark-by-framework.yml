@@ -47,12 +47,19 @@ jobs:
           restore-keys: |
             python-dependencies-${{ runner.os }}-benchmark-
 
+      - name: Checkout Kreuzberg v4 Dev
+        uses: actions/checkout@v4
+        with:
+          repository: Goldziher/kreuzberg
+          path: kreuzberg
+          ref: main
+
       - name: Install Dependencies
         shell: bash
         run: |
           # Install base package and dev dependencies
           # Install ALL frameworks for comprehensive testing
-          uv sync --dev --extra all
+          uv sync --dev --extra all --extra kreuzberg-dev
 
       - name: Cache and Install APT Packages
         uses: awalsh128/cache-apt-pkgs-action@latest
@@ -70,8 +77,11 @@ jobs:
           try:
               import kreuzberg
               frameworks.append(f'✅ Kreuzberg: {kreuzberg.__version__}')
+              # Test v4 dev availability
+              frameworks.append(f'✅ Kreuzberg v4 Dev: Available')
           except ImportError as e:
               frameworks.append(f'❌ Kreuzberg: {e}')
+              frameworks.append(f'❌ Kreuzberg v4 Dev: Not available')
 
           try:
               import extractous
@@ -125,8 +135,8 @@ jobs:
           mkdir -p results
 
           if [ "$INPUT_FRAMEWORKS" = "all" ]; then
-            # Test all frameworks
-            FRAMEWORK_LIST="kreuzberg_sync,kreuzberg_async,extractous,markitdown,unstructured"
+            # Test all frameworks including v4 dev variants
+            FRAMEWORK_LIST="kreuzberg_sync,kreuzberg_async,kreuzberg_v4_sync,kreuzberg_v4_async,extractous,markitdown,unstructured"
 
             # Add docling only if it doesn't conflict (test separately due to lxml conflicts)
             echo "Testing frameworks: $FRAMEWORK_LIST"
