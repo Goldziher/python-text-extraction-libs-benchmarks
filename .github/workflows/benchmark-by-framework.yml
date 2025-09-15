@@ -136,8 +136,7 @@ jobs:
               --iterations "$ITERATIONS" \
               --timeout 1800 \
               --continue-on-error \
-              --enable-quality-assessment \
-              --output-dir results/
+              --enable-quality-assessment
 
           else
             # Test specified frameworks
@@ -146,8 +145,7 @@ jobs:
               --iterations "$ITERATIONS" \
               --timeout 1800 \
               --continue-on-error \
-              --enable-quality-assessment \
-              --output-dir results/
+              --enable-quality-assessment
           fi
 
       - name: Test Docling Separately
@@ -163,8 +161,7 @@ jobs:
               --iterations "${{ github.event.inputs.iterations || '1' }}" \
               --timeout 1800 \
               --continue-on-error \
-              --enable-quality-assessment \
-              --output-dir results-docling/
+              --enable-quality-assessment
           else
             echo "⚠️ Docling installation failed - skipping Docling benchmarks"
             mkdir -p results-docling
