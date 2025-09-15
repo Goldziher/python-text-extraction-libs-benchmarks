@@ -28,8 +28,7 @@ jobs:
         shell: bash
         run: |
           # Install base package and dev dependencies only
-          uv pip install -e .
-          uv sync --dev --no-install-project
+          uv sync --dev
 
       - name: Load Cached Pre-Commit Dependencies
         id: cached-pre-commit-dependencies
@@ -74,11 +73,9 @@ jobs:
       - name: Install Dependencies
         shell: bash
         run: |
-          # Install base package and dev dependencies only
-          uv pip install -e .
-          uv sync --dev --no-install-project
+          # Install base package and dev dependencies
           # Install a minimal framework for import tests
-          uv pip install -e ".[extractous]"
+          uv sync --dev --extra extractous
 
       - name: Cache and Install APT Packages
         uses: awalsh128/cache-apt-pkgs-action@latest
