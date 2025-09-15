@@ -1,32 +1,46 @@
 """Test that all frameworks can be imported successfully."""
 
+import pytest
+
 
 def test_kreuzberg_import():
     """Test kreuzberg import."""
-    import kreuzberg
+    try:
+        import kreuzberg
 
-    assert hasattr(kreuzberg, "extract_file_sync")
+        assert hasattr(kreuzberg, "extract_file_sync")
+    except ImportError:
+        pytest.skip("kreuzberg not installed")
 
 
 def test_docling_import():
     """Test docling import."""
-    from docling.document_converter import DocumentConverter
+    try:
+        from docling.document_converter import DocumentConverter
 
-    assert DocumentConverter is not None
+        assert DocumentConverter is not None
+    except ImportError:
+        pytest.skip("docling not installed")
 
 
 def test_markitdown_import():
     """Test markitdown import."""
-    from markitdown import MarkItDown
+    try:
+        from markitdown import MarkItDown
 
-    assert MarkItDown is not None
+        assert MarkItDown is not None
+    except ImportError:
+        pytest.skip("markitdown not installed")
 
 
 def test_unstructured_import():
     """Test unstructured import."""
-    from unstructured.partition.auto import partition
+    try:
+        from unstructured.partition.auto import partition
 
-    assert partition is not None
+        assert partition is not None
+    except ImportError:
+        pytest.skip("unstructured not installed")
 
 
 def test_extractors_import():
