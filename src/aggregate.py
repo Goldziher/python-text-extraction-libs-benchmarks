@@ -141,7 +141,10 @@ class ResultAggregator:
         return matrix
 
     def _create_summary(
-        self, framework: Framework, category: DocumentCategory, results: list[BenchmarkResult]
+        self,
+        framework: Framework,
+        category: DocumentCategory,
+        results: list[BenchmarkResult],
     ) -> BenchmarkSummary:
         successful = [r for r in results if r.status == ExtractionStatus.SUCCESS]
         failed = [r for r in results if r.status == ExtractionStatus.FAILED]

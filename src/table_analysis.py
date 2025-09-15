@@ -236,7 +236,10 @@ class TableExtractionAnalyzer:
                 score += category_score * 0.3
 
         table_indicators = [
-            ("column_headers", r"(product|name|price|total|amount|category|region|quarter)"),
+            (
+                "column_headers",
+                r"(product|name|price|total|amount|category|region|quarter)",
+            ),
             ("structured_data", r"\d+\.\d+|\$\d+|[A-Z]{2,3}"),
             ("table_separators", r"[\|,\t]"),
             ("row_structure", r"\n.*\n.*\n"),

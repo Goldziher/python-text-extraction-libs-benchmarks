@@ -133,7 +133,11 @@ class TestResultAggregator:
             assert isinstance(key, str), f"Matrix key {key} is not a string"
             assert "_" in key, f"Matrix key {key} doesn't follow 'framework_category' format"
 
-        expected_keys = {"kreuzberg_sync_tiny", "kreuzberg_sync_small", "markitdown_tiny"}
+        expected_keys = {
+            "kreuzberg_sync_tiny",
+            "kreuzberg_sync_small",
+            "markitdown_tiny",
+        }
 
         for expected_key in expected_keys:
             assert expected_key in matrix, f"Expected key {expected_key} not found in matrix"
@@ -231,7 +235,11 @@ class TestResultAggregator:
 
         matrix = aggregator._create_matrix(sample_results)
 
-        expected_keys = ["kreuzberg_sync_tiny", "kreuzberg_sync_small", "markitdown_tiny"]
+        expected_keys = [
+            "kreuzberg_sync_tiny",
+            "kreuzberg_sync_small",
+            "markitdown_tiny",
+        ]
 
         for key in expected_keys:
             assert key in matrix, f"Expected key {key} not found"

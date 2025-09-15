@@ -203,7 +203,14 @@ class TestCLIEdgeCases:
         assert len(json_files) >= 0
 
     def test_help_commands(self):
-        commands = ["benchmark", "aggregate", "report", "visualize", "docs", "list-frameworks"]
+        commands = [
+            "benchmark",
+            "aggregate",
+            "report",
+            "visualize",
+            "docs",
+            "list-frameworks",
+        ]
 
         for cmd in commands:
             result = self.runner.invoke(main, [cmd, "--help"])

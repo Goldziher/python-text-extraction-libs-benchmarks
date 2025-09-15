@@ -18,14 +18,18 @@ def get_package_size(package_name: str, extra_deps: list[str] | None = None) -> 
         venv_path = temp_path / "test_env"
 
         try:
-            subprocess.run([sys.executable, "-m", "venv", str(venv_path)], check=True, capture_output=True)
+            subprocess.run(
+                [sys.executable, "-m", "venv", str(venv_path)],
+                check=True,
+                capture_output=True,
+            )
 
             if sys.platform == "win32":
                 pip_path = venv_path / "Scripts" / "pip"
-                python_path = venv_path / "Scripts" / "python"
+                venv_path / "Scripts" / "python"
             else:
                 pip_path = venv_path / "bin" / "pip"
-                python_path = venv_path / "bin" / "python"
+                venv_path / "bin" / "python"
 
             install_cmd = [str(pip_path), "install", package_name]
             if extra_deps:
@@ -48,7 +52,10 @@ def get_package_size(package_name: str, extra_deps: list[str] | None = None) -> 
                 size_mb = total_size / (1024 * 1024)
 
                 list_result = subprocess.run(
-                    [str(pip_path), "list", "--format=json"], check=False, capture_output=True, text=True
+                    [str(pip_path), "list", "--format=json"],
+                    check=False,
+                    capture_output=True,
+                    text=True,
                 )
                 packages = json.loads(list_result.stdout) if list_result.returncode == 0 else []
 
@@ -63,16 +70,32 @@ def get_package_size(package_name: str, extra_deps: list[str] | None = None) -> 
         except subprocess.CalledProcessError as e:
             return {"error": str(e)}
         except Exception as e:
-            logger.error("Failed to check package installation size", package=package_name, error=str(e))
+            logger.error(
+                "Failed to check package installation size",
+                package=package_name,
+                error=str(e),
+            )
             return {"error": str(e)}
 
 
 def main() -> None:
     libraries = {
-        "kreuzberg": {"package": "kreuzberg", "description": "Comprehensive text extraction library"},
-        "docling": {"package": "docling", "description": "IBM's document processing library"},
-        "markitdown": {"package": "markitdown", "description": "Microsoft's markdown converter"},
-        "unstructured": {"package": "unstructured", "description": "Unstructured.io document processing"},
+        "kreuzberg": {
+            "package": "kreuzberg",
+            "description": "Comprehensive text extraction library",
+        },
+        "docling": {
+            "package": "docling",
+            "description": "IBM's document processing library",
+        },
+        "markitdown": {
+            "package": "markitdown",
+            "description": "Microsoft's markdown converter",
+        },
+        "unstructured": {
+            "package": "unstructured",
+            "description": "Unstructured.io document processing",
+        },
     }
 
     results = {}
@@ -83,7 +106,11 @@ def main() -> None:
         print(f"{'=' * 50}")
 
         size_info = get_package_size(lib_info["package"])
-        results[lib_name] = {"package": lib_info["package"], "description": lib_info["description"], **size_info}
+        results[lib_name] = {
+            "package": lib_info["package"],
+            "description": lib_info["description"],
+            **size_info,
+        }
 
         if "error" in size_info:
             print(f"❌ Error: {size_info['error']}")

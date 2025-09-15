@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import asyncio
@@ -19,6 +18,7 @@ logger = get_logger(__name__)
 
 @click.group()
 def main() -> None:
+    """Main CLI command group for benchmark operations."""
 
 
 @main.command(name="benchmark")

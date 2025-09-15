@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import sys
@@ -24,7 +23,6 @@ logger = get_logger(__name__)
 
 
 class BenchmarkReporter:
-
     def __init__(self, results: list[BenchmarkResult], summaries: list[BenchmarkSummary]) -> None:
         self.results = results
         self.summaries = summaries
@@ -99,7 +97,9 @@ class BenchmarkReporter:
             excluded = ", ".join(sorted(exclusions))
             supported_count = len(all_formats - exclusions)
             support_table.add_row(
-                framework.replace("_", " ").title(), excluded if excluded else "None", f"{supported_count}/20"
+                framework.replace("_", " ").title(),
+                excluded if excluded else "None",
+                f"{supported_count}/20",
             )
 
         console.print(support_table)
@@ -158,7 +158,16 @@ class BenchmarkReporter:
         output_path.mkdir(parents=True, exist_ok=True)
 
         plt.style.use("seaborn-v0_8")
-        colorblind_palette = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f"]
+        colorblind_palette = [
+            "#1f77b4",
+            "#ff7f0e",
+            "#2ca02c",
+            "#d62728",
+            "#9467bd",
+            "#8c564b",
+            "#e377c2",
+            "#7f7f7f",
+        ]
         sns.set_palette(colorblind_palette)
 
         df = pd.DataFrame(
@@ -196,7 +205,7 @@ class BenchmarkReporter:
         plt.figure(figsize=(12, 8))
         pivot_df = df.pivot(index="file_type", columns="framework", values="average_time_seconds")
 
-        ax = pivot_df.plot(kind="bar", figsize=(12, 8))
+        pivot_df.plot(kind="bar", figsize=(12, 8))
         plt.title("Average Extraction Time by Framework and File Type")
         plt.xlabel("File Type")
         plt.ylabel("Average Time (seconds)")
@@ -211,7 +220,7 @@ class BenchmarkReporter:
         plt.figure(figsize=(12, 8))
         pivot_df = df.pivot(index="file_type", columns="framework", values="average_memory_mb")
 
-        ax = pivot_df.plot(kind="bar", figsize=(12, 8))
+        pivot_df.plot(kind="bar", figsize=(12, 8))
         plt.title("Average Memory Usage by Framework and File Type")
         plt.xlabel("File Type")
         plt.ylabel("Average Memory (MB)")
@@ -300,3 +309,4 @@ def generate_console_report(results: list[BenchmarkResult]) -> str:  # noqa: ARG
 
 
 def generate_html_report(results: list[BenchmarkResult], output_path: Path) -> None:
+    """Generate HTML report from benchmark results."""

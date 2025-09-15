@@ -1,19 +1,17 @@
 import pytest
 
-from src.types import BenchmarkResult, BenchmarkSummary, DocumentCategory, ExtractionStatus, FileType, Framework
+from src.types import (
+    BenchmarkResult,
+    BenchmarkSummary,
+    DocumentCategory,
+    ExtractionStatus,
+    FileType,
+    Framework,
+)
 
 
 class TestFieldMapping:
     def test_benchmark_result_field_mapping(self):
-        expected_but_missing = {
-            "file_size_bytes": "file_size",
-            "extraction_time_seconds": "extraction_time",
-            "memory_peak_mb": "peak_memory_mb",
-            "cpu_percent": "avg_cpu_percent",
-            "success": "status (computed as status == ExtractionStatus.SUCCESS)",
-            "extracted_text_length": "character_count",
-        }
-
         result = BenchmarkResult(
             file_path="test.pdf",
             file_size=1000,
@@ -37,19 +35,6 @@ class TestFieldMapping:
         assert result.character_count is None
 
     def test_benchmark_summary_field_mapping(self):
-        expected_but_missing = {
-            "successful_extractions": "successful_files",
-            "failed_extractions": "failed_files",
-            "average_time_seconds": "avg_extraction_time",
-            "median_time_seconds": "median_extraction_time",
-            "min_time_seconds": "min_extraction_time",
-            "max_time_seconds": "max_extraction_time",
-            "average_memory_mb": "avg_peak_memory_mb",
-            "average_cpu_percent": "avg_cpu_percent",
-            "total_time_seconds": "doesn't exist - need to calculate",
-            "file_type": "doesn't exist - summaries are per framework/category",
-        }
-
         summary = BenchmarkSummary(
             framework=Framework.KREUZBERG_SYNC,
             category=DocumentCategory.SMALL,

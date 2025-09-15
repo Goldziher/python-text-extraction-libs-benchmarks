@@ -83,7 +83,11 @@ class TestComprehensiveSystemIntegration:
         assert config.categories[0] == DocumentCategory.TINY
 
         multi_config = BenchmarkConfig(
-            frameworks=[Framework.KREUZBERG_SYNC, Framework.KREUZBERG_ASYNC, Framework.MARKITDOWN],
+            frameworks=[
+                Framework.KREUZBERG_SYNC,
+                Framework.KREUZBERG_ASYNC,
+                Framework.MARKITDOWN,
+            ],
             categories=[DocumentCategory.TINY, DocumentCategory.SMALL],
             iterations=2,
             warmup_runs=1,
@@ -135,8 +139,8 @@ class TestComprehensiveSystemIntegration:
             if file_path.is_file() and file_count < 50:
                 try:
                     metadata = self.categorizer._get_file_metadata(file_path)
-                    file_type = self.categorizer._detect_file_type(file_path)
-                    category = self.categorizer._categorize_by_size(metadata["file_size"])
+                    self.categorizer._detect_file_type(file_path)
+                    self.categorizer._categorize_by_size(metadata["file_size"])
 
                     assert isinstance(metadata, dict)
                     assert "file_size" in metadata
@@ -164,7 +168,7 @@ class TestComprehensiveSystemIntegration:
             if file_path.is_file():
                 try:
                     metadata = self.categorizer._get_file_metadata(file_path)
-                    file_type = self.categorizer._detect_file_type(file_path)
+                    self.categorizer._detect_file_type(file_path)
 
                     success_count += 1
 
@@ -196,7 +200,7 @@ class TestComprehensiveSystemIntegration:
                 for file_path in self.test_docs_dir.rglob("*"):
                     if file_path.is_file() and files_processed < 10:
                         try:
-                            metadata = local_categorizer._get_file_metadata(file_path)
+                            local_categorizer._get_file_metadata(file_path)
                             files_processed += 1
                         except Exception:
                             continue

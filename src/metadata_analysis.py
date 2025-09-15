@@ -227,7 +227,12 @@ class MetadataFieldAnalyzer:
             unique_count = len(data["unique_fields"])
 
             table.add_row(
-                framework, str(total), str(with_meta), f"{coverage_pct:.1f}%", f"{avg_fields:.1f}", str(unique_count)
+                framework,
+                str(total),
+                str(with_meta),
+                f"{coverage_pct:.1f}%",
+                f"{avg_fields:.1f}",
+                str(unique_count),
             )
 
         self.console.print(table)

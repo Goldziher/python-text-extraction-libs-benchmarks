@@ -2,7 +2,13 @@ from pathlib import Path
 
 import msgspec
 
-from src.types import BenchmarkResult, DocumentCategory, ExtractionStatus, FileType, Framework
+from src.types import (
+    BenchmarkResult,
+    DocumentCategory,
+    ExtractionStatus,
+    FileType,
+    Framework,
+)
 
 results = []
 
@@ -31,7 +37,11 @@ for framework in frameworks:
             status=ExtractionStatus.SUCCESS,
             character_count=file_size * 2,
             word_count=file_size // 5,
-            quality_metrics={"readability": 75.5, "completeness": 0.95, "coherence": 0.88},
+            quality_metrics={
+                "readability": 75.5,
+                "completeness": 0.95,
+                "coherence": 0.88,
+            },
             overall_quality_score=0.85,
             extracted_text="Sample extracted text..." if framework == Framework.KREUZBERG_SYNC else "Different text...",
             attempts=1,

@@ -92,7 +92,11 @@ class TestTimeoutIntegration:
                     mock_metadata_func.return_value = mock_metadata
 
                     result = await runner._benchmark_single_file(
-                        Framework.KREUZBERG_SYNC, test_file, mock_metadata, 0, DocumentCategory.TINY
+                        Framework.KREUZBERG_SYNC,
+                        test_file,
+                        mock_metadata,
+                        0,
+                        DocumentCategory.TINY,
                     )
 
                     assert result is not None
@@ -145,7 +149,7 @@ class TestTimeoutIntegration:
                 mock_extractor.extract_text = variable_speed_extract
                 mock_get_extractor.return_value = mock_extractor
 
-                results = await runner.run_benchmark_suite()
+                await runner.run_benchmark_suite()
 
                 mock_save.assert_called()
 
@@ -182,7 +186,11 @@ class TestTimeoutIntegration:
                     mock_metadata_func.return_value = mock_metadata
 
                     result = await runner._benchmark_single_file(
-                        Framework.KREUZBERG_ASYNC, test_file, mock_metadata, 0, DocumentCategory.TINY
+                        Framework.KREUZBERG_ASYNC,
+                        test_file,
+                        mock_metadata,
+                        0,
+                        DocumentCategory.TINY,
                     )
 
                     assert result is not None
@@ -238,7 +246,7 @@ class TestTimeoutIntegration:
                 results = await runner.run_benchmark_suite()
 
                 success_count = sum(1 for r in results if r.status == ExtractionStatus.SUCCESS)
-                timeout_count = sum(1 for r in results if r.status == ExtractionStatus.TIMEOUT)
+                sum(1 for r in results if r.status == ExtractionStatus.TIMEOUT)
 
                 assert success_count > 0, "Should have some successful extractions"
 
@@ -275,7 +283,7 @@ class TestTimeoutIntegration:
             mock_warmup.side_effect = lambda: asyncio.sleep(10)
 
             start_time = asyncio.get_event_loop().time()
-            results = await runner.run_benchmark_suite()
+            await runner.run_benchmark_suite()
             end_time = asyncio.get_event_loop().time()
 
             elapsed = end_time - start_time
@@ -311,7 +319,11 @@ class TestTimeoutErrorHandling:
                     mock_metadata_func.return_value = mock_metadata
 
                     result = await runner._benchmark_single_file(
-                        Framework.KREUZBERG_SYNC, test_file, mock_metadata, 0, DocumentCategory.TINY
+                        Framework.KREUZBERG_SYNC,
+                        test_file,
+                        mock_metadata,
+                        0,
+                        DocumentCategory.TINY,
                     )
 
                     assert result.status == ExtractionStatus.TIMEOUT
@@ -362,7 +374,11 @@ class TestTimeoutErrorHandling:
                     mock_metadata_func.return_value = mock_metadata
 
                     result = await runner._benchmark_single_file(
-                        Framework.KREUZBERG_SYNC, test_file, mock_metadata, 0, DocumentCategory.TINY
+                        Framework.KREUZBERG_SYNC,
+                        test_file,
+                        mock_metadata,
+                        0,
+                        DocumentCategory.TINY,
                     )
 
                     assert result.attempts == config.max_retries

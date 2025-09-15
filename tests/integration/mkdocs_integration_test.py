@@ -133,7 +133,13 @@ def test_real_world_data_generation(aggregated_results_file: Path, temp_dir: Pat
 
     index_content = (results_dir / "index.md").read_text()
 
-    expected_frameworks = ["kreuzberg", "docling", "unstructured", "extractous", "markitdown"]
+    expected_frameworks = [
+        "kreuzberg",
+        "docling",
+        "unstructured",
+        "extractous",
+        "markitdown",
+    ]
     found_frameworks = []
     for framework in expected_frameworks:
         if framework.lower() in index_content.lower():
@@ -219,7 +225,13 @@ nav:
     generator = DocsGenerator(docs_dir)
     generator.generate_from_results(aggregated_results_file, charts_dir)
 
-    result = subprocess.run(["mkdocs", "build"], check=False, cwd=project_dir, capture_output=True, text=True)
+    result = subprocess.run(
+        ["mkdocs", "build"],
+        check=False,
+        cwd=project_dir,
+        capture_output=True,
+        text=True,
+    )
 
     print(f"MkDocs build result: {result.returncode}")
     if result.stderr:

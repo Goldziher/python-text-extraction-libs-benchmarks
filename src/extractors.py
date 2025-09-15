@@ -133,7 +133,9 @@ class DoclingExtractor:
             )
 
             ocr_options = EasyOcrOptions(
-                lang=["en", "de", "fr", "es"], confidence_threshold=0.3, suppress_mps_warnings=True
+                lang=["en", "de", "fr", "es"],
+                confidence_threshold=0.3,
+                suppress_mps_warnings=True,
             )
 
             table_options = TableStructureOptions(do_cell_matching=True, mode="accurate")
@@ -358,7 +360,10 @@ class UnstructuredExtractor:
                     fallback_config.pop("chunking_strategy", None)
                     return self._extract_with_strategy(file_path, fallback_config, attempt + 1)
                 if attempt == 2:
-                    minimal_config = {"languages": config["languages"], "strategy": "auto"}
+                    minimal_config = {
+                        "languages": config["languages"],
+                        "strategy": "auto",
+                    }
                     return self._extract_with_strategy(file_path, minimal_config, attempt + 1)
             raise e
 
@@ -481,7 +486,10 @@ class ExtractousExtractor:
         characteristics = self._get_file_characteristics(file_path)
 
         if characteristics["size"] > self.max_file_size:
-            return "", {"error": "file_too_large", "size_mb": characteristics["size"] / 1024 / 1024}
+            return "", {
+                "error": "file_too_large",
+                "size_mb": characteristics["size"] / 1024 / 1024,
+            }
 
         try:
             self._configure_adaptive_extraction(file_path, characteristics)
@@ -500,7 +508,10 @@ class ExtractousExtractor:
 
             return text, metadata
         except Exception as e:
-            return "", {"error": str(e)[:100], "file_size_mb": round(characteristics["size"] / 1024 / 1024, 2)}
+            return "", {
+                "error": str(e)[:100],
+                "file_size_mb": round(characteristics["size"] / 1024 / 1024, 2),
+            }
 
 
 def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:

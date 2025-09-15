@@ -15,16 +15,14 @@ def run_benchmark(config_name: str, config_settings: dict[str, Any]) -> dict[str
     content = extractor_file.read_text()
 
     if "class ExtractousExtractor:" in content:
-        new_content = content
-
         if "parse_method" in config_settings:
-            parse_method = config_settings["parse_method"]
+            config_settings["parse_method"]
 
         if "pdf_config" in config_settings:
-            pdf_settings = config_settings["pdf_config"]
+            config_settings["pdf_config"]
 
         if "ocr_strategy" in config_settings:
-            ocr = config_settings["ocr_strategy"]
+            config_settings["ocr_strategy"]
 
     cmd = [
         "uv",
@@ -142,7 +140,11 @@ def main():
     print(f"  Settings: {json.dumps(best['settings'], indent=4)}")
 
     print("\nAll Results:")
-    for r in sorted(results, key=lambda x: (x["success_rate"], -x["avg_extraction_time"]), reverse=True):
+    for r in sorted(
+        results,
+        key=lambda x: (x["success_rate"], -x["avg_extraction_time"]),
+        reverse=True,
+    ):
         print(f"  {r['config_name']}: {r['success_rate']:.1f}% success, {r['avg_extraction_time']:.3f}s avg time")
 
     return best

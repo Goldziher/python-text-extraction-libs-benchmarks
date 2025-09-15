@@ -912,9 +912,15 @@ Quality varies by:
             for r in results:
                 by_fw[r.framework].append(r)
 
-            best_speed_fw = min(by_fw.items(), key=lambda x: sum(r.extraction_time for r in x[1]) / len(x[1]))[0]
+            best_speed_fw = min(
+                by_fw.items(),
+                key=lambda x: sum(r.extraction_time for r in x[1]) / len(x[1]),
+            )[0]
             best_speed = self._get_framework_name(best_speed_fw)
-            best_memory_fw = min(by_fw.items(), key=lambda x: sum(r.peak_memory_mb for r in x[1]) / len(x[1]))[0]
+            best_memory_fw = min(
+                by_fw.items(),
+                key=lambda x: sum(r.peak_memory_mb for r in x[1]) / len(x[1]),
+            )[0]
             best_memory = self._get_framework_name(best_memory_fw)
 
             quality_scores = {
@@ -1031,7 +1037,16 @@ Quality varies by:
         return "F"
 
     def _grade_to_score(self, grade: str) -> float:
-        grades = {"A+": 1.0, "A": 0.93, "B+": 0.87, "B": 0.83, "C+": 0.77, "C": 0.73, "D": 0.65, "F": 0.5}
+        grades = {
+            "A+": 1.0,
+            "A": 0.93,
+            "B+": 0.87,
+            "B": 0.83,
+            "C+": 0.77,
+            "C": 0.73,
+            "D": 0.65,
+            "F": 0.5,
+        }
         return grades.get(grade, 0.5)
 
     def _generate_key_findings(
@@ -1212,8 +1227,8 @@ Quality varies by:
             sizes = [p[0] for p in size_memory_pairs]
             memories = [p[1] for p in size_memory_pairs]
 
-            avg_size = sum(sizes) / len(sizes)
-            avg_memory = sum(memories) / len(memories)
+            sum(sizes) / len(sizes)
+            sum(memories) / len(memories)
 
             if sizes[-1] > sizes[0]:
                 growth_rate = (memories[-1] - memories[0]) / (sizes[-1] - sizes[0])
@@ -1360,7 +1375,15 @@ Quality varies by:
             groups[key].append(r)
 
         with open(output_path, "w", newline="") as f:
-            fieldnames = [group_by, "framework", "count", "avg_time", "avg_memory", "success_rate", "avg_quality"]
+            fieldnames = [
+                group_by,
+                "framework",
+                "count",
+                "avg_time",
+                "avg_memory",
+                "success_rate",
+                "avg_quality",
+            ]
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
 

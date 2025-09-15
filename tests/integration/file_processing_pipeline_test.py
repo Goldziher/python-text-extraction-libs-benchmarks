@@ -63,7 +63,11 @@ class TestFileProcessingPipeline:
 
             file_type = self.categorizer._detect_file_type(office_file)
 
-            expected_types = {".docx": FileType.DOCX, ".pptx": FileType.PPTX, ".xlsx": FileType.XLSX}
+            expected_types = {
+                ".docx": FileType.DOCX,
+                ".pptx": FileType.PPTX,
+                ".xlsx": FileType.XLSX,
+            }
 
             assert file_type == expected_types[ext]
 
@@ -157,7 +161,11 @@ class TestFileProcessingPipeline:
                 result = results[0]
                 assert result.file_path == str(test_file)
                 assert result.framework == Framework.KREUZBERG_SYNC
-                assert result.status in [ExtractionStatus.SUCCESS, ExtractionStatus.FAILED, ExtractionStatus.TIMEOUT]
+                assert result.status in [
+                    ExtractionStatus.SUCCESS,
+                    ExtractionStatus.FAILED,
+                    ExtractionStatus.TIMEOUT,
+                ]
 
                 if result.status == ExtractionStatus.SUCCESS:
                     assert result.extraction_time > 0
@@ -284,13 +292,6 @@ class TestFileProcessingPipeline:
     def test_category_boundary_conditions(self):
         all_files = [(f, f.stat().st_size) for f in self.test_docs_dir.rglob("*") if f.is_file()]
 
-        boundaries = [
-            (99999, DocumentCategory.TINY),
-            (100000, DocumentCategory.SMALL),
-            (1048575, DocumentCategory.SMALL),
-            (1048576, DocumentCategory.MEDIUM),
-        ]
-
         for _file_path, size in all_files[:10]:
             category = self.categorizer._categorize_by_size(size)
 
@@ -350,7 +351,7 @@ class TestFileProcessingPipeline:
         for file_path in self.test_docs_dir.rglob("*"):
             if file_path.is_file() and processed_count < 20:
                 try:
-                    metadata = self.categorizer._get_file_metadata(file_path)
+                    self.categorizer._get_file_metadata(file_path)
                     processed_count += 1
                 except Exception:
                     continue

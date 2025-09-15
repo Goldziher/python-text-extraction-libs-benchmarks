@@ -97,8 +97,11 @@ lint.ignore = [
   "BLE001",  # Blind exception catching (appropriate for CLI error handling)
   "COM812",  # Conflicts with formatter
   "D100",    # Missing docstring in public module
+  "D101",    # Missing docstring in public class
+  "D102",    # Missing docstring in public method
   "D103",    # Missing docstring in public function
   "D104",    # Missing docstring in public package
+  "D105",    # Missing docstring in magic method
   "D107",    # Missing docstring in __init__
   "D205",    # 1 blank line required between summary line and description
   "E501",    # Line too long, handled by ruff format
@@ -115,6 +118,7 @@ lint.ignore = [
   "PYI036",  # __aexit__ annotations (Any is fine for this context)
   "S110",    # try-except-pass detected
   "S603",    # subprocess-without-shell-equals-true
+  "S607",    # Starting a process with a partial executable path
   "SIM105",  # Use contextlib.suppress (pass is clearer)
   "T201",    # print found (demo file is fine)
   "TC001",   # Type checking imports (not needed for this codebase)

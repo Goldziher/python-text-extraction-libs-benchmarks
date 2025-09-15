@@ -3,7 +3,12 @@ import time
 
 import pytest
 
-from src.profiler import AsyncPerformanceProfiler, EnhancedResourceMonitor, PerformanceMetrics, profile_performance
+from src.profiler import (
+    AsyncPerformanceProfiler,
+    EnhancedResourceMonitor,
+    PerformanceMetrics,
+    profile_performance,
+)
 
 
 def test_enhanced_resource_monitor_initialization() -> None:
@@ -62,7 +67,11 @@ async def test_async_performance_profiler() -> None:
 
 def test_performance_metrics_creation() -> None:
     metrics = PerformanceMetrics(
-        extraction_time=1.5, peak_memory_mb=256.0, avg_memory_mb=200.0, peak_cpu_percent=80.0, avg_cpu_percent=60.0
+        extraction_time=1.5,
+        peak_memory_mb=256.0,
+        avg_memory_mb=200.0,
+        peak_cpu_percent=80.0,
+        avg_cpu_percent=60.0,
     )
 
     assert metrics.extraction_time == 1.5
@@ -128,7 +137,10 @@ def test_profile_performance_exception_handling() -> None:
     def failing_task() -> None:
         raise ValueError("Test error")
 
-    with pytest.raises(ValueError, match="Test error"), profile_performance() as metrics:
+    with (
+        pytest.raises(ValueError, match="Test error"),
+        profile_performance() as metrics,
+    ):
         failing_task()
 
     assert isinstance(metrics, PerformanceMetrics)

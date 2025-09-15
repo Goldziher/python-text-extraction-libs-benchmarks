@@ -152,7 +152,7 @@ class FileTypeAnalyzer:
 
     def _create_performance_by_file_type(self, df: pd.DataFrame, output_dir: Path) -> None:
         file_types = df["file_type"].unique()
-        n_types = len(file_types)
+        len(file_types)
 
         fig, axes = plt.subplots(2, 2, figsize=(16, 12))
         fig.suptitle("Performance Metrics by File Type", fontsize=16, fontweight="bold")
@@ -239,12 +239,18 @@ class FileTypeAnalyzer:
         plt.xlabel("Average Extraction Time (seconds, log scale)", fontsize=12)
         plt.ylabel("Success Rate (%)", fontsize=12)
         plt.title(
-            "Framework Efficiency by File Type\n(Bubble size = number of files tested)", fontsize=14, fontweight="bold"
+            "Framework Efficiency by File Type\n(Bubble size = number of files tested)",
+            fontsize=14,
+            fontweight="bold",
         )
         plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig(output_dir / "throughput_efficiency_analysis.png", dpi=300, bbox_inches="tight")
+        plt.savefig(
+            output_dir / "throughput_efficiency_analysis.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
         plt.close()
 
     def _create_extraction_quality_analysis(self, df: pd.DataFrame, output_dir: Path) -> None:
@@ -270,7 +276,11 @@ class FileTypeAnalyzer:
 
         plt.suptitle("Content Extraction Quality by File Type", fontsize=16, fontweight="bold")
         plt.tight_layout()
-        plt.savefig(output_dir / "extraction_quality_by_file_type.png", dpi=300, bbox_inches="tight")
+        plt.savefig(
+            output_dir / "extraction_quality_by_file_type.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
         plt.close()
 
     def get_top_performing_frameworks(self, metric: str = "success_rate") -> dict[str, str]:
@@ -282,7 +292,10 @@ class FileTypeAnalyzer:
 
             best_framework = max(frameworks.items(), key=lambda x: x[1].get(metric, 0))
 
-            top_frameworks[file_type] = {"framework": best_framework[0], "value": best_framework[1].get(metric, 0)}
+            top_frameworks[file_type] = {
+                "framework": best_framework[0],
+                "value": best_framework[1].get(metric, 0),
+            }
 
         return top_frameworks
 
@@ -307,7 +320,10 @@ class FileTypeAnalyzer:
                 continue
             valid_frameworks = {k: v for k, v in frameworks.items() if v.get("avg_memory_mb", 0) > 0}
             if valid_frameworks:
-                best_framework = min(valid_frameworks.items(), key=lambda x: x[1].get("avg_memory_mb", float("inf")))
+                best_framework = min(
+                    valid_frameworks.items(),
+                    key=lambda x: x[1].get("avg_memory_mb", float("inf")),
+                )
                 memory_leaders[file_type] = {
                     "framework": best_framework[0],
                     "value": best_framework[1].get("avg_memory_mb", 0),

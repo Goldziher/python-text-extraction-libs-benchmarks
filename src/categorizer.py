@@ -19,13 +19,29 @@ class DocumentCategorizer:
     FORMAT_CATEGORIES: ClassVar[dict[DocumentCategory, list[FileType]]] = {
         DocumentCategory.PDF_STANDARD: [FileType.PDF],
         DocumentCategory.PDF_SCANNED: [FileType.PDF_SCANNED],
-        DocumentCategory.OFFICE: [FileType.DOCX, FileType.PPTX, FileType.XLSX, FileType.XLS, FileType.ODT],
+        DocumentCategory.OFFICE: [
+            FileType.DOCX,
+            FileType.PPTX,
+            FileType.XLSX,
+            FileType.XLS,
+            FileType.ODT,
+        ],
         DocumentCategory.WEB: [FileType.HTML],
-        DocumentCategory.TEXT: [FileType.MARKDOWN, FileType.TXT, FileType.RST, FileType.ORG],
+        DocumentCategory.TEXT: [
+            FileType.MARKDOWN,
+            FileType.TXT,
+            FileType.RST,
+            FileType.ORG,
+        ],
         DocumentCategory.EMAIL: [FileType.MSG, FileType.EML],
         DocumentCategory.EBOOK: [FileType.EPUB],
         DocumentCategory.DATA: [FileType.CSV, FileType.JSON, FileType.YAML],
-        DocumentCategory.IMAGES: [FileType.IMAGE_PNG, FileType.IMAGE_JPG, FileType.IMAGE_JPEG, FileType.IMAGE_BMP],
+        DocumentCategory.IMAGES: [
+            FileType.IMAGE_PNG,
+            FileType.IMAGE_JPG,
+            FileType.IMAGE_JPEG,
+            FileType.IMAGE_BMP,
+        ],
     }
 
     SCANNED_PDF_PATTERNS: ClassVar[list[re.Pattern[str]]] = [
@@ -191,7 +207,10 @@ class DocumentCategorizer:
         return categories
 
     def get_files_for_category(
-        self, test_dir: Path, category: DocumentCategory, table_extraction_only: bool = False
+        self,
+        test_dir: Path,
+        category: DocumentCategory,
+        table_extraction_only: bool = False,
     ) -> list[tuple[Path, dict[str, Any]]]:
         files_with_metadata = []
 

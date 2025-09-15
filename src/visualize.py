@@ -24,7 +24,6 @@ FRAMEWORK_COLORS = {
 
 
 class BenchmarkVisualizer:
-
     def __init__(self, output_dir: Path = Path("results/charts")) -> None:
         self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -92,11 +91,16 @@ class BenchmarkVisualizer:
 
         df = pd.DataFrame(perf_data)
 
-        fig = plt.figure(figsize=(20, 12))
+        plt.figure(figsize=(20, 12))
         df_pivot = df.pivot(index="Framework", columns="Category", values="Avg Time (s)")
 
         ax = df_pivot.plot(kind="bar", width=0.8, figsize=(20, 12))
-        plt.title("Average Extraction Time by Framework and Category", fontsize=20, fontweight="bold", pad=20)
+        plt.title(
+            "Average Extraction Time by Framework and Category",
+            fontsize=20,
+            fontweight="bold",
+            pad=20,
+        )
         plt.xlabel("Framework", fontsize=16)
         plt.ylabel("Average Time (seconds)", fontsize=16)
         plt.yscale("log")
@@ -145,7 +149,11 @@ class BenchmarkVisualizer:
 
             axes[5].axis("off")
 
-            plt.suptitle("Performance Comparison by File Size Category", fontsize=20, fontweight="bold")
+            plt.suptitle(
+                "Performance Comparison by File Size Category",
+                fontsize=20,
+                fontweight="bold",
+            )
             plt.tight_layout()
 
             output_path = self.output_dir / "performance_by_size_category.png"
@@ -186,13 +194,37 @@ class BenchmarkVisualizer:
         _fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 16))
 
         df_pivot = df.pivot(index="Framework", columns="Category", values="Avg Memory (MB)")
-        sns.heatmap(df_pivot, annot=True, fmt=".0f", cmap="YlOrRd", ax=ax1, cbar_kws={"label": "Memory Usage (MB)"})
-        ax1.set_title("Average Peak Memory Usage by Framework and Category", fontsize=18, fontweight="bold", pad=15)
+        sns.heatmap(
+            df_pivot,
+            annot=True,
+            fmt=".0f",
+            cmap="YlOrRd",
+            ax=ax1,
+            cbar_kws={"label": "Memory Usage (MB)"},
+        )
+        ax1.set_title(
+            "Average Peak Memory Usage by Framework and Category",
+            fontsize=18,
+            fontweight="bold",
+            pad=15,
+        )
         ax1.set_xlabel("")
 
         df_pivot_cpu = df.pivot(index="Framework", columns="Category", values="CPU Usage (%)")
-        sns.heatmap(df_pivot_cpu, annot=True, fmt=".1f", cmap="Blues", ax=ax2, cbar_kws={"label": "CPU Usage (%)"})
-        ax2.set_title("Average CPU Usage by Framework and Category", fontsize=18, fontweight="bold", pad=15)
+        sns.heatmap(
+            df_pivot_cpu,
+            annot=True,
+            fmt=".1f",
+            cmap="Blues",
+            ax=ax2,
+            cbar_kws={"label": "CPU Usage (%)"},
+        )
+        ax2.set_title(
+            "Average CPU Usage by Framework and Category",
+            fontsize=18,
+            fontweight="bold",
+            pad=15,
+        )
 
         plt.tight_layout()
         output_path = self.output_dir / "resource_usage_heatmaps.png"
@@ -234,7 +266,11 @@ class BenchmarkVisualizer:
             for stats in framework_stats.values()
         ]
 
-        bars = ax1.bar(frameworks, success_rates, color=[FRAMEWORK_COLORS.get(fw, "#999999") for fw in frameworks])
+        bars = ax1.bar(
+            frameworks,
+            success_rates,
+            color=[FRAMEWORK_COLORS.get(fw, "#999999") for fw in frameworks],
+        )
         ax1.set_title("Overall Success Rate by Framework", fontsize=18, fontweight="bold")
         ax1.set_ylabel("Success Rate (%)", fontsize=14)
         ax1.set_ylim(0, 105)
@@ -344,7 +380,11 @@ class BenchmarkVisualizer:
         if not df_sizes.empty:
             df_pivot_files = df_sizes.pivot(index="Framework", columns="Category", values="Files/Second")
             df_pivot_files.plot(kind="bar", ax=ax2, width=0.8)
-            ax2.set_title("Files Processed per Second (Size Categories)", fontsize=16, fontweight="bold")
+            ax2.set_title(
+                "Files Processed per Second (Size Categories)",
+                fontsize=16,
+                fontweight="bold",
+            )
             ax2.set_ylabel("Files/Second", fontsize=14)
             ax2.set_yscale("log")
             ax2.grid(True, alpha=0.3, axis="y")
@@ -421,7 +461,11 @@ class BenchmarkVisualizer:
                 avg_times_per_cat.append(0)
 
         bars = ax1.bar(categories, avg_times_per_cat, color="skyblue", edgecolor="navy")
-        ax1.set_title("Average Extraction Time by Category (All Frameworks)", fontsize=18, fontweight="bold")
+        ax1.set_title(
+            "Average Extraction Time by Category (All Frameworks)",
+            fontsize=18,
+            fontweight="bold",
+        )
         ax1.set_ylabel("Average Time (seconds)", fontsize=14)
         ax1.set_yscale("log")
         ax1.grid(True, alpha=0.3, axis="y")
@@ -571,7 +615,13 @@ class BenchmarkVisualizer:
             fw_data = df[df["framework"] == fw]
             if fw_data["memory"].sum() > 0:
                 fig.add_trace(
-                    go.Box(name=fw, y=fw_data["memory"], marker_color=FRAMEWORK_COLORS.get(fw, "#999999")), row=1, col=2
+                    go.Box(
+                        name=fw,
+                        y=fw_data["memory"],
+                        marker_color=FRAMEWORK_COLORS.get(fw, "#999999"),
+                    ),
+                    row=1,
+                    col=2,
                 )
 
         fw_success = df.groupby("framework")["success_rate"].mean()
@@ -606,7 +656,11 @@ class BenchmarkVisualizer:
         pivot_table = df.pivot_table(values="avg_time", index="framework", columns="category")
         fig.add_trace(
             go.Heatmap(
-                z=pivot_table.values, x=pivot_table.columns, y=pivot_table.index, colorscale="YlOrRd", showscale=True
+                z=pivot_table.values,
+                x=pivot_table.columns,
+                y=pivot_table.index,
+                colorscale="YlOrRd",
+                showscale=True,
             ),
             row=3,
             col=1,
@@ -615,7 +669,10 @@ class BenchmarkVisualizer:
         fig.update_layout(
             height=1800,
             showlegend=True,
-            title={"text": "Python Text Extraction Benchmarks - Interactive Dashboard", "font": {"size": 24}},
+            title={
+                "text": "Python Text Extraction Benchmarks - Interactive Dashboard",
+                "font": {"size": 24},
+            },
         )
 
         fig.update_xaxes(title_text="Category", row=1, col=1)
@@ -690,6 +747,7 @@ class BenchmarkVisualizer:
 
 
 def generate_all_visualizations(results: list, output_dir: Path) -> None:
+    """Generate all visualizations from benchmark results."""
 
 
 def load_benchmark_results(results_file: Path) -> list:  # noqa: ARG001

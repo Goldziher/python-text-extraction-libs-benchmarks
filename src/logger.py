@@ -71,7 +71,12 @@ def log_benchmark_start(framework: str, file_path: str | Path) -> None:
 
 
 def log_benchmark_success(framework: str, file_path: str | Path, duration: float) -> None:
-    logger.info("Extraction completed", framework=framework, file=str(file_path), duration_s=f"{duration:.2f}")
+    logger.info(
+        "Extraction completed",
+        framework=framework,
+        file=str(file_path),
+        duration_s=f"{duration:.2f}",
+    )
 
 
 def log_benchmark_error(framework: str, file_path: str | Path, error: str) -> None:
@@ -79,4 +84,9 @@ def log_benchmark_error(framework: str, file_path: str | Path, error: str) -> No
 
 
 def log_benchmark_timeout(framework: str, file_path: str | Path, timeout_s: int) -> None:
-    logger.warning("Extraction timeout", framework=framework, file=str(file_path), timeout_s=timeout_s)
+    logger.warning(
+        "Extraction timeout",
+        framework=framework,
+        file=str(file_path),
+        timeout_s=timeout_s,
+    )

@@ -24,7 +24,10 @@ class TextQualityAssessor:
         self.tfidf = TfidfVectorizer(stop_words="english", max_features=5000, ngram_range=(1, 2))
 
     def assess_extraction_quality(
-        self, extracted_text: str, reference_text: str | None = None, file_path: Path | None = None
+        self,
+        extracted_text: str,
+        reference_text: str | None = None,
+        file_path: Path | None = None,
     ) -> dict[str, Any]:
         quality_metrics = {}
 
@@ -72,7 +75,12 @@ class TextQualityAssessor:
 
     def _content_quality_metrics(self, text: str) -> dict[str, Any]:
         if not text.strip():
-            return {"extraction_completeness": 0.0, "text_coherence": 0.0, "noise_ratio": 1.0, "gibberish_ratio": 1.0}
+            return {
+                "extraction_completeness": 0.0,
+                "text_coherence": 0.0,
+                "noise_ratio": 1.0,
+                "gibberish_ratio": 1.0,
+            }
 
         completeness = self._estimate_completeness(text)
 
@@ -100,7 +108,10 @@ class TextQualityAssessor:
             flesch_score = 0
             gunning_fog_score = 100
 
-        return {"flesch_reading_ease": flesch_score, "gunning_fog_index": gunning_fog_score}
+        return {
+            "flesch_reading_ease": flesch_score,
+            "gunning_fog_index": gunning_fog_score,
+        }
 
     def _structural_quality(self, text: str) -> dict[str, Any]:
         if not text.strip():
@@ -130,7 +141,11 @@ class TextQualityAssessor:
 
     def _similarity_metrics(self, extracted: str, reference: str) -> dict[str, Any]:
         if not extracted.strip() or not reference.strip():
-            return {"semantic_similarity": 0.0, "lexical_similarity": 0.0, "cosine_similarity": 0.0}
+            return {
+                "semantic_similarity": 0.0,
+                "lexical_similarity": 0.0,
+                "cosine_similarity": 0.0,
+            }
 
         try:
             extracted_embedding = self.sentence_model.encode([extracted])
@@ -166,7 +181,10 @@ class TextQualityAssessor:
     def _document_specific_quality(self, text: str, file_path: Path) -> dict[str, Any]:
         file_type = file_path.suffix.lower()
 
-        quality_checks = {"format_specific_score": 0.0, "expected_content_preserved": False}
+        quality_checks = {
+            "format_specific_score": 0.0,
+            "expected_content_preserved": False,
+        }
 
         if file_type == ".pdf":
             quality_checks.update(self._pdf_quality_checks(text))

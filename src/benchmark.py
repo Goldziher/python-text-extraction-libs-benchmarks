@@ -100,7 +100,8 @@ class ComprehensiveBenchmarkRunner:
 
         try:
             return await asyncio.wait_for(
-                self._run_benchmark_with_timeout_check(start_time, max_duration_seconds), timeout=max_duration_seconds
+                self._run_benchmark_with_timeout_check(start_time, max_duration_seconds),
+                timeout=max_duration_seconds,
             )
         except TimeoutError:
             elapsed_minutes = (time.time() - start_time) / 60
@@ -124,7 +125,7 @@ class ComprehensiveBenchmarkRunner:
         for iteration in range(self.config.iterations):
             elapsed = time.time() - start_time
             if elapsed > max_duration_seconds:
-                remaining_minutes = (max_duration_seconds - elapsed) / 60
+                (max_duration_seconds - elapsed) / 60
                 self.console.print(
                     f"[red]❌ Timeout reached before iteration {iteration + 1}. "
                     f"Ran for {elapsed / 60:.1f} minutes[/red]"
@@ -171,7 +172,11 @@ class ComprehensiveBenchmarkRunner:
         warmup_files = []
         test_dir = self.config.output_dir.parent / "test_documents"
 
-        for category in [DocumentCategory.TINY, DocumentCategory.PDF_STANDARD, DocumentCategory.OFFICE]:
+        for category in [
+            DocumentCategory.TINY,
+            DocumentCategory.PDF_STANDARD,
+            DocumentCategory.OFFICE,
+        ]:
             files = self.categorizer.get_files_for_category(test_dir, category, self.config.table_extraction_only)
             if files:
                 warmup_files.append(files[0][0])
@@ -195,7 +200,8 @@ class ComprehensiveBenchmarkRunner:
 
                 for category in self.config.categories:
                     progress.update(
-                        framework_task, description=f"[cyan]Testing {framework.value} - {category.value}...[/cyan]"
+                        framework_task,
+                        description=f"[cyan]Testing {framework.value} - {category.value}...[/cyan]",
                     )
 
                     test_files = await self._get_test_files(category, framework)
@@ -255,7 +261,8 @@ class ComprehensiveBenchmarkRunner:
         for attempt in range(self.config.max_retries):
             try:
                 extraction_result = await asyncio.wait_for(
-                    self._run_extraction(framework, file_path), timeout=self.config.timeout_seconds
+                    self._run_extraction(framework, file_path),
+                    timeout=self.config.timeout_seconds,
                 )
 
                 result = BenchmarkResult(
@@ -274,7 +281,10 @@ class ComprehensiveBenchmarkRunner:
                     / (1024 * 1024)
                     if extraction_result.resource_metrics
                     else 0,
-                    peak_cpu_percent=max((m.cpu_percent for m in extraction_result.resource_metrics), default=0),
+                    peak_cpu_percent=max(
+                        (m.cpu_percent for m in extraction_result.resource_metrics),
+                        default=0,
+                    ),
                     avg_cpu_percent=sum(m.cpu_percent for m in extraction_result.resource_metrics)
                     / len(extraction_result.resource_metrics)
                     if extraction_result.resource_metrics
