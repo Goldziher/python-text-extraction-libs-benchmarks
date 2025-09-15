@@ -1,4 +1,3 @@
-"""Visualization module for benchmark results."""
 # ruff: noqa: PERF401, PLR0915
 
 from __future__ import annotations
@@ -25,7 +24,6 @@ FRAMEWORK_COLORS = {
 
 
 class BenchmarkVisualizer:
-    """Generate comprehensive visualizations from benchmark results."""
 
     def __init__(self, output_dir: Path = Path("results/charts")) -> None:
         self.output_dir = output_dir
@@ -49,7 +47,6 @@ class BenchmarkVisualizer:
         sns.set_palette(framework_colors)
 
     def generate_all_visualizations(self, aggregated_file: Path) -> list[Path]:
-        """Generate all visualizations from aggregated results."""
         with open(aggregated_file, "rb") as f:
             aggregated = msgspec.json.decode(f.read(), type=AggregatedResults)
 
@@ -66,7 +63,6 @@ class BenchmarkVisualizer:
         return output_files
 
     def _create_performance_comparison(self, aggregated: AggregatedResults) -> list[Path]:
-        """Create performance comparison charts."""
         output_files = []
 
         all_summaries = []
@@ -160,7 +156,6 @@ class BenchmarkVisualizer:
         return output_files
 
     def _create_memory_usage_charts(self, aggregated: AggregatedResults) -> list[Path]:
-        """Create memory usage visualizations."""
         output_files = []
 
         memory_data = []
@@ -208,7 +203,6 @@ class BenchmarkVisualizer:
         return output_files
 
     def _create_success_rate_chart(self, aggregated: AggregatedResults) -> list[Path]:
-        """Create success rate visualization."""
         output_files = []
 
         framework_stats = {}
@@ -302,7 +296,6 @@ class BenchmarkVisualizer:
         return output_files
 
     def _create_throughput_charts(self, aggregated: AggregatedResults) -> list[Path]:
-        """Create throughput visualizations."""
         output_files = []
 
         throughput_data = []
@@ -387,11 +380,9 @@ class BenchmarkVisualizer:
         return output_files
 
     def _create_per_file_breakdown(self, aggregated: AggregatedResults) -> list[Path]:
-        """Create per-file performance breakdown charts."""
         return []
 
     def _create_category_analysis(self, aggregated: AggregatedResults) -> list[Path]:  # noqa: C901, PLR0912
-        """Create comprehensive category analysis."""
         output_files = []
 
         category_data = {}
@@ -520,7 +511,6 @@ class BenchmarkVisualizer:
         return output_files
 
     def _create_interactive_dashboard(self, aggregated: AggregatedResults) -> Path:
-        """Create an interactive Plotly dashboard."""
         fig = make_subplots(
             rows=3,
             cols=2,
@@ -648,7 +638,6 @@ class BenchmarkVisualizer:
         return output_path
 
     def generate_summary_metrics(self, aggregated_file: Path) -> dict:
-        """Generate summary metrics from aggregated results."""
         with open(aggregated_file, "rb") as f:
             aggregated = msgspec.json.decode(f.read(), type=AggregatedResults)
 
@@ -701,9 +690,7 @@ class BenchmarkVisualizer:
 
 
 def generate_all_visualizations(results: list, output_dir: Path) -> None:
-    """Generate all visualizations from benchmark results."""
 
 
 def load_benchmark_results(results_file: Path) -> list:  # noqa: ARG001
-    """Load benchmark results from file."""
     return []

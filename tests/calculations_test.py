@@ -45,7 +45,6 @@ class TestBenchmarkCalculations:
         assert abs(files_per_second - expected_fps) < 0.001, f"Expected {expected_fps}, got {files_per_second}"
 
     def test_speed_calculations_kreuzberg_async(self, summary_metrics):  # type: ignore[misc]
-        """Test speed calculations for kreuzberg_async framework."""
         framework = "kreuzberg_async"
         metrics = summary_metrics["framework_performance"][framework]
 
@@ -54,7 +53,6 @@ class TestBenchmarkCalculations:
         assert abs(files_per_second - expected_fps) < 0.001, f"Expected {expected_fps}, got {files_per_second}"
 
     def test_speed_calculations_docling(self, summary_metrics):  # type: ignore[misc]
-        """Test speed calculations for docling framework."""
         framework = "docling"
         metrics = summary_metrics["framework_performance"][framework]
 
@@ -66,7 +64,6 @@ class TestBenchmarkCalculations:
         assert files_per_second < kreuzberg_fps, "Docling should be slower than Kreuzberg"
 
     def test_speed_calculations_markitdown(self, summary_metrics):  # type: ignore[misc]
-        """Test speed calculations for markitdown framework."""
         framework = "markitdown"
         metrics = summary_metrics["framework_performance"][framework]
 
@@ -75,7 +72,6 @@ class TestBenchmarkCalculations:
         assert abs(files_per_second - expected_fps) < 0.001, f"Expected {expected_fps}, got {files_per_second}"
 
     def test_speed_calculations_unstructured(self, summary_metrics):  # type: ignore[misc]
-        """Test speed calculations for unstructured framework."""
         framework = "unstructured"
         metrics = summary_metrics["framework_performance"][framework]
 
@@ -84,7 +80,6 @@ class TestBenchmarkCalculations:
         assert abs(files_per_second - expected_fps) < 0.001, f"Expected {expected_fps}, got {files_per_second}"
 
     def test_speed_calculations_extractous(self, summary_metrics):  # type: ignore[misc]
-        """Test speed calculations for extractous framework."""
         framework = "extractous"
         metrics = summary_metrics["framework_performance"][framework]
 
@@ -93,7 +88,6 @@ class TestBenchmarkCalculations:
         assert abs(files_per_second - expected_fps) < 0.001, f"Expected {expected_fps}, got {files_per_second}"
 
     def test_speed_consistency_across_frameworks(self, summary_metrics):  # type: ignore[misc]
-        """Test that speed calculations are consistent across frameworks."""
         frameworks = summary_metrics["framework_performance"]
 
         for framework, metrics in frameworks.items():
@@ -109,7 +103,6 @@ class TestBenchmarkCalculations:
         assert markitdown_fps > docling_fps, "MarkItDown should be faster than Docling"
 
     def test_memory_calculations_kreuzberg_sync(self, summary_metrics):  # type: ignore[misc]
-        """Test memory calculations for kreuzberg_sync framework."""
         framework = "kreuzberg_sync"
         metrics = summary_metrics["framework_performance"][framework]
 
@@ -120,7 +113,6 @@ class TestBenchmarkCalculations:
         assert 100 < avg_memory < 10000, f"Memory usage {avg_memory}MB should be realistic"
 
     def test_memory_calculations_docling(self, summary_metrics):  # type: ignore[misc]
-        """Test memory calculations for docling framework."""
         framework = "docling"
         metrics = summary_metrics["framework_performance"][framework]
 
@@ -132,7 +124,6 @@ class TestBenchmarkCalculations:
         assert avg_memory > kreuzberg_memory, "Docling should use more memory than Kreuzberg"
 
     def test_memory_consistency_across_frameworks(self, summary_metrics):  # type: ignore[misc]
-        """Test that memory calculations are consistent across frameworks."""
         frameworks = summary_metrics["framework_performance"]
 
         for framework, metrics in frameworks.items():
@@ -161,7 +152,6 @@ class TestBenchmarkCalculations:
             )
 
     def test_category_performance_totals(self, summary_metrics):  # type: ignore[misc]
-        """Test category performance calculations."""
         category_perf = summary_metrics["category_performance"]
 
         for category, metrics in category_perf.items():
@@ -177,7 +167,6 @@ class TestBenchmarkCalculations:
             assert total_files > 0, f"{category} should have test files"
 
     def test_overall_totals_consistency(self, summary_metrics):  # type: ignore[misc]
-        """Test that overall totals are consistent."""
         total_runs = summary_metrics["total_runs"]
         total_files_processed = summary_metrics["total_files_processed"]
         frameworks_tested = summary_metrics["frameworks_tested"]
@@ -191,7 +180,6 @@ class TestBenchmarkCalculations:
         assert frameworks_tested == 6, f"Expected 6 frameworks, got {frameworks_tested}"
 
     def test_framework_file_counts_consistency(self, summary_metrics):  # type: ignore[misc]
-        """Test that framework file counts are consistent."""
         frameworks = summary_metrics["framework_performance"]
 
         total_framework_files = sum(metrics["total_files"] for metrics in frameworks.values())
@@ -202,7 +190,6 @@ class TestBenchmarkCalculations:
         )
 
     def test_mathematical_precision(self, summary_metrics):  # type: ignore[misc]
-        """Test mathematical precision of calculations."""
         frameworks = summary_metrics["framework_performance"]
 
         for framework, metrics in frameworks.items():

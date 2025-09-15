@@ -1,5 +1,3 @@
-"""Table extraction analysis for benchmarking frameworks."""
-
 from __future__ import annotations
 
 import re
@@ -13,15 +11,11 @@ from .types import BenchmarkResult, ExtractionStatus
 
 
 class TableExtractionAnalyzer:
-    """Analyze table extraction quality across frameworks."""
-
     def __init__(self, results: list[BenchmarkResult]) -> None:
-        """Initialize with benchmark results."""
         self.results = results
         self.table_files = self._identify_table_files()
 
     def _identify_table_files(self) -> list[str]:
-        """Identify files that likely contain tables."""
         table_keywords = [
             "table",
             "spreadsheet",
@@ -45,7 +39,6 @@ class TableExtractionAnalyzer:
         return list(set(table_files))
 
     def analyze_table_extraction_quality(self) -> dict[str, Any]:
-        """Analyze table extraction quality across frameworks."""
         analysis = {
             "total_table_files": len(self.table_files),
             "framework_analysis": {},
@@ -74,7 +67,6 @@ class TableExtractionAnalyzer:
         return analysis
 
     def _analyze_framework_tables(self, results: list[BenchmarkResult]) -> dict[str, Any]:
-        """Analyze table extraction for a specific framework."""
         total_files = len(results)
         successful_extractions = [r for r in results if r.status == ExtractionStatus.SUCCESS and r.extracted_text]
 
@@ -127,7 +119,6 @@ class TableExtractionAnalyzer:
         return analysis
 
     def _analyze_file_tables(self, results: list[BenchmarkResult]) -> dict[str, Any]:
-        """Analyze table extraction for a specific file across frameworks."""
         analysis = {
             "file_path": results[0].file_path if results else "",
             "file_type": Path(results[0].file_path).suffix.lower() if results else "",
@@ -167,7 +158,6 @@ class TableExtractionAnalyzer:
         return analysis
 
     def _analyze_table_structure(self, extracted_text: str, file_path: str) -> float:
-        """Analyze how well table structure is preserved in extracted text."""
         if not extracted_text:
             return 0.0
 
@@ -211,7 +201,6 @@ class TableExtractionAnalyzer:
         return min(1.0, score)
 
     def _analyze_table_detection(self, extracted_text: str, file_path: str) -> float:
-        """Analyze how well tables are detected and extracted."""
         if not extracted_text:
             return 0.0
 
@@ -261,7 +250,6 @@ class TableExtractionAnalyzer:
         return min(1.0, score)
 
     def _determine_table_complexity(self, file_path: str) -> str:
-        """Determine the complexity level of tables in the file."""
         file_name = Path(file_path).name.lower()
 
         if "simple" in file_name:
@@ -277,7 +265,6 @@ class TableExtractionAnalyzer:
         return "moderate"
 
     def _generate_table_summary(self, framework_analysis: dict[str, Any]) -> dict[str, Any]:
-        """Generate summary statistics for table extraction."""
         if not framework_analysis:
             return {}
 
@@ -336,7 +323,6 @@ class TableExtractionAnalyzer:
         return summary
 
     def generate_table_analysis_report(self, output_dir: Path) -> None:
-        """Generate a comprehensive table analysis report."""
         output_dir.mkdir(parents=True, exist_ok=True)
 
         analysis = self.analyze_table_extraction_quality()
@@ -354,7 +340,6 @@ class TableExtractionAnalyzer:
         print(f"Table analysis reports generated in {output_dir}/")
 
     def _generate_markdown_report(self, analysis: dict[str, Any], output_file: Path) -> None:
-        """Generate a markdown report for table extraction analysis."""
         md_content = []
         md_content.append("# Table Extraction Analysis Report\n")
 
@@ -420,7 +405,6 @@ class TableExtractionAnalyzer:
             f.write("\n".join(md_content))
 
     def _generate_csv_summary(self, analysis: dict[str, Any], output_file: Path) -> None:
-        """Generate a CSV summary of table extraction performance."""
         rows = []
 
         for framework, framework_analysis in analysis.get("framework_analysis", {}).items():
@@ -449,7 +433,6 @@ class TableExtractionAnalyzer:
 
 
 def analyze_table_extraction_from_results(results_file: Path, output_dir: Path) -> None:
-    """Analyze table extraction from benchmark results file."""
     with open(results_file, "rb") as f:
         results = msgspec.json.decode(f.read(), type=list[BenchmarkResult])
 

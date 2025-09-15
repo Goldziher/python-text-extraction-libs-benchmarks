@@ -1,5 +1,3 @@
-"""Quality assessment for extracted text using ML-based metrics."""
-
 from __future__ import annotations
 
 import re
@@ -20,10 +18,7 @@ logger = get_logger(__name__)
 
 
 class TextQualityAssessor:
-    """Assess quality of extracted text using various ML-based metrics."""
-
     def __init__(self) -> None:
-        """Initialize quality assessment tools."""
         self.sentence_model = SentenceTransformer("all-MiniLM-L6-v2")
 
         self.tfidf = TfidfVectorizer(stop_words="english", max_features=5000, ngram_range=(1, 2))
@@ -31,7 +26,6 @@ class TextQualityAssessor:
     def assess_extraction_quality(
         self, extracted_text: str, reference_text: str | None = None, file_path: Path | None = None
     ) -> dict[str, Any]:
-        """Assess quality of extracted text."""
         quality_metrics = {}
 
         quality_metrics.update(self._basic_text_stats(extracted_text))
@@ -51,7 +45,6 @@ class TextQualityAssessor:
         return quality_metrics
 
     def _basic_text_stats(self, text: str) -> dict[str, Any]:
-        """Calculate basic text statistics."""
         if not text.strip():
             return {
                 "char_count": 0,
@@ -78,7 +71,6 @@ class TextQualityAssessor:
         }
 
     def _content_quality_metrics(self, text: str) -> dict[str, Any]:
-        """Assess content quality using various heuristics."""
         if not text.strip():
             return {"extraction_completeness": 0.0, "text_coherence": 0.0, "noise_ratio": 1.0, "gibberish_ratio": 1.0}
 
@@ -98,7 +90,6 @@ class TextQualityAssessor:
         }
 
     def _readability_metrics(self, text: str) -> dict[str, Any]:
-        """Calculate readability metrics."""
         if not text.strip():
             return {"flesch_reading_ease": 0, "gunning_fog_index": 100}
 
@@ -112,7 +103,6 @@ class TextQualityAssessor:
         return {"flesch_reading_ease": flesch_score, "gunning_fog_index": gunning_fog_score}
 
     def _structural_quality(self, text: str) -> dict[str, Any]:
-        """Assess structural quality of extracted text."""
         if not text.strip():
             return {
                 "has_proper_formatting": False,
@@ -139,7 +129,6 @@ class TextQualityAssessor:
         }
 
     def _similarity_metrics(self, extracted: str, reference: str) -> dict[str, Any]:
-        """Calculate similarity metrics between extracted and reference text."""
         if not extracted.strip() or not reference.strip():
             return {"semantic_similarity": 0.0, "lexical_similarity": 0.0, "cosine_similarity": 0.0}
 
@@ -175,7 +164,6 @@ class TextQualityAssessor:
         }
 
     def _document_specific_quality(self, text: str, file_path: Path) -> dict[str, Any]:
-        """Assess quality based on document type."""
         file_type = file_path.suffix.lower()
 
         quality_checks = {"format_specific_score": 0.0, "expected_content_preserved": False}
@@ -190,7 +178,6 @@ class TextQualityAssessor:
         return quality_checks
 
     def _pdf_quality_checks(self, text: str) -> dict[str, Any]:
-        """PDF-specific quality assessment."""
         has_encoding_issues = bool(
             re.search(r"[\ufffd]", text)
             or re.search(r"[ï¿½]+", text)
@@ -222,7 +209,6 @@ class TextQualityAssessor:
         }
 
     def _word_quality_checks(self, text: str) -> dict[str, Any]:
-        """Word document quality assessment."""
         preserves_structure = bool(re.search(r"\n.*\n", text))
         has_metadata_pollution = bool(re.search(r"(Normal|Heading\d+|Header|Footer)", text))
 
@@ -239,7 +225,6 @@ class TextQualityAssessor:
         }
 
     def _html_quality_checks(self, text: str) -> dict[str, Any]:
-        """HTML quality assessment."""
         has_html_tags = bool(re.search(r"<[^>]+>", text))
         has_script_content = bool(re.search(r"(function|var|document\.)", text))
         clean_extraction = not has_html_tags and not has_script_content
@@ -254,7 +239,6 @@ class TextQualityAssessor:
         }
 
     def _estimate_completeness(self, text: str) -> float:
-        """Estimate extraction completeness using heuristics."""
         patterns = [
             r"\d+",
             r"[A-Z][a-z]+",
@@ -270,7 +254,6 @@ class TextQualityAssessor:
         return min(1.0, score)
 
     def _estimate_coherence(self, text: str) -> float:
-        """Estimate text coherence."""
         sentences = re.split(r"[.!?]+", text)
         valid_sentences = [s.strip() for s in sentences if len(s.strip()) > 10]
 
@@ -281,7 +264,6 @@ class TextQualityAssessor:
         return min(1.0, coherence)
 
     def _calculate_noise_ratio(self, text: str) -> float:
-        """Calculate ratio of noise to content."""
         total_chars = len(text)
         if total_chars == 0:
             return 1.0
@@ -307,7 +289,6 @@ class TextQualityAssessor:
         return min(1.0, noise_score)
 
     def _detect_gibberish(self, text: str) -> float:
-        """Detect gibberish text using language-agnostic heuristics."""
         if not text.strip():
             return 1.0
 
@@ -362,7 +343,6 @@ class TextQualityAssessor:
 
 
 def enhance_benchmark_results_with_quality(results_file: Path, reference_texts_dir: Path | None = None) -> Path:
-    """Enhance existing benchmark results with quality metrics."""
     with open(results_file, "rb") as f:
         results_data = msgspec.json.decode(f.read(), type=list[BenchmarkResult])
 
@@ -401,7 +381,6 @@ def enhance_benchmark_results_with_quality(results_file: Path, reference_texts_d
 
 
 def _calculate_overall_quality_score(quality_metrics: dict[str, Any]) -> float:
-    """Calculate overall quality score from individual metrics."""
     weights = {
         "extraction_completeness": 0.25,
         "text_coherence": 0.20,

@@ -1,5 +1,3 @@
-"""Test different Extractous configurations for optimization."""
-
 import sys
 import time
 from pathlib import Path
@@ -10,7 +8,6 @@ from src.extractors import ExtractousExtractor
 
 
 def test_speed_optimized():
-    """Test speed-optimized configuration."""
     print("\n=== Testing Speed-Optimized Configuration ===")
     extractor = ExtractousExtractor()
     extractor.extractor.set_extract_string_max_length(1000000)
@@ -44,7 +41,6 @@ def test_speed_optimized():
 
 
 def test_quality_optimized():
-    """Test quality-optimized configuration."""
     print("\n=== Testing Quality-Optimized Configuration ===")
     extractor = ExtractousExtractor()
     extractor.extractor.set_extract_string_max_length(10000000)
@@ -82,7 +78,6 @@ def test_quality_optimized():
 
 
 def test_balanced():
-    """Test balanced configuration (current default)."""
     print("\n=== Testing Balanced Configuration ===")
     extractor = ExtractousExtractor()
 

@@ -1,5 +1,3 @@
-"""Tests for profiler module."""
-
 import asyncio
 import time
 
@@ -9,7 +7,6 @@ from src.profiler import AsyncPerformanceProfiler, EnhancedResourceMonitor, Perf
 
 
 def test_enhanced_resource_monitor_initialization() -> None:
-    """Test EnhancedResourceMonitor initialization."""
     monitor = EnhancedResourceMonitor(sampling_interval_ms=100)
 
     assert monitor.sampling_interval == 0.1
@@ -20,7 +17,6 @@ def test_enhanced_resource_monitor_initialization() -> None:
 
 @pytest.mark.asyncio
 async def test_enhanced_resource_monitor_async_context() -> None:
-    """Test EnhancedResourceMonitor async operations."""
     monitor = EnhancedResourceMonitor(sampling_interval_ms=50)
 
     await monitor.start()
@@ -34,8 +30,6 @@ async def test_enhanced_resource_monitor_async_context() -> None:
 
 
 def test_profile_performance_context_manager() -> None:
-    """Test profile_performance context manager."""
-
     def short_task() -> str:
         time.sleep(0.1)
         return "completed"
@@ -52,8 +46,6 @@ def test_profile_performance_context_manager() -> None:
 
 @pytest.mark.asyncio
 async def test_async_performance_profiler() -> None:
-    """Test AsyncPerformanceProfiler context manager."""
-
     async def short_async_task() -> str:
         await asyncio.sleep(0.1)
         return "completed"
@@ -69,7 +61,6 @@ async def test_async_performance_profiler() -> None:
 
 
 def test_performance_metrics_creation() -> None:
-    """Test PerformanceMetrics creation."""
     metrics = PerformanceMetrics(
         extraction_time=1.5, peak_memory_mb=256.0, avg_memory_mb=200.0, peak_cpu_percent=80.0, avg_cpu_percent=60.0
     )
@@ -85,8 +76,6 @@ def test_performance_metrics_creation() -> None:
 
 
 def test_profile_performance_memory_tracking() -> None:
-    """Test memory tracking with profile_performance."""
-
     def memory_task() -> list[bytes]:
         data = []
         for _i in range(1000):
@@ -103,15 +92,12 @@ def test_profile_performance_memory_tracking() -> None:
 
 
 def test_enhanced_resource_monitor_psutil_error() -> None:
-    """Test EnhancedResourceMonitor handles psutil errors gracefully."""
     monitor = EnhancedResourceMonitor()
     assert monitor is not None
     assert monitor.process is not None
 
 
 def test_profile_performance_fast_operation() -> None:
-    """Test profile_performance with very fast operation."""
-
     def fast_task() -> int:
         return 42
 
@@ -127,7 +113,6 @@ def test_profile_performance_fast_operation() -> None:
 
 @pytest.mark.asyncio
 async def test_enhanced_resource_monitor_no_samples() -> None:
-    """Test EnhancedResourceMonitor with no samples collected."""
     monitor = EnhancedResourceMonitor(sampling_interval_ms=1000)
 
     await monitor.start()
@@ -140,8 +125,6 @@ async def test_enhanced_resource_monitor_no_samples() -> None:
 
 
 def test_profile_performance_exception_handling() -> None:
-    """Test profile_performance handles exceptions properly."""
-
     def failing_task() -> None:
         raise ValueError("Test error")
 
@@ -154,8 +137,6 @@ def test_profile_performance_exception_handling() -> None:
 
 @pytest.mark.asyncio
 async def test_async_profiler_exception_handling() -> None:
-    """Test AsyncPerformanceProfiler handles exceptions properly."""
-
     async def failing_async_task() -> None:
         raise ValueError("Async test error")
 
@@ -168,8 +149,6 @@ async def test_async_profiler_exception_handling() -> None:
 
 
 def test_profile_performance_multiple_samples() -> None:
-    """Test profile_performance collects multiple samples."""
-
     def longer_task() -> str:
         time.sleep(0.2)
         return "done"
@@ -184,8 +163,6 @@ def test_profile_performance_multiple_samples() -> None:
 
 @pytest.mark.asyncio
 async def test_async_profiler_concurrent_operations() -> None:
-    """Test AsyncPerformanceProfiler with concurrent operations."""
-
     async def task_a() -> int:
         await asyncio.sleep(0.1)
         return 1
@@ -203,7 +180,6 @@ async def test_async_profiler_concurrent_operations() -> None:
 
 
 def test_performance_metrics_with_io_data() -> None:
-    """Test PerformanceMetrics with I/O data."""
     metrics = PerformanceMetrics(
         extraction_time=2.0,
         peak_memory_mb=512.0,
@@ -222,7 +198,6 @@ def test_performance_metrics_with_io_data() -> None:
 
 @pytest.mark.asyncio
 async def test_enhanced_resource_monitor_start_stop_multiple() -> None:
-    """Test starting and stopping EnhancedResourceMonitor multiple times."""
     monitor = EnhancedResourceMonitor(sampling_interval_ms=50)
 
     await monitor.start()

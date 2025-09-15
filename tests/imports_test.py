@@ -1,10 +1,7 @@
-"""Test that all frameworks can be imported successfully."""
-
 import pytest
 
 
 def test_kreuzberg_import():
-    """Test kreuzberg import."""
     try:
         import kreuzberg
 
@@ -14,7 +11,6 @@ def test_kreuzberg_import():
 
 
 def test_docling_import():
-    """Test docling import."""
     try:
         from docling.document_converter import DocumentConverter
 
@@ -24,7 +20,6 @@ def test_docling_import():
 
 
 def test_markitdown_import():
-    """Test markitdown import."""
     try:
         from markitdown import MarkItDown
 
@@ -34,7 +29,6 @@ def test_markitdown_import():
 
 
 def test_unstructured_import():
-    """Test unstructured import."""
     try:
         from unstructured.partition.auto import partition
 
@@ -44,7 +38,6 @@ def test_unstructured_import():
 
 
 def test_extractors_import():
-    """Test our extractor implementations."""
     from src.extractors import (
         DoclingExtractor,
         KreuzbergAsyncExtractor,

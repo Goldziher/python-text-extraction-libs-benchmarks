@@ -1,5 +1,3 @@
-"""Document categorization for organized benchmarking."""
-
 from __future__ import annotations
 
 import re
@@ -10,8 +8,6 @@ from src.types import DocumentCategory, FileType
 
 
 class DocumentCategorizer:
-    """Categorize documents for organized testing."""
-
     SIZE_THRESHOLDS: ClassVar[dict[DocumentCategory, tuple[int, float]]] = {
         DocumentCategory.TINY: (0, 100 * 1024),
         DocumentCategory.SMALL: (100 * 1024, 1024 * 1024),
@@ -78,7 +74,6 @@ class DocumentCategorizer:
         self._file_type_map = self._build_file_type_map()
 
     def _build_file_type_map(self) -> dict[str, FileType]:
-        """Build a mapping of file extensions to FileType enum values."""
         return {
             ".pdf": FileType.PDF,
             ".docx": FileType.DOCX,
@@ -109,7 +104,6 @@ class DocumentCategorizer:
         }
 
     def get_file_type(self, file_path: Path) -> FileType | None:
-        """Determine the file type based on extension."""
         extension = file_path.suffix.lower()
         file_type = self._file_type_map.get(extension)
 
@@ -119,22 +113,18 @@ class DocumentCategorizer:
         return file_type
 
     def _is_scanned_pdf(self, file_path: Path) -> bool:
-        """Check if a PDF is scanned/OCR based on filename patterns."""
         filename = file_path.name
         return any(pattern.search(filename) for pattern in self.SCANNED_PDF_PATTERNS)
 
     def _is_complex_pdf(self, file_path: Path) -> bool:
-        """Check if a PDF is complex based on filename patterns."""
         filename = file_path.name
         return any(pattern.search(filename) for pattern in self.COMPLEX_PDF_PATTERNS)
 
     def _has_unicode_content(self, file_path: Path) -> bool:
-        """Check if file likely contains unicode content based on filename."""
         filename = file_path.name
         return any(pattern.search(filename) for pattern in self.UNICODE_PATTERNS)
 
     def categorize_by_size(self, file_path: Path) -> DocumentCategory | None:
-        """Categorize document by file size."""
         try:
             size = file_path.stat().st_size
             for category, (min_size, max_size) in self.SIZE_THRESHOLDS.items():
@@ -145,7 +135,6 @@ class DocumentCategorizer:
         return None
 
     def categorize_by_format(self, file_path: Path) -> list[DocumentCategory]:
-        """Categorize document by format type."""
         categories: list[DocumentCategory] = []
         file_type = self.get_file_type(file_path)
 
@@ -167,13 +156,11 @@ class DocumentCategorizer:
         return categories
 
     def categorize_by_language(self, file_path: Path) -> DocumentCategory | None:
-        """Categorize document by language content."""
         if self._has_unicode_content(file_path):
             return DocumentCategory.UNICODE
         return DocumentCategory.ENGLISH
 
     def categorize_document(self, file_path: Path) -> dict[str, Any]:
-        """Comprehensively categorize a document."""
         return {
             "file_path": file_path,
             "file_type": self.get_file_type(file_path),
@@ -184,7 +171,6 @@ class DocumentCategorizer:
         }
 
     def categorize_documents(self, test_dir: Path) -> dict[DocumentCategory, list[Path]]:
-        """Categorize all documents in a test directory."""
         categories: dict[DocumentCategory, list[Path]] = {category: [] for category in DocumentCategory}
 
         for file_path in test_dir.rglob("*"):
@@ -207,7 +193,6 @@ class DocumentCategorizer:
     def get_files_for_category(
         self, test_dir: Path, category: DocumentCategory, table_extraction_only: bool = False
     ) -> list[tuple[Path, dict[str, Any]]]:
-        """Get all files belonging to a specific category with their metadata."""
         files_with_metadata = []
 
         for file_path in test_dir.rglob("*"):
@@ -234,7 +219,6 @@ class DocumentCategorizer:
         return files_with_metadata
 
     def _is_table_file(self, file_path: Path, categorization: dict[str, Any]) -> bool:
-        """Check if a file likely contains tables."""
         file_name = file_path.name.lower()
         file_type = categorization.get("file_type")
 

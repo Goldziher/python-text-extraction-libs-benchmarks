@@ -1,4 +1,3 @@
-"""Reporting and visualization utilities for benchmark results."""
 
 from __future__ import annotations
 
@@ -25,20 +24,12 @@ logger = get_logger(__name__)
 
 
 class BenchmarkReporter:
-    """Generate reports and visualizations from benchmark results."""
 
     def __init__(self, results: list[BenchmarkResult], summaries: list[BenchmarkSummary]) -> None:
-        """Initialize reporter with results and summaries.
-
-        Args:
-            results: List of individual benchmark results.
-            summaries: List of benchmark summaries.
-        """
         self.results = results
         self.summaries = summaries
 
     def print_summary_table(self) -> None:
-        """Print a summary table to the console."""
         table = Table(title="Benchmark Results Summary")
 
         table.add_column("Framework", style="cyan", no_wrap=True)
@@ -71,7 +62,6 @@ class BenchmarkReporter:
         self._print_format_support_info()
 
     def _print_format_support_info(self) -> None:
-        """Print format support information."""
         from .config import FRAMEWORK_EXCLUSIONS
 
         console.print("\n[bold cyan]Format Support Information[/bold cyan]")
@@ -115,11 +105,6 @@ class BenchmarkReporter:
         console.print(support_table)
 
     def save_results_csv(self, output_path: str | Path) -> None:
-        """Save detailed results to CSV file.
-
-        Args:
-            output_path: Path to save the CSV file.
-        """
         df = pd.DataFrame(
             [
                 {
@@ -142,11 +127,6 @@ class BenchmarkReporter:
         console.print(f"Results saved to: {output_path}")
 
     def save_summary_csv(self, output_path: str | Path) -> None:
-        """Save summary statistics to CSV file.
-
-        Args:
-            output_path: Path to save the CSV file.
-        """
         df = pd.DataFrame(
             [
                 {
@@ -174,11 +154,6 @@ class BenchmarkReporter:
         console.print(f"Summary saved to: {output_path}")
 
     def create_performance_charts(self, output_dir: str | Path) -> None:
-        """Create performance visualization charts.
-
-        Args:
-            output_dir: Directory to save chart files.
-        """
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
 
@@ -218,7 +193,6 @@ class BenchmarkReporter:
         console.print(f"Charts saved to: {output_path}")
 
     def _create_time_comparison_chart(self, df: pd.DataFrame, output_path: Path) -> None:
-        """Create extraction time comparison chart."""
         plt.figure(figsize=(12, 8))
         pivot_df = df.pivot(index="file_type", columns="framework", values="average_time_seconds")
 
@@ -234,7 +208,6 @@ class BenchmarkReporter:
         plt.close()
 
     def _create_memory_comparison_chart(self, df: pd.DataFrame, output_path: Path) -> None:
-        """Create memory usage comparison chart."""
         plt.figure(figsize=(12, 8))
         pivot_df = df.pivot(index="file_type", columns="framework", values="average_memory_mb")
 
@@ -250,7 +223,6 @@ class BenchmarkReporter:
         plt.close()
 
     def _create_success_rate_chart(self, df: pd.DataFrame, output_path: Path) -> None:
-        """Create success rate comparison chart."""
         success_data = []
         for summary in self.summaries:
             success_rate = summary.successful_extractions / summary.total_files if summary.total_files > 0 else 0.0
@@ -283,7 +255,6 @@ class BenchmarkReporter:
         plt.close()
 
     def _create_performance_heatmap(self, df: pd.DataFrame, output_path: Path) -> None:
-        """Create performance heatmap."""
         metrics_df = df.copy()
 
         if not metrics_df.empty and metrics_df["average_time_seconds"].max() > 0:
@@ -325,9 +296,7 @@ class BenchmarkReporter:
 
 
 def generate_console_report(results: list[BenchmarkResult]) -> str:  # noqa: ARG001
-    """Generate console report from benchmark results."""
     return "Console report generated"
 
 
 def generate_html_report(results: list[BenchmarkResult], output_path: Path) -> None:
-    """Generate HTML report from benchmark results."""

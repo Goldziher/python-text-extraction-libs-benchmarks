@@ -1,13 +1,9 @@
-"""Centralized configuration defaults for the benchmarking suite."""
-
 from __future__ import annotations
 
 from typing import ClassVar
 
 
 class DefaultValues:
-    """Centralized default values for all configuration parameters."""
-
     EXTRACTION_TIMEOUT_SECONDS = 1800
     MAX_RUN_DURATION_MINUTES = 30
 
@@ -29,8 +25,6 @@ class DefaultValues:
 
 
 class LanguageMapper:
-    """Language mapping configurations for different OCR backends."""
-
     TESSERACT_MAPPING: ClassVar[dict[str, str]] = {
         "eng": "eng",
         "deu": "deu",
@@ -60,7 +54,6 @@ class LanguageMapper:
 
     @classmethod
     def get_mapping(cls, ocr_backend: str) -> dict[str, str]:
-        """Get language mapping for specific OCR backend."""
         mapping_name = f"{ocr_backend.upper()}_MAPPING"
         if not hasattr(cls, mapping_name):
             return cls.TESSERACT_MAPPING

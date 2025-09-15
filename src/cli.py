@@ -1,10 +1,3 @@
-"""Command-line interface for the benchmarking suite.
-
-Simplified, idiomatic approach:
-- Each framework tests against its supported formats only
-- No complex filtering or tiers
-- Automatic format detection based on framework capabilities
-"""
 
 from __future__ import annotations
 
@@ -26,7 +19,6 @@ logger = get_logger(__name__)
 
 @click.group()
 def main() -> None:
-    """Python text extraction libraries benchmarking suite."""
 
 
 @main.command(name="benchmark")
@@ -69,12 +61,6 @@ def benchmark(
     continue_on_error: bool,
     enable_quality_assessment: bool,
 ) -> None:
-    """Run benchmarks for text extraction frameworks.
-
-    Each framework automatically tests against its supported file formats.
-    No need to specify categories or file types - the benchmark knows what
-    each framework can handle based on 2025 documentation.
-    """
     frameworks = [f.value for f in Framework] if framework.lower() == "all" else [framework]
 
     valid_frameworks = {f.value for f in Framework}
@@ -139,20 +125,22 @@ def benchmark(
     help="Output file for aggregated results",
 )
 def aggregate(results_dir: Path, output_file: Path) -> None:
-    """Aggregate benchmark results from multiple runs."""
-    from .aggregate import aggregate_results
+    from .aggregate import ResultAggregator
 
     console.print("Aggregating benchmark results...")
 
     try:
-        result = aggregate_results(results_dir, output_file)
-        if result:
+        aggregator = ResultAggregator()
+        result_dirs = [results_dir] if results_dir.is_dir() else []
+        if result_dirs:
+            aggregated = aggregator.aggregate_results(result_dirs)
+            aggregator.save_results(aggregated, output_file.parent)
             console.print(f"[green]✓ Results aggregated to {output_file}[/green]")
         else:
             console.print("[yellow]No results found to aggregate[/yellow]")
     except Exception as e:
         console.print(f"[red]Aggregation failed: {e}[/red]")
-        logger.exception("Aggregation failed")
+        logger.error("Aggregation failed", error=str(e))
         sys.exit(1)
 
 
@@ -176,7 +164,6 @@ def aggregate(results_dir: Path, output_file: Path) -> None:
     help="Documentation output directory",
 )
 def docs(results_file: Path, aggregated_file: Path, docs_dir: Path) -> None:
-    """Generate comprehensive MkDocs documentation from benchmark results."""
     from .docs_generator import DocsGenerator
 
     console.print("Generating comprehensive documentation...")
@@ -192,7 +179,7 @@ def docs(results_file: Path, aggregated_file: Path, docs_dir: Path) -> None:
         console.print("[blue]Run 'mkdocs serve' to preview the documentation[/blue]")
     except Exception as e:
         console.print(f"[red]Documentation generation failed: {e}[/red]")
-        logger.exception("Documentation generation failed")
+        logger.error("Documentation generation failed", error=str(e))
         sys.exit(1)
 
 
@@ -216,29 +203,36 @@ def docs(results_file: Path, aggregated_file: Path, docs_dir: Path) -> None:
     help="Output directory for reports",
 )
 def report(output_format: str, aggregated_file: Path, output_dir: Path) -> None:
-    """Generate benchmark reports from aggregated results."""
-    from .reporting import ReportGenerator
+    from .report import ReportGenerator
 
     console.print("Generating benchmark report...")
     output_dir.mkdir(exist_ok=True)
 
-    generator = ReportGenerator(aggregated_file)
+    generator = ReportGenerator()
 
     try:
+        with open(aggregated_file, "rb") as f:
+            import msgspec
+
+            from .types import AggregatedResults
+
+            aggregated_results = msgspec.json.decode(f.read(), type=AggregatedResults)
+
         if output_format == "markdown":
             output_file = output_dir / "benchmark_report.md"
-            generator.generate_markdown_report(output_file)
+            generator.generate_markdown_report(aggregated_results, output_file)
         elif output_format == "html":
             output_file = output_dir / "benchmark_report.html"
-            generator.generate_html_report(output_file)
+            generator.generate_html_report(aggregated_results, output_file)
         else:
             output_file = output_dir / "benchmark_report.json"
-            generator.generate_json_report(output_file)
+            with open(output_file, "wb") as f:
+                f.write(msgspec.json.encode(aggregated_results))
 
         console.print(f"[green]✓ Generated {output_format} report: {output_file}[/green]")
     except Exception as e:
         console.print(f"[red]Report generation failed: {e}[/red]")
-        logger.exception("Report generation failed")
+        logger.error("Report generation failed", error=str(e))
         sys.exit(1)
 
 
@@ -256,20 +250,19 @@ def report(output_format: str, aggregated_file: Path, output_dir: Path) -> None:
     help="Output directory for visualizations",
 )
 def visualize(results_file: Path, output_dir: Path) -> None:
-    """Generate visualization charts from benchmark results."""
     console.print("Generating benchmark visualizations...")
     output_dir.mkdir(exist_ok=True)
 
-    visualizer = BenchmarkVisualizer(results_file, output_dir)
+    visualizer = BenchmarkVisualizer(output_dir)
 
     try:
-        generated_files = visualizer.generate_all_visualizations()
+        generated_files = visualizer.generate_all_visualizations(results_file)
         console.print(f"[green]✓ Generated {len(generated_files)} visualizations:[/green]")
         for file in generated_files:
             console.print(f"  - {file}")
     except Exception as e:
         console.print(f"[red]Visualization failed: {e}[/red]")
-        logger.exception("Visualization failed")
+        logger.error("Visualization failed", error=str(e))
         sys.exit(1)
 
 
@@ -281,10 +274,9 @@ def visualize(results_file: Path, output_dir: Path) -> None:
     help="Output format",
 )
 def list_frameworks(output_format: str) -> None:
-    """List all available frameworks and their supported formats."""
     from .config import get_supported_formats
 
-    frameworks_info = {}
+    frameworks_info: dict[str, list[str]] = {}
     for framework in Framework:
         formats = get_supported_formats(framework)
         frameworks_info[framework.value] = sorted(formats)
@@ -295,11 +287,11 @@ def list_frameworks(output_format: str) -> None:
         console.print(json.dumps(frameworks_info, indent=2))
     else:
         console.print("Available Frameworks and Supported Formats:\n")
-        for fw_name, formats in frameworks_info.items():
+        for fw_name, formats_list in frameworks_info.items():
             console.print(f"[bold]{fw_name}[/bold]")
-            console.print(f"  Formats ({len(formats)}): {', '.join(formats[:10])}")
-            if len(formats) > 10:
-                console.print(f"  ... and {len(formats) - 10} more")
+            console.print(f"  Formats ({len(formats_list)}): {', '.join(formats_list[:10])}")
+            if len(formats_list) > 10:
+                console.print(f"  ... and {len(formats_list) - 10} more")
             console.print()
 
 

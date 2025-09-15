@@ -1,5 +1,3 @@
-"""Integration tests for MkDocs documentation generation."""
-
 import subprocess
 from pathlib import Path
 
@@ -10,7 +8,6 @@ from src.types import AggregatedResults
 
 
 def test_mkdocs_build_with_generated_results(aggregated_results: AggregatedResults, temp_dir: Path) -> None:
-    """Test that MkDocs can build site with generated results."""
     mkdocs_config = temp_dir / "mkdocs.yml"
     mkdocs_config.write_text("""
 site_name: Test Site
@@ -52,7 +49,6 @@ nav:
 
 
 def test_generated_pages_have_valid_markdown(aggregated_results: AggregatedResults, temp_dir: Path) -> None:
-    """Test that generated pages have valid markdown syntax."""
     results_file = temp_dir / "test_results.json"
     with open(results_file, "w") as f:
         import msgspec
@@ -83,7 +79,6 @@ def test_generated_pages_have_valid_markdown(aggregated_results: AggregatedResul
 
 
 def test_charts_integration(aggregated_results: AggregatedResults, temp_dir: Path, charts_dir: Path) -> None:
-    """Test that charts are properly integrated into docs."""
     results_file = temp_dir / "test_results.json"
     with open(results_file, "w") as f:
         import msgspec
@@ -104,7 +99,6 @@ def test_charts_integration(aggregated_results: AggregatedResults, temp_dir: Pat
 
 
 def test_navigation_structure(aggregated_results: AggregatedResults, temp_dir: Path) -> None:
-    """Test that generated pages follow expected navigation structure."""
     results_file = temp_dir / "test_results.json"
     with open(results_file, "w") as f:
         import msgspec
@@ -131,7 +125,6 @@ def test_navigation_structure(aggregated_results: AggregatedResults, temp_dir: P
 
 
 def test_real_world_data_generation(aggregated_results_file: Path, temp_dir: Path) -> None:
-    """Test docs generation with real benchmark data."""
     generator = DocsGenerator(temp_dir / "docs")
     generator.generate_from_results(aggregated_results_file)
 
@@ -150,7 +143,6 @@ def test_real_world_data_generation(aggregated_results_file: Path, temp_dir: Pat
 
 
 def test_performance_with_large_dataset(aggregated_results: AggregatedResults, temp_dir: Path) -> None:
-    """Test performance with a larger dataset."""
     large_framework_summaries = {}
     for framework, summaries_list in aggregated_results.framework_summaries.items():
         large_framework_summaries[framework] = summaries_list * 10
@@ -201,7 +193,6 @@ def test_performance_with_large_dataset(aggregated_results: AggregatedResults, t
 
 @pytest.mark.slow
 def test_full_mkdocs_workflow(aggregated_results_file: Path, temp_dir: Path, charts_dir: Path) -> None:
-    """Test the complete workflow from results to deployed docs."""
     project_dir = temp_dir / "project"
     project_dir.mkdir()
 

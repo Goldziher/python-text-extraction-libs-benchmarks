@@ -1,5 +1,3 @@
-"""Pytest configuration and fixtures."""
-
 import tempfile
 from collections.abc import Generator
 from pathlib import Path
@@ -12,33 +10,28 @@ from src.types import AggregatedResults, BenchmarkResult, BenchmarkSummary
 
 @pytest.fixture
 def temp_dir() -> Generator[Path]:
-    """Create a temporary directory for tests."""
     with tempfile.TemporaryDirectory() as tmp:
         yield Path(tmp)
 
 
 @pytest.fixture
 def fixtures_dir() -> Path:
-    """Path to test fixtures directory."""
     return Path(__file__).parent / "fixtures"
 
 
 @pytest.fixture
 def aggregated_results_file(fixtures_dir: Path) -> Path:
-    """Path to real aggregated benchmark results."""
     return fixtures_dir / "aggregated-benchmark-results-17369154065" / "aggregated_results.json"
 
 
 @pytest.fixture
 def aggregated_results(aggregated_results_file: Path) -> AggregatedResults:
-    """Load real aggregated benchmark results."""
     with open(aggregated_results_file, "rb") as f:
         return msgspec.json.decode(f.read(), type=AggregatedResults)
 
 
 @pytest.fixture
 def sample_benchmark_result() -> BenchmarkResult:
-    """Create a sample benchmark result for testing."""
     from src.types import BenchmarkMetadata, BenchmarkMetrics
 
     return BenchmarkResult(
@@ -56,7 +49,6 @@ def sample_benchmark_result() -> BenchmarkResult:
 
 @pytest.fixture
 def sample_benchmark_summary() -> BenchmarkSummary:
-    """Create a sample benchmark summary for testing."""
     return BenchmarkSummary(
         framework="test_framework",
         category="small",
@@ -76,7 +68,6 @@ def sample_benchmark_summary() -> BenchmarkSummary:
 
 @pytest.fixture
 def charts_dir(temp_dir: Path) -> Path:
-    """Create a charts directory with sample files."""
     charts = temp_dir / "charts"
     charts.mkdir()
 
@@ -88,7 +79,6 @@ def charts_dir(temp_dir: Path) -> Path:
 
 @pytest.fixture
 def docs_dir(temp_dir: Path) -> Path:
-    """Create a docs directory for testing."""
     docs = temp_dir / "docs"
     docs.mkdir()
     return docs
@@ -96,8 +86,6 @@ def docs_dir(temp_dir: Path) -> Path:
 
 @pytest.fixture
 def mock_cli_args():
-    """Mock CLI arguments for testing."""
-
     class MockArgs:
         def __init__(self, **kwargs):
             for key, value in kwargs.items():

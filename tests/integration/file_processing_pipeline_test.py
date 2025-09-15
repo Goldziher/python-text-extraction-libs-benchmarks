@@ -1,5 +1,3 @@
-"""Integration tests for the complete file processing pipeline using real test documents."""
-
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
@@ -18,10 +16,7 @@ from src.types import (
 
 
 class TestFileProcessingPipeline:
-    """Test the complete file processing pipeline with real documents."""
-
     def setup_method(self):
-        """Set up test environment."""
         self.test_docs_dir = Path("test_documents")
         self.categorizer = DocumentCategorizer()
 
@@ -32,7 +27,6 @@ class TestFileProcessingPipeline:
         reason="PDF processing pipeline requires test_documents directory which may not be available in test environment"
     )
     def test_pdf_processing_pipeline(self):
-        """Test complete pipeline for PDF documents."""
         pdf_files = list(self.test_docs_dir.rglob("*.pdf"))
 
         if not pdf_files:
@@ -57,7 +51,6 @@ class TestFileProcessingPipeline:
         ]
 
     def test_office_document_processing(self):
-        """Test processing of Office documents (DOCX, PPTX, XLSX)."""
         office_extensions = [".docx", ".pptx", ".xlsx"]
 
         for ext in office_extensions:
@@ -79,7 +72,6 @@ class TestFileProcessingPipeline:
             assert metadata["file_extension"] == ext
 
     def test_text_and_data_format_processing(self):
-        """Test processing of text and data formats."""
         format_tests = [
             (".json", FileType.JSON),
             (".yaml", FileType.YAML),
@@ -107,7 +99,6 @@ class TestFileProcessingPipeline:
             assert metadata["file_size"] >= 0
 
     def test_image_processing_pipeline(self):
-        """Test processing of image files with OCR potential."""
         image_extensions = [".png", ".jpg", ".jpeg", ".bmp"]
 
         for ext in image_extensions:
@@ -134,7 +125,6 @@ class TestFileProcessingPipeline:
 
     @pytest.mark.asyncio
     async def test_end_to_end_extraction_pipeline(self):
-        """Test complete extraction pipeline from file discovery to results."""
         small_files = []
         for pattern in ["*.json", "*.txt", "*.md"]:
             small_files.extend(list(self.test_docs_dir.rglob(pattern)))
@@ -177,7 +167,6 @@ class TestFileProcessingPipeline:
                 pytest.skip(f"Extraction failed (framework may not be available): {e}")
 
     def test_large_file_handling(self):
-        """Test handling of larger files."""
         all_files = list(self.test_docs_dir.rglob("*"))
         file_sizes = []
 
@@ -206,7 +195,6 @@ class TestFileProcessingPipeline:
             assert category == DocumentCategory.HUGE
 
     def test_multilingual_file_detection(self):
-        """Test detection and processing of multilingual files."""
         language_patterns = {
             "hebrew": ["*hebrew*", "*israel*", "*heb*"],
             "german": ["*german*", "*germany*", "*deu*"],
@@ -244,7 +232,6 @@ class TestFileProcessingPipeline:
                 assert detected_lang == expected_mappings[language]
 
     def test_file_processing_error_recovery(self):
-        """Test error recovery during file processing."""
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False, mode="w") as f:
             f.write("This is not a valid PDF file content")
             invalid_file = Path(f.name)
@@ -262,7 +249,6 @@ class TestFileProcessingPipeline:
             invalid_file.unlink()
 
     def test_concurrent_file_processing(self):
-        """Test concurrent processing of multiple files."""
         test_files = []
         for pattern in ["*.json", "*.txt", "*.yaml"]:
             files = list(self.test_docs_dir.rglob(pattern))
@@ -286,7 +272,6 @@ class TestFileProcessingPipeline:
             assert metadata["file_size"] >= 0
 
     def test_file_type_edge_cases(self):
-        """Test edge cases in file type detection."""
         no_ext_files = []
         for file_path in self.test_docs_dir.rglob("*"):
             if file_path.is_file() and "." not in file_path.name:
@@ -297,7 +282,6 @@ class TestFileProcessingPipeline:
             assert file_type == FileType.UNKNOWN
 
     def test_category_boundary_conditions(self):
-        """Test files at category boundary sizes."""
         all_files = [(f, f.stat().st_size) for f in self.test_docs_dir.rglob("*") if f.is_file()]
 
         boundaries = [
@@ -322,7 +306,6 @@ class TestFileProcessingPipeline:
                 assert category == DocumentCategory.HUGE
 
     def test_complete_pipeline_performance(self):
-        """Test performance characteristics of the complete pipeline."""
         import time
 
         test_files = list(self.test_docs_dir.rglob("*.json"))
@@ -356,7 +339,6 @@ class TestFileProcessingPipeline:
 
     @pytest.mark.asyncio
     async def test_pipeline_memory_usage(self):
-        """Test that pipeline doesn't consume excessive memory."""
         import os
 
         import psutil

@@ -1,5 +1,3 @@
-"""Tests for result aggregation functionality."""
-
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -24,7 +22,6 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def sample_results() -> list[BenchmarkResult]:
-    """Create sample benchmark results for testing."""
     return [
         BenchmarkResult(
             file_path="test1.pdf",
@@ -95,7 +92,6 @@ def sample_results() -> list[BenchmarkResult]:
 
 @pytest.fixture
 def temp_results_dirs(sample_results: list[BenchmarkResult]) -> "Generator[list[Path]]":
-    """Create temporary directories with benchmark results."""
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
 
@@ -114,12 +110,9 @@ def temp_results_dirs(sample_results: list[BenchmarkResult]) -> "Generator[list[
 
 
 class TestResultAggregator:
-    """Test the ResultAggregator class."""
-
     def test_aggregate_results_basic(
         self, temp_results_dirs: list[Path], sample_results: list[BenchmarkResult]
     ) -> None:
-        """Test basic aggregation functionality."""
         aggregator = ResultAggregator()
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
@@ -129,7 +122,6 @@ class TestResultAggregator:
         assert aggregated.total_runs > 0
 
     def test_framework_category_matrix_string_keys(self, temp_results_dirs: list[Path]) -> None:
-        """Test that framework_category_matrix uses string keys for msgspec compatibility."""
         aggregator = ResultAggregator()
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
@@ -147,7 +139,6 @@ class TestResultAggregator:
             assert expected_key in matrix, f"Expected key {expected_key} not found in matrix"
 
     def test_msgspec_serialization(self, temp_results_dirs: list[Path]) -> None:
-        """Test that aggregated results can be serialized with msgspec."""
         aggregator = ResultAggregator()
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
@@ -163,7 +154,6 @@ class TestResultAggregator:
             assert isinstance(key, str)
 
     def test_save_and_load_results(self, temp_results_dirs: list[Path]) -> None:
-        """Test saving and loading aggregated results."""
         aggregator = ResultAggregator()
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
@@ -188,7 +178,6 @@ class TestResultAggregator:
                 assert isinstance(key, str)
 
     def test_framework_summaries_structure(self, temp_results_dirs: list[Path]) -> None:
-        """Test framework summaries are properly structured."""
         aggregator = ResultAggregator()
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
@@ -203,7 +192,6 @@ class TestResultAggregator:
         assert Framework.MARKITDOWN in fw_summaries
 
     def test_category_summaries_structure(self, temp_results_dirs: list[Path]) -> None:
-        """Test category summaries are properly structured."""
         aggregator = ResultAggregator()
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
@@ -218,7 +206,6 @@ class TestResultAggregator:
         assert DocumentCategory.SMALL in cat_summaries
 
     def test_failure_analysis(self, temp_results_dirs: list[Path]) -> None:
-        """Test failure pattern analysis."""
         aggregator = ResultAggregator()
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
@@ -229,7 +216,6 @@ class TestResultAggregator:
         assert failures["ImportError"] == 1
 
     def test_empty_results(self) -> None:
-        """Test handling of empty result directories."""
         aggregator = ResultAggregator()
 
         aggregated = aggregator.aggregate_results([])
@@ -241,7 +227,6 @@ class TestResultAggregator:
         assert len(aggregated.framework_category_matrix) == 0
 
     def test_matrix_key_format(self, sample_results: list[BenchmarkResult]) -> None:
-        """Test that matrix keys follow the expected format."""
         aggregator = ResultAggregator()
 
         matrix = aggregator._create_matrix(sample_results)
@@ -258,11 +243,6 @@ class TestResultAggregator:
             assert any(cat.value == category_part for cat in DocumentCategory)
 
     def test_cli_report_generation_integration(self, temp_results_dirs: list[Path]) -> None:
-        """Test the full pipeline: aggregation -> save -> CLI load -> report generation.
-
-        This test specifically covers the GitHub Actions failure case where
-        aggregated results were loaded as dicts instead of AggregatedResults objects.
-        """
         aggregator = ResultAggregator()
 
         aggregated = aggregator.aggregate_results(temp_results_dirs)
@@ -294,10 +274,6 @@ class TestResultAggregator:
                 assert isinstance(category, DocumentCategory)
 
     def test_msgspec_type_loading_consistency(self, temp_results_dirs: list[Path]) -> None:
-        """Test that all msgspec decode operations use proper typing.
-
-        This prevents regression of the GitHub Actions error.
-        """
         aggregator = ResultAggregator()
         aggregated = aggregator.aggregate_results(temp_results_dirs)
 
@@ -322,10 +298,6 @@ class TestResultAggregator:
         reason="CLI report command requires actual benchmark data files which may not be available in test environment"
     )
     def test_cli_report_command_integration(self, temp_results_dirs: list[Path]) -> None:
-        """Test the CLI report command works with aggregated results on disk.
-
-        This simulates the exact GitHub Actions scenario.
-        """
         import sys
         from unittest.mock import patch
 

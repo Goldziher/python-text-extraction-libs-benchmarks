@@ -6,25 +6,27 @@ ______________________________________________________________________
 
 ## Size Range: \<100KB
 
-- **Total Files Tested:** 142
-- **Average File Size:** 32722.73 MB
-- **Average Extraction Time:** 0.09s
-- **Average Memory Usage:** 515.1 MB
+- **Total Files Tested:** 9
+- **Average File Size:** 12504.67 MB
+- **Average Extraction Time:** 0.75s
+- **Average Memory Usage:** 62.5 MB
 
 ## Framework Scalability
 
-| Framework    | Files | Avg Time (s) | Time/MB (s) | Memory/MB | Success Rate |
-| ------------ | ----- | ------------ | ----------- | --------- | ------------ |
-| unstructured | 142   | 0.09         | 2.97        | 16506.87  | 0.0%         |
+| Framework      | Files | Avg Time (s) | Time/MB (s) | Memory/MB | Success Rate |
+| -------------- | ----- | ------------ | ----------- | --------- | ------------ |
+| extractous     | 3     | 0.75         | 62.90       | 5241.31   | 100.0%       |
+| kreuzberg_sync | 3     | 0.75         | 62.90       | 5241.31   | 100.0%       |
+| markitdown     | 3     | 0.75         | 62.90       | 5241.31   | 100.0%       |
 
 ## Performance Characteristics
 
-- **Average Throughput:** 352672.23 MB/s
-- **Files Processed:** 142
-- **Total Data Processed:** 4.4 MB
+- **Average Throughput:** 16670.81 MB/s
+- **Files Processed:** 9
+- **Total Data Processed:** 0.1 MB
 
 ## Resource Growth Analysis
 
-- **Memory Growth Rate:** 1839.11 MB per MB of file size
-- **Base Memory Usage:** ~394.2 MB
-- **Peak Memory Usage:** 593.6 MB
+- **Memory Growth Rate:** 1048.58 MB per MB of file size
+- **Base Memory Usage:** ~58.8 MB
+- **Peak Memory Usage:** 66.4 MB

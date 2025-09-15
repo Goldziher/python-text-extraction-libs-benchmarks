@@ -1,5 +1,3 @@
-"""Report generation for benchmark results."""
-
 from __future__ import annotations
 
 import json
@@ -11,10 +9,7 @@ from src.types import AggregatedResults
 
 
 class ReportGenerator:
-    """Generate various report formats from aggregated results."""
-
     def load_results(self, results_dir: Path) -> AggregatedResults:
-        """Load aggregated results from directory."""
         results_file = results_dir / "aggregated_results.json"
         if not results_file.exists():
             raise FileNotFoundError(f"Aggregated results not found: {results_file}")
@@ -23,7 +18,6 @@ class ReportGenerator:
             return msgspec.json.decode(f.read(), type=AggregatedResults)
 
     def generate_markdown_report(self, results: AggregatedResults, output_path: Path) -> None:
-        """Generate a comprehensive markdown report."""
         lines = [
             "# Benchmark Report",
             "",
@@ -146,7 +140,6 @@ class ReportGenerator:
             f.write("\n".join(lines))
 
     def generate_json_metrics(self, results: AggregatedResults, output_path: Path) -> None:
-        """Generate JSON metrics for GitHub Actions benchmark tracking."""
         metrics = []
 
         for framework, summaries in results.framework_summaries.items():
@@ -185,7 +178,6 @@ class ReportGenerator:
             json.dump(metrics, f, indent=2)
 
     def generate_html_report(self, results: AggregatedResults, output_path: Path) -> None:
-        """Generate an HTML report with charts and tables."""
         html_content = f"""
 <!DOCTYPE html>
 <html>

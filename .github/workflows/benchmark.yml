@@ -58,7 +58,7 @@ jobs:
 
           # Run benchmark for each framework with their supported formats
           # The benchmark automatically tests only supported formats per framework
-          for framework in kreuzberg_sync kreuzberg_async kreuzberg_tesseract docling markitdown unstructured extractous; do
+          for framework in kreuzberg_sync kreuzberg_async docling markitdown unstructured extractous; do
             echo "=================================================="
             echo "Benchmarking: $framework"
             echo "=================================================="

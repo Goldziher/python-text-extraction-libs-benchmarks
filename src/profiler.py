@@ -1,5 +1,3 @@
-"""Enhanced performance profiling for benchmarking."""
-
 from __future__ import annotations
 
 import asyncio
@@ -22,8 +20,6 @@ logger = get_logger(__name__)
 
 @dataclass
 class PerformanceMetrics:
-    """Container for performance metrics."""
-
     extraction_time: float
     peak_memory_mb: float
     avg_memory_mb: float
@@ -36,8 +32,6 @@ class PerformanceMetrics:
 
 
 class EnhancedResourceMonitor:
-    """Advanced resource monitoring with detailed metrics."""
-
     def __init__(self, sampling_interval_ms: int = 50) -> None:
         self.sampling_interval = sampling_interval_ms / 1000.0
         self.metrics_buffer: list[ResourceMetrics] = []
@@ -47,7 +41,6 @@ class EnhancedResourceMonitor:
         self._baseline_io: dict[str, int] | None = None
 
     def _get_io_counters(self) -> dict[str, int] | None:
-        """Get I/O counters if available on platform."""
         try:
             io = self.process.io_counters()
             return {
@@ -60,14 +53,12 @@ class EnhancedResourceMonitor:
             return None
 
     def _get_open_files_count(self) -> int:
-        """Get count of open files, handling platform differences."""
         try:
             return len(self.process.open_files())
         except (psutil.AccessDenied, AttributeError):
             return 0
 
     async def _monitor_loop(self) -> None:
-        """Background monitoring loop."""
         while self.monitoring:
             try:
                 cpu_percent = self.process.cpu_percent(interval=None)
@@ -101,7 +92,6 @@ class EnhancedResourceMonitor:
             await asyncio.sleep(self.sampling_interval)
 
     async def start(self) -> None:
-        """Start monitoring."""
         self.monitoring = True
         self.metrics_buffer.clear()
         self._baseline_io = self._get_io_counters()
@@ -133,7 +123,6 @@ class EnhancedResourceMonitor:
         self._monitor_task = asyncio.create_task(self._monitor_loop())
 
     async def stop(self) -> PerformanceMetrics:
-        """Stop monitoring and return collected metrics."""
         self.monitoring = False
 
         if self._monitor_task:
@@ -142,7 +131,6 @@ class EnhancedResourceMonitor:
         return self._calculate_metrics()
 
     def _calculate_metrics(self) -> PerformanceMetrics:
-        """Calculate aggregate metrics from samples."""
         if not self.metrics_buffer:
             try:
                 mem_info = self.process.memory_info()
@@ -201,7 +189,6 @@ class EnhancedResourceMonitor:
 
 @contextmanager
 def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceMetrics]:  # noqa: ARG001, PLR0915, C901
-    """Context manager for synchronous performance profiling."""
     gc.collect()
 
     process = psutil.Process()
@@ -310,15 +297,12 @@ def profile_performance(sampling_interval_ms: int = 50) -> Iterator[PerformanceM
 
 
 class AsyncPerformanceProfiler:
-    """Async context manager for performance profiling."""
-
     def __init__(self, sampling_interval_ms: int = 50) -> None:
         self.monitor = EnhancedResourceMonitor(sampling_interval_ms)
         self.metrics: PerformanceMetrics | None = None
         self._start_time: float | None = None
 
     async def __aenter__(self) -> PerformanceMetrics:
-        """Enter the profiling context."""
         gc.collect()
 
         self._start_time = time.time()
@@ -335,7 +319,6 @@ class AsyncPerformanceProfiler:
         return self.metrics
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        """Exit the profiling context and update metrics."""
         result = await self.monitor.stop()
 
         if self.metrics:

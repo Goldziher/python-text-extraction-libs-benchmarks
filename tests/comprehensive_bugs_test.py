@@ -1,5 +1,3 @@
-"""Comprehensive tests for all the bugs we discovered."""
-
 import json
 
 import msgspec
@@ -16,7 +14,6 @@ from src.types import (
 
 
 def create_test_result(status: ExtractionStatus = ExtractionStatus.SUCCESS, **kwargs) -> BenchmarkResult:
-    """Helper to create a test BenchmarkResult with defaults."""
     defaults = {
         "file_path": "test.pdf",
         "file_size": 1000,
@@ -36,10 +33,7 @@ def create_test_result(status: ExtractionStatus = ExtractionStatus.SUCCESS, **kw
 
 
 class TestCriticalBugs:
-    """Test all critical bugs we found in production."""
-
     def test_benchmark_result_fields_used_by_reporting(self):
-        """Test that BenchmarkResult has all fields used by reporting module."""
         result = create_test_result()
 
         assert not hasattr(result, "success")
@@ -57,7 +51,6 @@ class TestCriticalBugs:
         assert hasattr(result, "character_count")
 
     def test_reporting_csv_export_field_mapping(self):
-        """Test that we can map the correct fields for CSV export."""
         result = create_test_result(character_count=1000, error_message="Test error")
 
         field_mapping = {
@@ -74,7 +67,6 @@ class TestCriticalBugs:
             assert value is not None or report_field == "error_message"
 
     def test_aggregation_with_missing_dependency_error(self):
-        """Test aggregation with the exact error we saw in production."""
         results = [
             BenchmarkResult(
                 file_path=f"test{i}.pdf",
@@ -104,7 +96,6 @@ class TestCriticalBugs:
             assert data["error_type"] == "MissingDependencyError"
 
     def test_generate_index_none_handling(self):
-        """Test the exact None handling issues from generate_index.py."""
         framework_stats = {
             "kreuzberg_async": {
                 "category_speeds": {
@@ -148,7 +139,6 @@ class TestCriticalBugs:
         assert avg_memory_display == "N/A"
 
     def test_summary_calculation_with_all_failed(self):
-        """Test summary calculations when all extractions failed."""
         summary = BenchmarkSummary(
             framework=Framework.KREUZBERG_ASYNC,
             category=DocumentCategory.LARGE,
@@ -175,10 +165,7 @@ class TestCriticalBugs:
 
 
 class TestRegressionPrevention:
-    """Tests to prevent these bugs from happening again."""
-
     def test_reporting_module_field_access(self):
-        """Ensure reporting module can handle BenchmarkResult correctly."""
         result = create_test_result()
 
         required_mapping = {
@@ -195,7 +182,6 @@ class TestRegressionPrevention:
                 assert hasattr(result, actual), f"BenchmarkResult missing {actual} field"
 
     def test_none_value_serialization(self):
-        """Test that None values serialize correctly."""
         result = create_test_result(
             extraction_time=None,
             character_count=None,

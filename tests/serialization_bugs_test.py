@@ -1,5 +1,3 @@
-"""Tests for serialization bugs we discovered in production."""
-
 import json
 import tempfile
 from pathlib import Path
@@ -20,10 +18,7 @@ from src.types import (
 
 
 class TestBenchmarkResultSerialization:
-    """Test that BenchmarkResult serializes correctly."""
-
     def test_benchmark_result_has_no_success_field(self):
-        """Verify BenchmarkResult doesn't have a success field."""
         result = BenchmarkResult(
             file_path="test.pdf",
             file_size=1000,
@@ -45,7 +40,6 @@ class TestBenchmarkResultSerialization:
             _ = result.success
 
     def test_benchmark_result_status_field_exists(self):
-        """Verify BenchmarkResult has status field."""
         result = BenchmarkResult(
             file_path="test.pdf",
             file_size=1000,
@@ -65,7 +59,6 @@ class TestBenchmarkResultSerialization:
         assert isinstance(result.status, ExtractionStatus)
 
     def test_msgspec_serialization_of_benchmark_result(self):
-        """Test that msgspec correctly serializes BenchmarkResult."""
         result = BenchmarkResult(
             file_path="test.pdf",
             file_size=1000,
@@ -91,7 +84,6 @@ class TestBenchmarkResultSerialization:
         assert "success" not in data
 
     def test_msgspec_deserialization_of_benchmark_result(self):
-        """Test that msgspec correctly deserializes BenchmarkResult."""
         data = {
             "file_path": "test.pdf",
             "file_size": 1000,
@@ -116,10 +108,7 @@ class TestBenchmarkResultSerialization:
 
 
 class TestReportingBugs:
-    """Test the reporting module bugs we discovered."""
-
     def test_csv_export_with_status_field(self):
-        """Test CSV export correctly uses status field, not success."""
         results = [
             BenchmarkResult(
                 file_path="test1.pdf",
@@ -192,7 +181,6 @@ class TestReportingBugs:
             output_path.unlink()
 
     def test_csv_export_with_none_fields(self):
-        """Test CSV export handles None fields correctly."""
         result = BenchmarkResult(
             file_path="test.pdf",
             file_size=1000,
@@ -228,10 +216,7 @@ class TestReportingBugs:
 
 
 class TestAggregationWithFailedResults:
-    """Test aggregation logic with failed/incomplete results."""
-
     def test_aggregation_with_all_failed_results(self):
-        """Test aggregation when all results have failed status."""
         import tempfile
 
         from src.aggregate import ResultAggregator
@@ -274,7 +259,6 @@ class TestAggregationWithFailedResults:
         assert summary.files_per_second is None or summary.files_per_second == 0
 
     def test_aggregation_with_mixed_results(self):
-        """Test aggregation with mix of success and failed results."""
         import tempfile
 
         from src.aggregate import ResultAggregator
@@ -346,10 +330,7 @@ class TestAggregationWithFailedResults:
 
 
 class TestGenerateIndexNoneHandling:
-    """Test generate_index.py None value handling."""
-
     def test_generate_performance_table_with_none_speeds(self):
-        """Test performance table generation with None speed values."""
         from src.generate_index import generate_performance_table
 
         framework_stats = {
@@ -380,7 +361,6 @@ class TestGenerateIndexNoneHandling:
         assert html.count("<td>-</td>") >= 2
 
     def test_generate_memory_table_with_none_values(self):
-        """Test memory table generation with None memory values."""
         from src.generate_index import generate_memory_table
 
         framework_stats = {

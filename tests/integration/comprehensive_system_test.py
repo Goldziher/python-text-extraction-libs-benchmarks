@@ -1,5 +1,3 @@
-"""Comprehensive system integration test covering all major code paths."""
-
 import tempfile
 from pathlib import Path
 
@@ -10,10 +8,7 @@ from src.types import BenchmarkConfig, DocumentCategory, Framework
 
 
 class TestComprehensiveSystemIntegration:
-    """Test complete system integration with real test documents."""
-
     def setup_method(self):
-        """Set up test environment."""
         self.test_docs_dir = Path("test_documents")
         self.categorizer = DocumentCategorizer()
 
@@ -21,7 +16,6 @@ class TestComprehensiveSystemIntegration:
             pytest.skip("test_documents directory not found")
 
     def test_end_to_end_file_discovery_and_categorization(self):
-        """Test complete file discovery and categorization pipeline."""
         for category in DocumentCategory:
             files = self.categorizer.get_files_by_category(category)
 
@@ -32,7 +26,6 @@ class TestComprehensiveSystemIntegration:
                 assert file_path.exists()
 
     def test_multi_format_file_type_detection(self):
-        """Test file type detection across multiple formats."""
         file_count = 0
         format_counts = {}
 
@@ -54,7 +47,6 @@ class TestComprehensiveSystemIntegration:
         assert overlap >= 3, f"Expected more common formats, got: {detected_formats}"
 
     def test_size_based_categorization_accuracy(self):
-        """Test accuracy of size-based categorization."""
         category_file_counts = {}
 
         for category in DocumentCategory:
@@ -76,7 +68,6 @@ class TestComprehensiveSystemIntegration:
                 )
 
     def test_benchmark_config_validation_with_real_frameworks(self):
-        """Test benchmark configuration with actual framework values."""
         config = BenchmarkConfig(
             frameworks=[Framework.KREUZBERG_SYNC],
             categories=[DocumentCategory.TINY],
@@ -105,7 +96,6 @@ class TestComprehensiveSystemIntegration:
         assert len(multi_config.categories) == 2
 
     def test_document_language_detection_patterns(self):
-        """Test document language detection patterns with real files."""
         language_indicators = {
             "english": ["english", "en_", "eng"],
             "hebrew": ["hebrew", "heb", "israel"],
@@ -130,7 +120,6 @@ class TestComprehensiveSystemIntegration:
         )
 
     def test_system_memory_and_performance_boundaries(self):
-        """Test system behavior within reasonable memory and performance boundaries."""
         import os
         import time
 
@@ -168,7 +157,6 @@ class TestComprehensiveSystemIntegration:
         assert file_count > 0, "No files were processed successfully"
 
     def test_error_recovery_with_problematic_files(self):
-        """Test system error recovery with various problematic files."""
         error_count = 0
         success_count = 0
 
@@ -195,14 +183,12 @@ class TestComprehensiveSystemIntegration:
         assert error_rate < 0.5, f"Error rate too high: {error_rate:.2%} ({error_count}/{total_files})"
 
     def test_concurrent_operations_stability(self):
-        """Test system stability under concurrent operations."""
         import queue
         import threading
 
         results = queue.Queue()
 
         def worker_thread(thread_id):
-            """Worker thread that performs categorization operations."""
             try:
                 local_categorizer = DocumentCategorizer()
                 files_processed = 0
@@ -241,7 +227,6 @@ class TestComprehensiveSystemIntegration:
         assert len(successful_threads) >= num_threads // 2, f"Too many thread failures: {thread_results}"
 
     def test_benchmark_configuration_edge_cases(self):
-        """Test benchmark configuration with edge case values."""
         minimal_config = BenchmarkConfig(
             frameworks=[Framework.KREUZBERG_SYNC],
             categories=[DocumentCategory.TINY],
@@ -270,7 +255,6 @@ class TestComprehensiveSystemIntegration:
         assert maximal_config.iterations == 10
 
     def test_output_directory_handling(self):
-        """Test output directory creation and handling."""
         with tempfile.TemporaryDirectory() as temp_dir:
             output_path = Path(temp_dir) / "benchmark_results"
 
@@ -293,7 +277,6 @@ class TestComprehensiveSystemIntegration:
             assert output_path.is_dir()
 
     def test_file_metadata_extraction_comprehensive(self):
-        """Test comprehensive file metadata extraction."""
         metadata_samples = []
         file_types_seen = set()
 

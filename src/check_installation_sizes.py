@@ -1,5 +1,3 @@
-"""Script to check minimal installation sizes of text extraction libraries."""
-
 import json
 import subprocess
 import sys
@@ -13,7 +11,6 @@ logger = get_logger(__name__)
 
 
 def get_package_size(package_name: str, extra_deps: list[str] | None = None) -> dict[str, Any]:
-    """Get the installation size of a package in a clean environment."""
     print(f"Checking installation size for: {package_name}")
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -71,7 +68,6 @@ def get_package_size(package_name: str, extra_deps: list[str] | None = None) -> 
 
 
 def main() -> None:
-    """Check installation sizes for all text extraction libraries."""
     libraries = {
         "kreuzberg": {"package": "kreuzberg", "description": "Comprehensive text extraction library"},
         "docling": {"package": "docling", "description": "IBM's document processing library"},

@@ -1,5 +1,3 @@
-"""Text extraction implementations for different frameworks."""
-
 from __future__ import annotations
 
 import os
@@ -51,13 +49,6 @@ from .types import AsyncExtractorProtocol, ExtractorProtocol
 
 
 def get_language_config(file_path: str | Path) -> str:
-    """Determine language configuration based on file path and content hints.
-
-    Returns language codes appropriate for the framework being used.
-    For Tesseract: eng, deu, heb, chi_sim, jpn, kor
-    For EasyOCR: en, de, he, ch_sim, ja, ko
-    For PaddleOCR: en, german, ch, japan, korean
-    """
     file_path = Path(file_path)
     filename = file_path.name.lower()
 
@@ -75,10 +66,7 @@ def get_language_config(file_path: str | Path) -> str:
 
 
 class KreuzbergSyncExtractor:
-    """Synchronous Kreuzberg text extractor with optimized configuration."""
-
     def extract_text(self, file_path: str) -> str:
-        """Extract text using Kreuzberg synchronously."""
         if kreuzberg is None:
             msg = "Kreuzberg is not installed"
             raise ImportError(msg)
@@ -87,7 +75,6 @@ class KreuzbergSyncExtractor:
         return result.content
 
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Kreuzberg synchronously."""
         if kreuzberg is None:
             msg = "Kreuzberg is not installed"
             raise ImportError(msg)
@@ -97,7 +84,6 @@ class KreuzbergSyncExtractor:
         return result.content, metadata
 
     def _get_optimized_config(self, file_path: str) -> ExtractionConfig:
-        """Get optimized configuration for sync extraction with high-quality Tesseract settings."""
         lang_code = get_language_config(file_path)
 
         tesseract_config = TesseractConfig(language=lang_code, psm=PSMMode.AUTO, output_format="text")
@@ -106,10 +92,7 @@ class KreuzbergSyncExtractor:
 
 
 class KreuzbergAsyncExtractor:
-    """Asynchronous Kreuzberg text extractor with optimized configuration."""
-
     async def extract_text(self, file_path: str) -> str:
-        """Extract text using Kreuzberg asynchronously."""
         if kreuzberg is None:
             msg = "Kreuzberg is not installed"
             raise ImportError(msg)
@@ -118,7 +101,6 @@ class KreuzbergAsyncExtractor:
         return result.content
 
     async def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Kreuzberg asynchronously."""
         if kreuzberg is None:
             msg = "Kreuzberg is not installed"
             raise ImportError(msg)
@@ -128,7 +110,6 @@ class KreuzbergAsyncExtractor:
         return result.content, metadata
 
     def _get_optimized_config(self, file_path: str) -> ExtractionConfig:
-        """Get optimized configuration for async extraction with high-quality Tesseract settings."""
         lang_code = get_language_config(file_path)
 
         tesseract_config = TesseractConfig(language=lang_code, psm=PSMMode.AUTO, output_format="text")
@@ -137,10 +118,7 @@ class KreuzbergAsyncExtractor:
 
 
 class DoclingExtractor:
-    """Docling text extractor with optimized configuration and robust error handling."""
-
     def __init__(self) -> None:
-        """Initialize Docling converter with optimized configuration for performance and reliability."""
         if DocumentConverter is None:
             msg = "Docling is not installed"
             raise ImportError(msg)
@@ -189,7 +167,6 @@ class DoclingExtractor:
             self.timeout = 600
 
     def _validate_file(self, file_path: str) -> bool:
-        """Validate file before processing."""
         try:
             path_obj = Path(file_path)
             if not path_obj.exists():
@@ -201,7 +178,6 @@ class DoclingExtractor:
             return False
 
     def extract_text(self, file_path: str) -> str:
-        """Extract text using Docling with robust error handling."""
         if not self._validate_file(file_path):
             return ""
 
@@ -213,7 +189,6 @@ class DoclingExtractor:
             return ""
 
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Docling with robust error handling."""
         if not self._validate_file(file_path):
             return "", {"error": "file_validation_failed"}
 
@@ -247,10 +222,7 @@ class DoclingExtractor:
 
 
 class MarkItDownExtractor:
-    """MarkItDown text extractor with robust error handling and timeout management."""
-
     def __init__(self) -> None:
-        """Initialize MarkItDown converter with optimized settings."""
         if MarkItDown is None:
             msg = "MarkItDown is not installed"
             raise ImportError(msg)
@@ -260,7 +232,6 @@ class MarkItDownExtractor:
         self.max_file_size = 100 * 1024 * 1024
 
     def _validate_file(self, file_path: str) -> bool:
-        """Validate file before processing."""
         try:
             path_obj = Path(file_path)
             if not path_obj.exists():
@@ -275,8 +246,6 @@ class MarkItDownExtractor:
             return False
 
     def _extract_with_timeout(self, file_path: str) -> Any:
-        """Extract with timeout protection."""
-
         def timeout_handler(signum: int, frame: Any) -> Never:  # noqa: ARG001
             raise TimeoutError(f"MarkItDown extraction timed out after {self.timeout}s")
 
@@ -294,7 +263,6 @@ class MarkItDownExtractor:
             signal.signal(signal.SIGALRM, old_handler)
 
     def extract_text(self, file_path: str) -> str:
-        """Extract text using MarkItDown with robust error handling."""
         if not self._validate_file(file_path):
             return ""
 
@@ -307,7 +275,6 @@ class MarkItDownExtractor:
             return ""
 
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using MarkItDown with robust error handling."""
         if not self._validate_file(file_path):
             return "", {}
 
@@ -331,23 +298,18 @@ class MarkItDownExtractor:
 
 
 class UnstructuredExtractor:
-    """Unstructured text extractor with adaptive strategy selection and retry logic."""
-
     def __init__(self) -> None:
-        """Initialize with strategy configuration."""
         self.max_retries = 2
         self.timeout = 180
         self.max_file_size = 150 * 1024 * 1024
 
     def _get_file_size(self, file_path: str) -> int:
-        """Get file size safely."""
         try:
             return Path(file_path).stat().st_size
         except Exception:
             return 0
 
     def _get_adaptive_strategy(self, file_path: str, file_size: int) -> dict[str, Any]:
-        """Select optimal strategy based on file characteristics."""
         lang_code = get_language_config(file_path)
         file_ext = Path(file_path).suffix.lower()
 
@@ -386,7 +348,6 @@ class UnstructuredExtractor:
         return config
 
     def _extract_with_strategy(self, file_path: str, config: dict[str, Any], attempt: int = 1) -> Any:
-        """Extract with a specific strategy, with fallback options."""
         try:
             return partition(filename=file_path, **config)
         except Exception as e:
@@ -402,7 +363,6 @@ class UnstructuredExtractor:
             raise e
 
     def extract_text(self, file_path: str) -> str:
-        """Extract text using Unstructured with adaptive strategy."""
         if partition is None:
             msg = "Unstructured is not installed"
             raise ImportError(msg)
@@ -419,7 +379,6 @@ class UnstructuredExtractor:
             return ""
 
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Unstructured with adaptive strategy."""
         if partition is None:
             msg = "Unstructured is not installed"
             raise ImportError(msg)
@@ -465,21 +424,17 @@ class UnstructuredExtractor:
 
 
 class ExtractousExtractor:
-    """Extractous text extractor with adaptive configuration and performance optimizations."""
-
     def __init__(self) -> None:
-        """Initialize Extractous extractor with adaptive configuration."""
         if Extractor is None:
             msg = "Extractous is not installed. Install with: pip install extractous"
             raise ImportError(msg)
 
         self.extractor = Extractor()
-        self.max_file_size = 200 * 1024 * 1024
+        self.max_file_size = 500 * 1024 * 1024
 
-        self.extractor.set_extract_string_max_length(5000000)
+        self.extractor.set_extract_string_max_length(10000000)
 
     def _get_file_characteristics(self, file_path: str) -> dict[str, Any]:
-        """Analyze file to determine optimal extraction strategy."""
         try:
             path_obj = Path(file_path)
             file_size = path_obj.stat().st_size
@@ -504,14 +459,12 @@ class ExtractousExtractor:
             }
 
     def _configure_adaptive_extraction(self, file_path: str, characteristics: dict[str, Any]) -> None:
-        """Configure extractor based on file characteristics."""
         if characteristics["is_large"]:
-            self.extractor.set_extract_string_max_length(2000000)
+            self.extractor.set_extract_string_max_length(8000000)
         else:
-            self.extractor.set_extract_string_max_length(10000000)
+            self.extractor.set_extract_string_max_length(15000000)
 
     def extract_text(self, file_path: str) -> str:
-        """Extract text using Extractous with adaptive configuration."""
         characteristics = self._get_file_characteristics(file_path)
 
         if characteristics["size"] > self.max_file_size:
@@ -525,7 +478,6 @@ class ExtractousExtractor:
             return ""
 
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Extractous with adaptive configuration."""
         characteristics = self._get_file_characteristics(file_path)
 
         if characteristics["size"] > self.max_file_size:
@@ -552,17 +504,6 @@ class ExtractousExtractor:
 
 
 def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
-    """Get an extractor instance for the specified framework.
-
-    Args:
-        framework: The framework name to get an extractor for.
-
-    Returns:
-        An extractor instance.
-
-    Raises:
-        ValueError: If the framework is not supported.
-    """
     extractors = {
         "kreuzberg_sync": KreuzbergSyncExtractor,
         "kreuzberg_async": KreuzbergAsyncExtractor,

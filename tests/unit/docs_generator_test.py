@@ -1,5 +1,3 @@
-"""Tests for docs_generator module."""
-
 from pathlib import Path
 
 import msgspec
@@ -11,13 +9,11 @@ from src.types import BenchmarkResult, Framework
 
 @pytest.fixture
 def temp_dir(tmp_path):
-    """Create a temporary directory for tests."""
     return tmp_path
 
 
 @pytest.fixture
 def sample_benchmark_results():
-    """Create sample benchmark results for testing."""
     return [
         BenchmarkResult(
             file_path="test_documents/sample.pdf",
@@ -81,7 +77,6 @@ def sample_benchmark_results():
 
 
 def test_docs_generator_init_default_paths() -> None:
-    """Test initialization with default paths."""
     generator = DocsGenerator()
 
     assert generator.docs_dir == Path("docs")
@@ -90,7 +85,6 @@ def test_docs_generator_init_default_paths() -> None:
 
 
 def test_docs_generator_init_custom_paths(temp_dir: Path) -> None:
-    """Test initialization with custom paths."""
     custom_docs = temp_dir / "custom_docs"
     generator = DocsGenerator(custom_docs)
 
@@ -100,7 +94,6 @@ def test_docs_generator_init_custom_paths(temp_dir: Path) -> None:
 
 
 def test_generate_all_creates_directories(sample_benchmark_results, temp_dir: Path) -> None:
-    """Test that generate_all creates necessary directories."""
     results_file = temp_dir / "results.json"
     with open(results_file, "wb") as f:
         f.write(msgspec.json.encode(sample_benchmark_results))
@@ -117,7 +110,6 @@ def test_generate_all_creates_directories(sample_benchmark_results, temp_dir: Pa
 
 
 def test_generate_all_creates_pages(sample_benchmark_results, temp_dir: Path) -> None:
-    """Test that all expected pages are created."""
     results_file = temp_dir / "results.json"
     with open(results_file, "wb") as f:
         f.write(msgspec.json.encode(sample_benchmark_results))
@@ -141,7 +133,6 @@ def test_generate_all_creates_pages(sample_benchmark_results, temp_dir: Path) ->
 
 
 def test_generate_all_with_empty_results(temp_dir: Path) -> None:
-    """Test handling of empty results."""
     results_file = temp_dir / "results.json"
     with open(results_file, "wb") as f:
         f.write(msgspec.json.encode([]))
@@ -154,7 +145,6 @@ def test_generate_all_with_empty_results(temp_dir: Path) -> None:
 
 
 def test_generate_all_no_results_file(temp_dir: Path) -> None:
-    """Test handling when results file doesn't exist."""
     generator = DocsGenerator(temp_dir / "docs")
     generator.generate_all()
 
@@ -164,7 +154,6 @@ def test_generate_all_no_results_file(temp_dir: Path) -> None:
 
 
 def test_aggregate_by_file_type(sample_benchmark_results, temp_dir: Path) -> None:
-    """Test file type aggregation."""
     generator = DocsGenerator(temp_dir / "docs")
     by_file_type = generator._aggregate_by_file_type(sample_benchmark_results)
 
@@ -175,7 +164,6 @@ def test_aggregate_by_file_type(sample_benchmark_results, temp_dir: Path) -> Non
 
 
 def test_aggregate_by_framework(sample_benchmark_results, temp_dir: Path) -> None:
-    """Test framework aggregation."""
     generator = DocsGenerator(temp_dir / "docs")
     by_framework = generator._aggregate_by_framework(sample_benchmark_results)
 
@@ -186,7 +174,6 @@ def test_aggregate_by_framework(sample_benchmark_results, temp_dir: Path) -> Non
 
 
 def test_aggregate_by_file_size(sample_benchmark_results, temp_dir: Path) -> None:
-    """Test file size aggregation."""
     generator = DocsGenerator(temp_dir / "docs")
     by_size = generator._aggregate_by_file_size(sample_benchmark_results)
 
@@ -195,7 +182,6 @@ def test_aggregate_by_file_size(sample_benchmark_results, temp_dir: Path) -> Non
 
 
 def test_load_results_valid_file(sample_benchmark_results, temp_dir: Path) -> None:
-    """Test loading valid results file."""
     results_file = temp_dir / "results.json"
     with open(results_file, "wb") as f:
         f.write(msgspec.json.encode(sample_benchmark_results))
@@ -209,7 +195,6 @@ def test_load_results_valid_file(sample_benchmark_results, temp_dir: Path) -> No
 
 
 def test_load_results_nonexistent_file(temp_dir: Path) -> None:
-    """Test loading non-existent results file."""
     generator = DocsGenerator()
     results = generator._load_results(temp_dir / "nonexistent.json")
 
@@ -217,7 +202,6 @@ def test_load_results_nonexistent_file(temp_dir: Path) -> None:
 
 
 def test_load_results_malformed_file(temp_dir: Path) -> None:
-    """Test loading malformed results file."""
     results_file = temp_dir / "malformed.json"
     with open(results_file, "w") as f:
         f.write("invalid json")
@@ -229,7 +213,6 @@ def test_load_results_malformed_file(temp_dir: Path) -> None:
 
 
 def test_score_to_grade() -> None:
-    """Test score to grade conversion."""
     generator = DocsGenerator()
 
     assert generator._score_to_grade(98) == "A+"
@@ -243,7 +226,6 @@ def test_score_to_grade() -> None:
 
 
 def test_grade_to_score() -> None:
-    """Test grade to score conversion."""
     generator = DocsGenerator()
 
     assert generator._grade_to_score("A+") == 1.0
@@ -254,7 +236,6 @@ def test_grade_to_score() -> None:
 
 
 def test_csv_export_generation(sample_benchmark_results, temp_dir: Path) -> None:
-    """Test CSV export generation."""
     generator = DocsGenerator(temp_dir / "docs")
     generator._setup_directories()
     generator._generate_csv_exports(sample_benchmark_results)

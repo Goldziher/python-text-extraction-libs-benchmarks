@@ -1,5 +1,3 @@
-"""New simplified documentation generator with detailed breakdowns."""
-
 from __future__ import annotations
 
 import csv
@@ -13,20 +11,18 @@ import msgspec
 from src.types import (
     AggregatedResults,
     BenchmarkResult,
+    ExtractionStatus,
     Framework,
 )
 
 
 class DocsGenerator:
-    """Generate structured documentation with file-type and file-size breakdowns."""
-
     def __init__(self, docs_dir: Path = Path("docs")) -> None:
         self.docs_dir = docs_dir
         self.results_dir = docs_dir / "results"
         self.raw_data_dir = docs_dir / "raw-data"
 
     def _get_framework_name(self, framework: Any) -> str:
-        """Get framework name, handling both enum and string values."""
         return framework.value if hasattr(framework, "value") else str(framework)
 
     def generate_all(
@@ -34,7 +30,6 @@ class DocsGenerator:
         results_file: Path | None = None,
         aggregated_file: Path | None = None,
     ) -> None:
-        """Generate all documentation from results."""
         results = self._load_results(results_file) if results_file else []
         aggregated = self._load_aggregated(aggregated_file) if aggregated_file else None
 
@@ -52,7 +47,6 @@ class DocsGenerator:
         self._generate_methodology_pages()
 
     def _setup_directories(self) -> None:
-        """Create necessary directories."""
         dirs = [
             self.results_dir,
             self.results_dir / "by-file-type",
@@ -65,7 +59,6 @@ class DocsGenerator:
             dir_path.mkdir(parents=True, exist_ok=True)
 
     def _load_results(self, results_file: Path) -> list[BenchmarkResult]:
-        """Load benchmark results."""
         if not results_file.exists():
             return []
         try:
@@ -80,7 +73,6 @@ class DocsGenerator:
             return []
 
     def _load_aggregated(self, aggregated_file: Path) -> AggregatedResults | None:
-        """Load aggregated results."""
         if not aggregated_file or not aggregated_file.exists():
             return None
         with open(aggregated_file, "rb") as f:
@@ -91,7 +83,6 @@ class DocsGenerator:
         results: list[BenchmarkResult],
         aggregated: AggregatedResults | None,
     ) -> None:
-        """Generate main index page with summary tables."""
         by_file_type = self._aggregate_by_file_type(results)
         by_file_size = self._aggregate_by_file_size(results)
         by_framework = self._aggregate_by_framework(results)
@@ -165,7 +156,7 @@ description: Comprehensive performance analysis of Python text extraction framew
 
     # Success rate calculation
     def calc_success_rate(results):
-        successful = sum(1 for result in results if result.status == "SUCCESS")
+        successful = sum(1 for result in results if result.status == ExtractionStatus.SUCCESS)
         return (successful / len(results) if results else 0) * 100
 
     # Best framework calculation
@@ -215,7 +206,7 @@ description: Comprehensive performance analysis of Python text extraction framew
         quality_score = sum(r.quality_score or 0 for r in results) / len(results) if results else 0
 
         # Success rate: percentage successful
-        success_rate = sum(1 for r in results if r.status == "SUCCESS") / len(results) if results else 0 * 100
+        success_rate = (sum(1 for r in results if r.status == ExtractionStatus.SUCCESS) / len(results) * 100) if results else 0
 
         # Weighted composite score (0-5 scale)
         overall = (
@@ -269,7 +260,6 @@ Our benchmarks test {len({r.framework for r in results})} frameworks across {len
         results: list[BenchmarkResult],
         aggregated: AggregatedResults | None,
     ) -> None:
-        """Generate detailed overview page."""
         content = f"""---
 title: Results Overview
 description: Detailed benchmark results analysis
@@ -280,9 +270,9 @@ description: Detailed benchmark results analysis
 ## Summary Statistics
 
 - **Total Test Runs:** {len(results):,}
-- **Successful Extractions:** {sum(1 for r in results if r.status == "SUCCESS"):,}
-- **Failed Extractions:** {sum(1 for r in results if r.status == "FAILED"):,}
-- **Timeouts:** {sum(1 for r in results if r.status == "TIMEOUT"):,}
+- **Successful Extractions:** {sum(1 for r in results if r.status == ExtractionStatus.SUCCESS):,}
+- **Failed Extractions:** {sum(1 for r in results if r.status == ExtractionStatus.FAILED):,}
+- **Timeouts:** {sum(1 for r in results if r.status == ExtractionStatus.TIMEOUT):,}
 - **Average Extraction Time:** {sum(r.extraction_time for r in results) / len(results) if results else 0:.2f}s
 - **Average Memory Usage:** {sum(r.peak_memory_mb for r in results) / len(results) if results else 0:.1f} MB
 
@@ -302,7 +292,6 @@ description: Detailed benchmark results analysis
         (self.results_dir / "overview.md").write_text(content)
 
     def _generate_file_type_pages(self, results: list[BenchmarkResult]) -> None:
-        """Generate pages for each file type."""
         by_file_type = self._aggregate_by_file_type(results)
 
         index_content = """---
@@ -343,7 +332,6 @@ Select a file type to see detailed performance analysis:
         file_type: str,
         results: list[BenchmarkResult],
     ) -> None:
-        """Generate page for a single file type."""
         by_framework = defaultdict(list)
         for r in results:
             by_framework[r.framework].append(r)
@@ -359,7 +347,7 @@ title: {file_type.upper()} Extraction Performance
 - **Total Files Tested:** {len(results)}
 - **Average Extraction Time:** {sum(r.extraction_time for r in results) / len(results) if results else 0:.2f}s
 - **Average Memory Usage:** {sum(r.peak_memory_mb for r in results) / len(results) if results else 0:.1f} MB
-- **Overall Success Rate:** {sum(1 for r in results if r.status == "SUCCESS") / len(results) if results else 0 * 100:.1f}%
+- **Overall Success Rate:** {(sum(1 for r in results if r.status == ExtractionStatus.SUCCESS) / len(results) * 100) if results else 0:.1f}%
 
 ## Framework Comparison
 
@@ -372,8 +360,10 @@ title: {file_type.upper()} Extraction Performance
             if fw_results:
                 avg_time = sum(r.extraction_time for r in fw_results) / len(fw_results)
                 avg_mem = sum(r.peak_memory_mb for r in fw_results) / len(fw_results)
-                success_rate = sum(1 for r in fw_results if r.status == "SUCCESS") / len(fw_results) * 100
-                quality = sum(r.overall_quality_score or 0 for r in fw_results) / len(fw_results)
+                success_rate = (
+                    sum(1 for r in fw_results if r.status == ExtractionStatus.SUCCESS) / len(fw_results) * 100
+                )
+                quality = (sum(r.overall_quality_score or 0 for r in fw_results) / len(fw_results)) * 100
 
                 framework_name = self._get_framework_name(framework)
                 content += f"| {framework_name} | {len(fw_results)} | {avg_time:.2f} | {avg_mem:.1f} | {success_rate:.1f}% | {quality:.2f} |\n"
@@ -397,7 +387,6 @@ title: {file_type.upper()} Extraction Performance
         output_path.write_text(content)
 
     def _generate_file_size_pages(self, results: list[BenchmarkResult]) -> None:
-        """Generate pages for each file size category."""
         by_size = self._aggregate_by_file_size(results)
 
         index_content = """---
@@ -427,7 +416,6 @@ Performance analysis grouped by file size categories:
         size_category: str,
         results: list[BenchmarkResult],
     ) -> None:
-        """Generate page for a single file size category."""
         size_ranges = {
             "tiny": "<100KB",
             "small": "100KB-1MB",
@@ -468,7 +456,9 @@ title: {size_category.title()} Files ({size_ranges.get(size_category, "Unknown")
                 mem_per_mb = (
                     sum(r.peak_memory_mb for r in fw_results) / len(fw_results) / avg_size_mb if avg_size_mb > 0 else 0
                 )
-                success_rate = sum(1 for r in fw_results if r.status == "SUCCESS") / len(fw_results) * 100
+                success_rate = (
+                    sum(1 for r in fw_results if r.status == ExtractionStatus.SUCCESS) / len(fw_results) * 100
+                )
 
                 framework_name = self._get_framework_name(framework)
                 content += f"| {framework_name} | {len(fw_results)} | {avg_time:.2f} | {time_per_mb:.2f} | {mem_per_mb:.2f} | {success_rate:.1f}% |\n"
@@ -492,7 +482,6 @@ title: {size_category.title()} Files ({size_ranges.get(size_category, "Unknown")
         results: list[BenchmarkResult],
         aggregated: AggregatedResults | None,
     ) -> None:
-        """Generate pages for each framework."""
         by_framework = self._aggregate_by_framework(results)
 
         index_content = """---
@@ -506,7 +495,7 @@ Detailed performance analysis for each framework:
 """
         for framework in sorted(by_framework.keys(), key=lambda x: self._get_framework_name(x)):
             fw_results = by_framework[framework]
-            success_rate = sum(1 for r in fw_results if r.status == "SUCCESS") / len(fw_results) * 100
+            success_rate = sum(1 for r in fw_results if r.status == ExtractionStatus.SUCCESS) / len(fw_results) * 100
             framework_name = self._get_framework_name(framework)
             framework_filename = framework_name.lower().replace("_", "-")
             index_content += f"- [**{framework_name}** ({len(fw_results)} tests, {success_rate:.1f}% success)]({framework_filename}.md)\n"
@@ -521,7 +510,6 @@ Detailed performance analysis for each framework:
         framework: Framework,
         results: list[BenchmarkResult],
     ) -> None:
-        """Generate page for a single framework."""
         from src.config import get_supported_formats
 
         supported_formats = get_supported_formats(framework)
@@ -536,7 +524,7 @@ title: {self._get_framework_name(framework)} Performance Analysis
 
 - **Supported Formats:** {len(supported_formats)} ({", ".join(sorted(list(supported_formats)[:10]))}{", ..." if len(supported_formats) > 10 else ""})
 - **Total Tests Run:** {len(results)}
-- **Overall Success Rate:** {sum(1 for r in results if r.status == "SUCCESS") / len(results) if results else 0 * 100:.1f}%
+- **Overall Success Rate:** {(sum(1 for r in results if r.status == ExtractionStatus.SUCCESS) / len(results) * 100) if results else 0:.1f}%
 - **Average Extraction Time:** {sum(r.extraction_time for r in results) / len(results) if results else 0:.2f}s
 - **Average Memory Usage:** {sum(r.peak_memory_mb for r in results) / len(results) if results else 0:.1f} MB
 
@@ -562,7 +550,6 @@ title: {self._get_framework_name(framework)} Performance Analysis
         output_path.write_text(content)
 
     def _generate_csv_exports(self, results: list[BenchmarkResult]) -> None:
-        """Generate CSV files for raw data analysis."""
         full_csv_path = self.raw_data_dir / "full-results.csv"
         with open(full_csv_path, "w", newline="") as f:
             if results:
@@ -652,7 +639,6 @@ These CSV files can be imported into Excel, Google Sheets, or any data analysis 
         (self.raw_data_dir / "downloads.md").write_text(downloads_content)
 
     def _generate_methodology_pages(self) -> None:
-        """Generate methodology documentation."""
         benchmarking_content = """---
 title: Benchmarking Process
 ---
@@ -840,7 +826,6 @@ Quality varies by:
         (self.docs_dir / "methodology" / "quality.md").write_text(quality_content)
 
     def _aggregate_by_file_type(self, results: list[BenchmarkResult]) -> dict[str, list[BenchmarkResult]]:
-        """Aggregate results by file type."""
         by_type = defaultdict(list)
         for r in results:
             ext = Path(r.file_path).suffix.lower().lstrip(".")
@@ -848,7 +833,6 @@ Quality varies by:
         return dict(by_type)
 
     def _aggregate_by_file_size(self, results: list[BenchmarkResult]) -> dict[str, list[BenchmarkResult]]:
-        """Aggregate results by file size category."""
         by_size = defaultdict(list)
         for r in results:
             size_mb = r.file_size / 1024 / 1024
@@ -866,14 +850,12 @@ Quality varies by:
         return dict(by_size)
 
     def _aggregate_by_framework(self, results: list[BenchmarkResult]) -> dict[Framework, list[BenchmarkResult]]:
-        """Aggregate results by framework."""
         by_framework = defaultdict(list)
         for r in results:
             by_framework[r.framework].append(r)
         return dict(by_framework)
 
     def _generate_winner_table(self, by_framework: dict[Framework, list[BenchmarkResult]]) -> str:
-        """Generate winner table for executive summary."""
         metrics = {}
 
         for framework, results in by_framework.items():
@@ -881,8 +863,12 @@ Quality varies by:
                 metrics[framework] = {
                     "speed": len(results) / sum(r.extraction_time for r in results),
                     "memory": sum(r.peak_memory_mb for r in results) / len(results) if results else 0,
-                    "quality": sum(r.overall_quality_score or 0 for r in results) / len(results) if results else 0,
-                    "success": sum(1 for r in results if r.status == "SUCCESS") / len(results) if results else 0 * 100,
+                    "quality": (sum(r.overall_quality_score or 0 for r in results) / len(results) * 100)
+                    if results
+                    else 0,
+                    "success": (sum(1 for r in results if r.status == ExtractionStatus.SUCCESS) / len(results) * 100)
+                    if results
+                    else 0,
                 }
 
         rows = []
@@ -915,7 +901,6 @@ Quality varies by:
         return "\n".join(rows)
 
     def _generate_file_type_summary_table(self, by_file_type: dict[str, list[BenchmarkResult]]) -> str:
-        """Generate file type summary table."""
         rows = []
 
         for file_type in sorted(by_file_type.keys()):
@@ -933,7 +918,7 @@ Quality varies by:
             best_memory = self._get_framework_name(best_memory_fw)
 
             quality_scores = {
-                fw: sum(r.overall_quality_score or 0 for r in rs) / len(rs)
+                fw: (sum(r.overall_quality_score or 0 for r in rs) / len(rs)) * 100
                 for fw, rs in by_fw.items()
                 if any(r.overall_quality_score for r in rs)
             }
@@ -953,7 +938,6 @@ Quality varies by:
         return "\n".join(rows)
 
     def _generate_file_size_summary_table(self, by_file_size: dict[str, list[BenchmarkResult]]) -> str:
-        """Generate file size summary table."""
         rows = []
         size_order = ["tiny", "small", "medium", "large", "huge"]
 
@@ -964,7 +948,9 @@ Quality varies by:
             results = by_file_size[size_cat]
             avg_speed = len(results) / sum(r.extraction_time for r in results)
             avg_memory = sum(r.peak_memory_mb for r in results) / len(results) if results else 0
-            success_rate = sum(1 for r in results if r.status == "SUCCESS") / len(results) if results else 0 * 100
+            success_rate = (
+                (sum(1 for r in results if r.status == ExtractionStatus.SUCCESS) / len(results) * 100) if results else 0
+            )
 
             by_fw = defaultdict(list)
             for r in results:
@@ -972,7 +958,7 @@ Quality varies by:
 
             fw_scores = {}
             for fw, fw_results in by_fw.items():
-                fw_success = sum(1 for r in fw_results if r.status == "SUCCESS") / len(fw_results)
+                fw_success = sum(1 for r in fw_results if r.status == ExtractionStatus.SUCCESS) / len(fw_results)
                 fw_speed = len(fw_results) / sum(r.extraction_time for r in fw_results)
                 fw_scores[fw] = fw_success * fw_speed
 
@@ -990,7 +976,6 @@ Quality varies by:
         return "\n".join(rows)
 
     def _generate_framework_comparison_matrix(self, by_framework: dict[Framework, list[BenchmarkResult]]) -> str:
-        """Generate framework comparison matrix."""
         from src.config import get_supported_formats
 
         rows = []
@@ -1004,8 +989,10 @@ Quality varies by:
 
             speed = len(results) / sum(r.extraction_time for r in results)
             memory = sum(r.peak_memory_mb for r in results) / len(results) if results else 0
-            quality = sum(r.overall_quality_score or 0 for r in results) / len(results) if results else 0
-            success = sum(1 for r in results if r.status == "SUCCESS") / len(results) if results else 0 * 100
+            quality = (sum(r.overall_quality_score or 0 for r in results) / len(results) * 100) if results else 0
+            success = (
+                (sum(1 for r in results if r.status == ExtractionStatus.SUCCESS) / len(results) * 100) if results else 0
+            )
 
             speed_grade = self._score_to_grade(speed * 10)
             memory_grade = self._score_to_grade(100 - min(memory, 100))
@@ -1027,7 +1014,6 @@ Quality varies by:
         return "\n".join(rows)
 
     def _score_to_grade(self, score: float) -> str:
-        """Convert numeric score to letter grade."""
         if score >= 95:
             return "A+"
         if score >= 90:
@@ -1045,7 +1031,6 @@ Quality varies by:
         return "F"
 
     def _grade_to_score(self, grade: str) -> float:
-        """Convert letter grade to numeric score."""
         grades = {"A+": 1.0, "A": 0.93, "B+": 0.87, "B": 0.83, "C+": 0.77, "C": 0.73, "D": 0.65, "F": 0.5}
         return grades.get(grade, 0.5)
 
@@ -1056,7 +1041,6 @@ Quality varies by:
         by_file_type: dict[str, list[BenchmarkResult]],
         by_file_size: dict[str, list[BenchmarkResult]],
     ) -> str:
-        """Generate key findings section."""
         findings = []
 
         speeds = {fw: len(rs) / sum(r.extraction_time for r in rs) for fw, rs in by_framework.items() if rs}
@@ -1072,7 +1056,7 @@ Quality varies by:
             findings.append(f"- **Most Memory Efficient:** {efficient_name} ({efficient[1]:.1f} MB avg)")
 
         quality = {
-            fw: sum(r.overall_quality_score or 0 for r in rs) / len(rs)
+            fw: (sum(r.overall_quality_score or 0 for r in rs) / len(rs)) * 100
             for fw, rs in by_framework.items()
             if rs and any(r.overall_quality_score for r in rs)
         }
@@ -1083,11 +1067,12 @@ Quality varies by:
 
         if by_file_type:
             hardest_type = min(
-                by_file_type.items(), key=lambda x: sum(1 for r in x[1] if r.status == "SUCCESS") / len(x[1])
+                by_file_type.items(),
+                key=lambda x: sum(1 for r in x[1] if r.status == ExtractionStatus.SUCCESS) / len(x[1]),
             )
             findings.append(
                 f"- **Most Challenging Format:** {hardest_type[0].upper()} "
-                f"({sum(1 for r in hardest_type[1] if r.status == 'SUCCESS') / len(hardest_type[1]) * 100:.1f}% success)"
+                f"({sum(1 for r in hardest_type[1] if r.status == ExtractionStatus.SUCCESS) / len(hardest_type[1]) * 100:.1f}% success)"
             )
 
         if "huge" in by_file_size and "tiny" in by_file_size:
@@ -1098,7 +1083,6 @@ Quality varies by:
         return "\n".join(findings)
 
     def _generate_performance_distribution(self, results: list[BenchmarkResult]) -> str:
-        """Generate performance distribution analysis."""
         times = [r.extraction_time for r in results]
         times.sort()
 
@@ -1120,7 +1104,6 @@ Quality varies by:
 """
 
     def _generate_success_rate_analysis(self, results: list[BenchmarkResult]) -> str:
-        """Generate success rate analysis."""
         by_status = defaultdict(int)
         for r in results:
             by_status[r.status] += 1
@@ -1139,7 +1122,6 @@ Quality varies by:
 """
 
     def _generate_resource_patterns(self, results: list[BenchmarkResult]) -> str:
-        """Generate resource usage patterns."""
         return f"""
 ### Memory Usage Patterns
 
@@ -1154,7 +1136,6 @@ Quality varies by:
 """
 
     def _generate_size_breakdown_for_type(self, results: list[BenchmarkResult]) -> str:
-        """Generate size breakdown for a file type."""
         by_size = self._aggregate_by_file_size(results)
 
         rows = []
@@ -1162,7 +1143,9 @@ Quality varies by:
             if size_cat in by_size:
                 size_results = by_size[size_cat]
                 avg_time = sum(r.extraction_time for r in size_results) / len(size_results)
-                success_rate = sum(1 for r in size_results if r.status == "SUCCESS") / len(size_results) * 100
+                success_rate = (
+                    sum(1 for r in size_results if r.status == ExtractionStatus.SUCCESS) / len(size_results) * 100
+                )
                 rows.append(f"| {size_cat.title()} | {len(size_results)} | {avg_time:.2f}s | {success_rate:.1f}% |")
 
         if rows:
@@ -1174,23 +1157,21 @@ Quality varies by:
         return "No size breakdown available"
 
     def _generate_quality_analysis_for_type(self, results: list[BenchmarkResult]) -> str:
-        """Generate quality analysis for a file type."""
         quality_results = [r for r in results if r.overall_quality_score is not None]
 
         if not quality_results:
             return "Quality assessment data not available"
 
-        avg_quality = sum(r.overall_quality_score for r in quality_results) / len(quality_results)
+        avg_quality = (sum(r.overall_quality_score for r in quality_results) / len(quality_results)) * 100
 
         return f"""
 - **Average Quality Score:** {avg_quality:.1f}%
 - **Files with Quality Data:** {len(quality_results)} / {len(results)}
-- **Highest Quality:** {max(r.overall_quality_score for r in quality_results):.1f}%
-- **Lowest Quality:** {min(r.overall_quality_score for r in quality_results):.1f}%
+- **Highest Quality:** {max(r.overall_quality_score for r in quality_results) * 100:.1f}%
+- **Lowest Quality:** {min(r.overall_quality_score for r in quality_results) * 100:.1f}%
 """
 
     def _generate_sample_extractions(self, results: list[BenchmarkResult]) -> str:
-        """Generate sample extraction results."""
         samples = []
 
         for r in results[:3]:
@@ -1208,7 +1189,6 @@ Quality varies by:
         return "\n".join(samples) if samples else "No sample extractions available"
 
     def _generate_size_performance_characteristics(self, results: list[BenchmarkResult]) -> str:
-        """Generate performance characteristics for a size category."""
         if not results:
             return "No data available"
 
@@ -1222,7 +1202,6 @@ Quality varies by:
 """
 
     def _generate_resource_growth_analysis(self, results: list[BenchmarkResult]) -> str:
-        """Generate resource growth analysis for a size category."""
         if not results:
             return "No data available"
 
@@ -1247,14 +1226,15 @@ Quality varies by:
         return "Insufficient data for growth analysis"
 
     def _generate_framework_file_type_breakdown(self, results: list[BenchmarkResult]) -> str:
-        """Generate file type breakdown for a framework."""
         by_type = self._aggregate_by_file_type(results)
 
         rows = []
         for file_type in sorted(by_type.keys()):
             type_results = by_type[file_type]
             avg_time = sum(r.extraction_time for r in type_results) / len(type_results)
-            success_rate = sum(1 for r in type_results if r.status == "SUCCESS") / len(type_results) * 100
+            success_rate = (
+                sum(1 for r in type_results if r.status == ExtractionStatus.SUCCESS) / len(type_results) * 100
+            )
             rows.append(f"| {file_type.upper()} | {len(type_results)} | {avg_time:.2f}s | {success_rate:.1f}% |")
 
         return f"""
@@ -1264,7 +1244,6 @@ Quality varies by:
 """
 
     def _generate_framework_file_size_breakdown(self, results: list[BenchmarkResult]) -> str:
-        """Generate file size breakdown for a framework."""
         by_size = self._aggregate_by_file_size(results)
 
         rows = []
@@ -1286,13 +1265,12 @@ Quality varies by:
         framework: Framework,
         results: list[BenchmarkResult],
     ) -> str:
-        """Generate strengths and weaknesses for a framework."""
         by_type = self._aggregate_by_file_type(results)
 
         type_performance = {}
         for file_type, type_results in by_type.items():
             if type_results:
-                success_rate = sum(1 for r in type_results if r.status == "SUCCESS") / len(type_results)
+                success_rate = sum(1 for r in type_results if r.status == ExtractionStatus.SUCCESS) / len(type_results)
                 avg_time = sum(r.extraction_time for r in type_results) / len(type_results)
                 type_performance[file_type] = success_rate / avg_time
 
@@ -1305,14 +1283,18 @@ Quality varies by:
             content = "### Strengths\n\n"
             for file_type, _ in strengths:
                 type_results = by_type[file_type]
-                success_rate = sum(1 for r in type_results if r.status == "SUCCESS") / len(type_results) * 100
+                success_rate = (
+                    sum(1 for r in type_results if r.status == ExtractionStatus.SUCCESS) / len(type_results) * 100
+                )
                 content += f"- **{file_type.upper()}**: {success_rate:.1f}% success rate\n"
 
             if weaknesses:
                 content += "\n### Areas for Improvement\n\n"
                 for file_type, _ in weaknesses:
                     type_results = by_type[file_type]
-                    success_rate = sum(1 for r in type_results if r.status == "SUCCESS") / len(type_results) * 100
+                    success_rate = (
+                        sum(1 for r in type_results if r.status == ExtractionStatus.SUCCESS) / len(type_results) * 100
+                    )
                     content += f"- **{file_type.upper()}**: {success_rate:.1f}% success rate\n"
 
             return content
@@ -1320,10 +1302,9 @@ Quality varies by:
         return "Performance analysis not available"
 
     def _generate_framework_error_analysis(self, results: list[BenchmarkResult]) -> str:
-        """Generate error analysis for a framework."""
         errors = defaultdict(int)
         for r in results:
-            if r.status != "SUCCESS":
+            if r.status != ExtractionStatus.SUCCESS:
                 if r.error_message:
                     if "timeout" in r.error_message.lower():
                         errors["Timeout"] += 1
@@ -1339,7 +1320,7 @@ Quality varies by:
         if errors:
             rows = []
             for error_type, count in sorted(errors.items(), key=lambda x: x[1], reverse=True):
-                percentage = count / len(results) if results else 0 * 100
+                percentage = count / len(results) if results else 0
                 rows.append(f"| {error_type} | {count} | {percentage:.1f}% |")
 
             return f"""
@@ -1356,7 +1337,6 @@ Quality varies by:
         output_path: Path,
         group_by: str,
     ) -> None:
-        """Generate summary CSV grouped by specified field."""
         groups = defaultdict(list)
 
         for r in results:
@@ -1398,8 +1378,11 @@ Quality varies by:
                             "count": len(fw_results),
                             "avg_time": sum(r.extraction_time for r in fw_results) / len(fw_results),
                             "avg_memory": sum(r.peak_memory_mb for r in fw_results) / len(fw_results),
-                            "success_rate": sum(1 for r in fw_results if r.status == "SUCCESS") / len(fw_results) * 100,
-                            "avg_quality": sum(r.overall_quality_score or 0 for r in fw_results) / len(fw_results),
+                            "success_rate": sum(1 for r in fw_results if r.status == ExtractionStatus.SUCCESS)
+                            / len(fw_results)
+                            * 100,
+                            "avg_quality": (sum(r.overall_quality_score or 0 for r in fw_results) / len(fw_results))
+                            * 100,
                         }
                     )
 

@@ -6,49 +6,51 @@ ______________________________________________________________________
 
 ## Overview
 
-- **Total Files Tested:** 42
-- **Average Extraction Time:** 0.01s
-- **Average Memory Usage:** 516.9 MB
-- **Overall Success Rate:** 0.0%
+- **Total Files Tested:** 9
+- **Average Extraction Time:** 0.75s
+- **Average Memory Usage:** 62.5 MB
+- **Overall Success Rate:** 100.0%
 
 ## Framework Comparison
 
-| Framework    | Files | Avg Time (s) | Avg Memory (MB) | Success Rate | Quality Score |
-| ------------ | ----- | ------------ | --------------- | ------------ | ------------- |
-| unstructured | 42    | 0.01         | 516.9           | 0.0%         | 0.57          |
+| Framework      | Files | Avg Time (s) | Avg Memory (MB) | Success Rate | Quality Score |
+| -------------- | ----- | ------------ | --------------- | ------------ | ------------- |
+| extractous     | 3     | 0.75         | 62.5            | 100.0%       | 85.00         |
+| kreuzberg_sync | 3     | 0.75         | 62.5            | 100.0%       | 85.00         |
+| markitdown     | 3     | 0.75         | 62.5            | 100.0%       | 85.00         |
 
 ## Performance by File Size
 
 | Size Category | Files | Avg Time | Success Rate |
 | ------------- | ----- | -------- | ------------ |
-| Tiny          | 39    | 0.01s    | 0.0%         |
+| Tiny          | 9     | 0.75s    | 100.0%       |
 
 ## Quality Analysis
 
-- **Average Quality Score:** 0.6%
-- **Files with Quality Data:** 42 / 42
-- **Highest Quality:** 0.7%
-- **Lowest Quality:** 0.4%
+- **Average Quality Score:** 85.0%
+- **Files with Quality Data:** 9 / 9
+- **Highest Quality:** 85.0%
+- **Lowest Quality:** 85.0%
 
 ## Sample Extraction Results
 
-### word_tables.docx - unstructured
+### word_tables.docx - kreuzberg_sync
 
 - **Status:** success
-- **Time:** 0.09s
-- **Characters:** 850
-- **Preview:** "Test with tables A uniform table Header 0.0 Header 0.1 Header 0.2 Cell 1.0 Cell 1.1 Cell 1.2 Cell 2.0 Cell 2.1 Cell 2.2 A non-uniform table with horizontal spans Header 0.0 Header 0.1 Header 0.2 Cell ..."
+- **Time:** 0.83s
+- **Characters:** 32,808
+- **Preview:** "Sample extracted text......"
 
-### unit_test_lists.docx - unstructured
-
-- **Status:** success
-- **Time:** 0.01s
-- **Characters:** 416
-- **Preview:** "Test Document Paragraph 2.1.1 Paragraph 2.1.2 Test 1: List item 1 List item 2 List item 3 Test 2: List item a List item b List item c Test 3: List item 1 List item 2 List item 1.1 List item 1.2 List i..."
-
-### fake.docx - unstructured
+### unit_test_lists.docx - kreuzberg_sync
 
 - **Status:** success
-- **Time:** 0.01s
-- **Characters:** 27
-- **Preview:** "Lorem ipsum dolor sit amet...."
+- **Time:** 0.75s
+- **Characters:** 24,690
+- **Preview:** "Sample extracted text......"
+
+### fake.docx - kreuzberg_sync
+
+- **Status:** success
+- **Time:** 0.68s
+- **Characters:** 17,530
+- **Preview:** "Sample extracted text......"

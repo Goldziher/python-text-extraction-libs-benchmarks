@@ -1,5 +1,3 @@
-"""Per-file-type performance and quality analysis for text extraction benchmarks."""
-
 from __future__ import annotations
 
 import json
@@ -18,15 +16,11 @@ logger = get_logger(__name__)
 
 
 class FileTypeAnalyzer:
-    """Analyze benchmark results by file type for detailed insights."""
-
     def __init__(self, results_data: list[dict[str, Any]]) -> None:
-        """Initialize with benchmark results data."""
         self.results = results_data
         self.file_type_stats = self._calculate_file_type_stats()
 
     def _calculate_file_type_stats(self) -> dict[str, dict[str, Any]]:
-        """Calculate comprehensive statistics per file type and framework."""
         stats = defaultdict(
             lambda: defaultdict(
                 lambda: {
@@ -100,7 +94,6 @@ class FileTypeAnalyzer:
         return dict(stats)
 
     def generate_file_type_performance_report(self, output_dir: Path) -> None:
-        """Generate comprehensive per-file-type performance report."""
         output_dir.mkdir(parents=True, exist_ok=True)
 
         summary_data = []
@@ -133,7 +126,6 @@ class FileTypeAnalyzer:
         logger.info("Generated file type analysis", output_dir=str(output_dir))
 
     def _create_success_rate_heatmap(self, df: pd.DataFrame, output_dir: Path) -> None:
-        """Create success rate heatmap by file type and framework."""
         pivot_data = df.pivot(index="file_type", columns="framework", values="success_rate")
 
         plt.figure(figsize=(14, 10))
@@ -159,7 +151,6 @@ class FileTypeAnalyzer:
         plt.close()
 
     def _create_performance_by_file_type(self, df: pd.DataFrame, output_dir: Path) -> None:
-        """Create performance comparison charts by file type."""
         file_types = df["file_type"].unique()
         n_types = len(file_types)
 
@@ -203,7 +194,6 @@ class FileTypeAnalyzer:
         plt.close()
 
     def _create_memory_usage_comparison(self, df: pd.DataFrame, output_dir: Path) -> None:
-        """Create detailed memory usage analysis by file type."""
         plt.figure(figsize=(14, 8))
 
         df_filtered = df[df["avg_memory_mb"] > 0]
@@ -219,7 +209,6 @@ class FileTypeAnalyzer:
         plt.close()
 
     def _create_throughput_analysis(self, df: pd.DataFrame, output_dir: Path) -> None:
-        """Create throughput analysis showing framework efficiency per file type."""
         plt.figure(figsize=(14, 10))
 
         frameworks = df["framework"].unique()
@@ -259,7 +248,6 @@ class FileTypeAnalyzer:
         plt.close()
 
     def _create_extraction_quality_analysis(self, df: pd.DataFrame, output_dir: Path) -> None:
-        """Create extraction quality analysis based on character/word counts."""
         _fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
         ax1 = axes[0]
@@ -286,7 +274,6 @@ class FileTypeAnalyzer:
         plt.close()
 
     def get_top_performing_frameworks(self, metric: str = "success_rate") -> dict[str, str]:
-        """Get the top performing framework for each file type based on specified metric."""
         top_frameworks = {}
 
         for file_type, frameworks in self.file_type_stats.items():
@@ -300,7 +287,6 @@ class FileTypeAnalyzer:
         return top_frameworks
 
     def generate_insights_report(self, output_dir: Path) -> None:
-        """Generate human-readable insights and recommendations."""
         insights = []
 
         insights.append("# File Type Performance Analysis - Key Insights\n")
@@ -345,7 +331,6 @@ class FileTypeAnalyzer:
 
 
 def main():
-    """Main function to run file type analysis on existing benchmark data."""
     results_files = [
         "extractous-results/benchmark-extractous-tiny-16215030688/benchmark_results.json",
         "kreuzberg-results/benchmark-kreuzberg_sync-tiny-16215030688/benchmark_results.json",

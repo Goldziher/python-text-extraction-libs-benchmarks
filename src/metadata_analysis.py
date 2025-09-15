@@ -1,5 +1,3 @@
-"""Metadata analysis system for benchmarking results."""
-
 from __future__ import annotations
 
 import json
@@ -16,14 +14,11 @@ from src.types import BenchmarkResult
 
 
 class MetadataFieldAnalyzer:
-    """Analyzes metadata fields extracted by each framework."""
-
     def __init__(self, results: list[BenchmarkResult]) -> None:
         self.results = results
         self.console = Console()
 
     def analyze_metadata_coverage(self) -> dict[str, dict[str, Any]]:
-        """Analyze metadata coverage by framework."""
         coverage = defaultdict(
             lambda: {
                 "total_extractions": 0,
@@ -58,7 +53,6 @@ class MetadataFieldAnalyzer:
         return dict(coverage)
 
     def compare_metadata_fields(self) -> pd.DataFrame:
-        """Create comparison matrix of metadata fields across frameworks."""
         all_fields = set()
         framework_fields = defaultdict(dict)
 
@@ -89,7 +83,6 @@ class MetadataFieldAnalyzer:
         return df
 
     def analyze_metadata_quality(self) -> dict[str, dict[str, Any]]:
-        """Analyze quality and completeness of metadata by framework."""
         quality_metrics = defaultdict(
             lambda: {
                 "completeness_scores": [],
@@ -148,7 +141,6 @@ class MetadataFieldAnalyzer:
         return dict(quality_metrics)
 
     def generate_metadata_report(self, output_dir: Path) -> None:
-        """Generate comprehensive metadata analysis report."""
         output_dir.mkdir(parents=True, exist_ok=True)
 
         coverage = self.analyze_metadata_coverage()
@@ -168,7 +160,6 @@ class MetadataFieldAnalyzer:
         self._display_metadata_summary(coverage)
 
     def _generate_summary_report(self, coverage: dict, quality: dict, output_dir: Path) -> None:
-        """Generate markdown summary report."""
         lines = [
             "# Metadata Extraction Analysis",
             "",
@@ -219,7 +210,6 @@ class MetadataFieldAnalyzer:
             f.write("\n".join(lines))
 
     def _display_metadata_summary(self, coverage: dict) -> None:
-        """Display metadata summary to console."""
         table = Table(title="Metadata Extraction Coverage by Framework")
 
         table.add_column("Framework", style="cyan")
@@ -244,7 +234,6 @@ class MetadataFieldAnalyzer:
 
 
 def analyze_metadata_from_results(results_file: Path, output_dir: Path) -> None:
-    """Analyze metadata from benchmark results file."""
     with open(results_file, "rb") as f:
         results_data = msgspec.json.decode(f.read())
 

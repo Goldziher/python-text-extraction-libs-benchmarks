@@ -1,8 +1,3 @@
-"""Configuration for benchmark file format support.
-
-Based on latest 2025 research of framework capabilities from official documentation.
-"""
-
 from __future__ import annotations
 
 from src.types import Framework
@@ -187,14 +182,6 @@ FRAMEWORK_SUPPORTED_FORMATS = {
 
 
 def get_supported_formats(framework: Framework | str) -> set[str]:
-    """Get the set of supported formats for a framework.
-
-    Args:
-        framework: Framework enum or string name
-
-    Returns:
-        Set of supported file extensions
-    """
     if isinstance(framework, str):
         try:
             framework = Framework(framework)
@@ -205,15 +192,6 @@ def get_supported_formats(framework: Framework | str) -> set[str]:
 
 
 def should_test_file(file_path: str, framework: Framework | str) -> bool:
-    """Determine if a file should be tested for a given framework.
-
-    Args:
-        file_path: Path to the file
-        framework: Framework name
-
-    Returns:
-        True if the file format is supported by the framework
-    """
     from pathlib import Path
 
     ext = Path(file_path).suffix.lower()
@@ -223,11 +201,6 @@ def should_test_file(file_path: str, framework: Framework | str) -> bool:
 
 
 def get_all_test_formats() -> set[str]:
-    """Get all unique formats across all frameworks.
-
-    Returns:
-        Set of all file extensions that should be tested
-    """
     all_formats = set()
     for formats in FRAMEWORK_SUPPORTED_FORMATS.values():
         all_formats.update(formats)

@@ -6,12 +6,16 @@ ______________________________________________________________________
 
 ## 🎯 Executive Summary
 
-**Last Updated:** 2025-09-14 18:29 UTC
+**Last Updated:** 2025-09-15 09:53 UTC
 
 ### Best Framework by Metric
 
-| Metric | Winner | Score | Runner-up | Score |
-| ------ | ------ | ----- | --------- | ----- |
+| Metric            | Winner         | Score   | Runner-up  | Score   |
+| ----------------- | -------------- | ------- | ---------- | ------- |
+| Speed (files/sec) | kreuzberg_sync | 1.33    | extractous | 1.33    |
+| Memory Efficiency | kreuzberg_sync | 62.5 MB | extractous | 62.5 MB |
+| Quality Score     | kreuzberg_sync | 85.0%   | extractous | 85.0%   |
+| Success Rate      | kreuzberg_sync | 100.0%  | extractous | 100.0%  |
 
 ### Performance by File Type
 
@@ -41,24 +45,9 @@ ______________________________________________________________________
     avg_time = sum(all_extraction_times) / total_test_count
     ```
 
-| File Type | Files | Best Speed   | Best Memory  | Best Quality | Avg Time (s) |
-| --------- | ----- | ------------ | ------------ | ------------ | ------------ |
-| BMP       | 3     | unstructured | unstructured | N/A          | 0.00         |
-| CSV       | 3     | unstructured | unstructured | unstructured | 0.00         |
-| DOCX      | 42    | unstructured | unstructured | unstructured | 0.01         |
-| EML       | 3     | unstructured | unstructured | unstructured | 0.00         |
-| EPUB      | 6     | unstructured | unstructured | N/A          | 0.00         |
-| HTML      | 51    | unstructured | unstructured | unstructured | 0.07         |
-| JSON      | 3     | unstructured | unstructured | unstructured | 0.00         |
-| MD        | 21    | unstructured | unstructured | N/A          | 0.00         |
-| MSG       | 6     | unstructured | unstructured | unstructured | 0.07         |
-| PDF       | 89    | unstructured | unstructured | N/A          | 0.11         |
-| PNG       | 6     | unstructured | unstructured | N/A          | 0.00         |
-| PPTX      | 12    | unstructured | unstructured | unstructured | 0.02         |
-| TXT       | 12    | unstructured | unstructured | unstructured | 0.05         |
-| XLS       | 3     | unstructured | unstructured | unstructured | 0.01         |
-| XLSX      | 6     | unstructured | unstructured | unstructured | 0.17         |
-| YAML      | 3     | unstructured | unstructured | unstructured | 0.23         |
+| File Type | Files | Best Speed     | Best Memory    | Best Quality   | Avg Time (s) |
+| --------- | ----- | -------------- | -------------- | -------------- | ------------ |
+| DOCX      | 9     | kreuzberg_sync | kreuzberg_sync | kreuzberg_sync | 0.75         |
 
 ### Performance by File Size
 
@@ -84,7 +73,7 @@ ______________________________________________________________________
 
     # Success rate calculation
     def calc_success_rate(results):
-        successful = sum(1 for result in results if result.status == "SUCCESS")
+        successful = sum(1 for result in results if result.status == ExtractionStatus.SUCCESS)
         return (successful / len(results) if results else 0) * 100
 
     # Best framework calculation
@@ -99,11 +88,7 @@ ______________________________________________________________________
 
 | Size Category | Files | Avg Speed (f/s) | Avg Memory (MB) | Success Rate | Best Framework |
 | ------------- | ----- | --------------- | --------------- | ------------ | -------------- |
-| Tiny          | 142   | 10.78           | 515.1           | 0.0%         | unstructured   |
-| Small         | 73    | 34.63           | 534.0           | 0.0%         | unstructured   |
-| Medium        | 36    | 25.61           | 554.1           | 0.0%         | unstructured   |
-| Large         | 9     | 371.18          | 558.8           | 0.0%         | unstructured   |
-| Huge          | 9     | 348.86          | 557.1           | 0.0%         | unstructured   |
+| Tiny          | 9     | 1.33            | 62.5            | 100.0%       | kreuzberg_sync |
 
 ### Framework Comparison Matrix
 
@@ -140,7 +125,7 @@ ______________________________________________________________________
         quality_score = sum(r.quality_score or 0 for r in results) / len(results) if results else 0
 
         # Success rate: percentage successful
-        success_rate = sum(1 for r in results if r.status == "SUCCESS") / len(results) if results else 0 * 100
+        success_rate = (sum(1 for r in results if r.status == ExtractionStatus.SUCCESS) / len(results) * 100) if results else 0
 
         # Weighted composite score (0-5 scale)
         overall = (
@@ -159,9 +144,11 @@ ______________________________________________________________________
         }
     ```
 
-| Framework    | Formats | Speed Grade | Memory Grade | Quality Grade | Success % | Overall Score |
-| ------------ | ------- | ----------- | ------------ | ------------- | --------- | ------------- |
-| unstructured | 30      | A+          | F            | F             | 0.0%      | 2.8           |
+| Framework      | Formats | Speed Grade | Memory Grade | Quality Grade | Success % | Overall Score |
+| -------------- | ------- | ----------- | ------------ | ------------- | --------- | ------------- |
+| extractous     | 52      | F           | F            | B+            | 100.0%    | 3.6           |
+| kreuzberg_sync | 25      | F           | F            | B+            | 100.0%    | 3.6           |
+| markitdown     | 19      | F           | F            | B+            | 100.0%    | 3.6           |
 
 ## 📊 Quick Navigation
 
@@ -173,15 +160,14 @@ ______________________________________________________________________
 
 ## 🔍 Key Findings
 
-- **Fastest Framework:** unstructured (16.07 files/sec)
-- **Most Memory Efficient:** unstructured (528.3 MB avg)
-- **Best Quality:** unstructured (0.3% score)
-- **Most Challenging Format:** JSON (0.0% success)
-- **Scalability Factor:** 0.0x slower for huge vs tiny files
+- **Fastest Framework:** kreuzberg_sync (1.33 files/sec)
+- **Most Memory Efficient:** kreuzberg_sync (62.5 MB avg)
+- **Best Quality:** kreuzberg_sync (85.0% score)
+- **Most Challenging Format:** DOCX (100.0% success)
 
 ## 📈 Methodology
 
-Our benchmarks test 1 frameworks across 17 file types with 269 total test runs.
+Our benchmarks test 3 frameworks across 1 file types with 9 total test runs.
 
 - **Quality Assessment:** Enabled by default
 - **Performance Profiling:** CPU and memory tracked at 50ms intervals

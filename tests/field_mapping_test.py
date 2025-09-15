@@ -1,15 +1,10 @@
-"""Document and test field mapping issues between types and reporting."""
-
 import pytest
 
 from src.types import BenchmarkResult, BenchmarkSummary, DocumentCategory, ExtractionStatus, FileType, Framework
 
 
 class TestFieldMapping:
-    """Document the field mapping issues we found."""
-
     def test_benchmark_result_field_mapping(self):
-        """Document actual vs expected field names in BenchmarkResult."""
         expected_but_missing = {
             "file_size_bytes": "file_size",
             "extraction_time_seconds": "extraction_time",
@@ -42,7 +37,6 @@ class TestFieldMapping:
         assert result.character_count is None
 
     def test_benchmark_summary_field_mapping(self):
-        """Document actual vs expected field names in BenchmarkSummary."""
         expected_but_missing = {
             "successful_extractions": "successful_files",
             "failed_extractions": "failed_files",
@@ -85,7 +79,6 @@ class TestFieldMapping:
         assert not hasattr(summary, "total_time_seconds")
 
     def test_reporting_assumptions(self):
-        """Test what the reporting module assumes vs reality."""
         summary_transformations = {
             "successful_extractions": lambda s: s.successful_files,
             "failed_extractions": lambda s: s.failed_files,

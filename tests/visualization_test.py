@@ -1,5 +1,3 @@
-"""Tests for visualization module to ensure proper handling of None values."""
-
 from pathlib import Path
 from unittest.mock import patch
 
@@ -11,11 +9,8 @@ from src.visualize import BenchmarkVisualizer
 
 
 class TestVisualizationNoneHandling:
-    """Test suite for verifying visualization handles None values correctly."""
-
     @pytest.fixture
     def sample_aggregated_results_with_nones(self):
-        """Create aggregated results with None values."""
         summaries = {
             "kreuzberg_sync": [
                 BenchmarkSummary(
@@ -89,7 +84,6 @@ class TestVisualizationNoneHandling:
         )
 
     def test_category_analysis_handles_none_avg_times(self, sample_aggregated_results_with_nones, tmp_path):
-        """Test that category analysis correctly handles None values in avg_times."""
         visualizer = BenchmarkVisualizer(output_dir=tmp_path)
 
         with patch("matplotlib.pyplot.savefig"):
@@ -98,7 +92,6 @@ class TestVisualizationNoneHandling:
         assert isinstance(output_files, list)
 
     def test_performance_comparison_handles_none_success_rate(self, sample_aggregated_results_with_nones, tmp_path):
-        """Test that performance comparison handles None success_rate values."""
         visualizer = BenchmarkVisualizer(output_dir=tmp_path)
 
         with patch("matplotlib.pyplot.savefig"):
@@ -107,7 +100,6 @@ class TestVisualizationNoneHandling:
         assert isinstance(output_files, list)
 
     def test_summary_metrics_handles_none_values(self, sample_aggregated_results_with_nones, tmp_path):
-        """Test that summary metrics generation handles None values in calculations."""
         visualizer = BenchmarkVisualizer(output_dir=tmp_path)
 
         test_file = tmp_path / "test_aggregated.json"
@@ -124,7 +116,6 @@ class TestVisualizationNoneHandling:
         assert fw_metrics["avg_memory_mb"] >= 0
 
     def test_interactive_dashboard_handles_none_values(self, sample_aggregated_results_with_nones, tmp_path):
-        """Test that interactive dashboard handles None values in data."""
         visualizer = BenchmarkVisualizer(output_dir=tmp_path)
 
         with patch("plotly.graph_objects.Figure"):
@@ -133,7 +124,6 @@ class TestVisualizationNoneHandling:
         assert isinstance(output_path, Path)
 
     def test_success_rate_distribution_skips_none_rates(self, tmp_path):
-        """Test that success rate distribution correctly skips None rates."""
         visualizer = BenchmarkVisualizer(output_dir=tmp_path)
 
         summaries = {

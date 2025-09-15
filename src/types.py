@@ -1,5 +1,3 @@
-"""Type definitions for the benchmarking system."""
-
 from __future__ import annotations
 
 from enum import Enum
@@ -12,8 +10,6 @@ from .config_defaults import DefaultValues
 
 
 class Framework(str, Enum):
-    """Supported text extraction frameworks."""
-
     KREUZBERG_SYNC = "kreuzberg_sync"
     KREUZBERG_ASYNC = "kreuzberg_async"
     DOCLING = "docling"
@@ -23,8 +19,6 @@ class Framework(str, Enum):
 
 
 class FileType(str, Enum):
-    """Supported file types for benchmarking."""
-
     PDF = "pdf"
     PDF_SCANNED = "pdf_scanned"
     DOCX = "docx"
@@ -51,8 +45,6 @@ class FileType(str, Enum):
 
 
 class DocumentCategory(str, Enum):
-    """Document categories for organized testing."""
-
     TINY = "tiny"
     SMALL = "small"
     MEDIUM = "medium"
@@ -76,8 +68,6 @@ class DocumentCategory(str, Enum):
 
 
 class ExtractionStatus(str, Enum):
-    """Status of an extraction attempt."""
-
     SUCCESS = "success"
     PARTIAL = "partial"
     FAILED = "failed"
@@ -86,32 +76,18 @@ class ExtractionStatus(str, Enum):
 
 
 class ExtractorProtocol(Protocol):
-    """Protocol for synchronous text extractors."""
+    def extract_text(self, file_path: str | Path) -> str: ...
 
-    def extract_text(self, file_path: str | Path) -> str:
-        """Extract text from a file."""
-        ...
-
-    def extract_with_metadata(self, file_path: str | Path) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata from a file."""
-        ...
+    def extract_with_metadata(self, file_path: str | Path) -> tuple[str, dict[str, Any]]: ...
 
 
 class AsyncExtractorProtocol(Protocol):
-    """Protocol for asynchronous text extractors."""
+    async def extract_text(self, file_path: str | Path) -> str: ...
 
-    async def extract_text(self, file_path: str | Path) -> str:
-        """Extract text from a file asynchronously."""
-        ...
-
-    async def extract_with_metadata(self, file_path: str | Path) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata from a file asynchronously."""
-        ...
+    async def extract_with_metadata(self, file_path: str | Path) -> tuple[str, dict[str, Any]]: ...
 
 
 class ResourceMetrics(msgspec.Struct):
-    """Detailed resource usage metrics."""
-
     timestamp: float
     cpu_percent: float
     memory_rss: int
@@ -125,8 +101,6 @@ class ResourceMetrics(msgspec.Struct):
 
 
 class ExtractionResult(msgspec.Struct, kw_only=True):
-    """Result of a single extraction attempt."""
-
     file_path: str
     file_size: int
     framework: Framework
@@ -143,8 +117,6 @@ class ExtractionResult(msgspec.Struct, kw_only=True):
 
 
 class BenchmarkResult(msgspec.Struct, kw_only=True):
-    """Complete benchmark result for a single file."""
-
     file_path: str
     file_size: int
     file_type: FileType
@@ -181,8 +153,6 @@ class BenchmarkResult(msgspec.Struct, kw_only=True):
 
 
 class BenchmarkSummary(msgspec.Struct, kw_only=True):
-    """Summary statistics for a framework/category combination."""
-
     framework: Framework
     category: DocumentCategory
     total_files: int
@@ -216,8 +186,6 @@ class BenchmarkSummary(msgspec.Struct, kw_only=True):
 
 
 class AggregatedResults(msgspec.Struct, kw_only=True):
-    """Aggregated results from multiple benchmark runs."""
-
     total_runs: int
     total_files_processed: int
     total_time_seconds: float
@@ -237,8 +205,6 @@ class AggregatedResults(msgspec.Struct, kw_only=True):
 
 
 class BenchmarkConfig(msgspec.Struct, kw_only=True):
-    """Configuration for benchmark execution."""
-
     iterations: int = DefaultValues.DEFAULT_ITERATIONS
     warmup_runs: int = DefaultValues.DEFAULT_WARMUP_RUNS
     cooldown_seconds: int = DefaultValues.COOLDOWN_SECONDS

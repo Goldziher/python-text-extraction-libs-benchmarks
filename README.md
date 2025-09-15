@@ -219,9 +219,6 @@ uv run python -m src.cli benchmark --format-tier universal
 ```bash
 # Test Kreuzberg with Tesseract OCR backend
 uv run python -m src.cli benchmark \
-  --framework kreuzberg_tesseract \
-  --category images
-
 # Test async vs sync implementations
 uv run python -m src.cli benchmark \
   --framework kreuzberg_sync,kreuzberg_async \

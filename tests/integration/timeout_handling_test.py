@@ -1,5 +1,3 @@
-"""Integration tests for timeout handling across the system."""
-
 import asyncio
 import tempfile
 from pathlib import Path
@@ -17,11 +15,8 @@ from src.types import (
 
 
 class TestTimeoutIntegration:
-    """Test timeout handling across the entire system."""
-
     @pytest.mark.asyncio
     async def test_benchmark_suite_timeout_short_duration(self):
-        """Test that benchmark suite respects max_run_duration timeout."""
         config = BenchmarkConfig(
             frameworks=[Framework.KREUZBERG_SYNC],
             categories=[DocumentCategory.TINY],
@@ -62,7 +57,6 @@ class TestTimeoutIntegration:
 
     @pytest.mark.asyncio
     async def test_individual_file_timeout(self):
-        """Test timeout handling for individual file extraction."""
         config = BenchmarkConfig(
             frameworks=[Framework.KREUZBERG_SYNC],
             categories=[DocumentCategory.TINY],
@@ -110,7 +104,6 @@ class TestTimeoutIntegration:
 
     @pytest.mark.asyncio
     async def test_timeout_recovery_and_partial_results(self):
-        """Test that timeout allows recovery and saves partial results."""
         config = BenchmarkConfig(
             frameworks=[Framework.KREUZBERG_SYNC],
             categories=[DocumentCategory.TINY],
@@ -162,7 +155,6 @@ class TestTimeoutIntegration:
 
     @pytest.mark.asyncio
     async def test_async_extractor_timeout_handling(self):
-        """Test timeout handling specifically for async extractors."""
         config = BenchmarkConfig(
             frameworks=[Framework.KREUZBERG_ASYNC],
             categories=[DocumentCategory.TINY],
@@ -201,7 +193,6 @@ class TestTimeoutIntegration:
 
     @pytest.mark.asyncio
     async def test_concurrent_timeout_handling(self):
-        """Test timeout handling when multiple files are processed concurrently."""
         config = BenchmarkConfig(
             frameworks=[Framework.KREUZBERG_SYNC],
             categories=[DocumentCategory.TINY],
@@ -256,7 +247,6 @@ class TestTimeoutIntegration:
                 test_file.unlink()
 
     def test_timeout_configuration_consistency(self):
-        """Test that timeout configurations are consistent across components."""
         from src.config_defaults import DefaultValues
 
         config = BenchmarkConfig(
@@ -270,7 +260,6 @@ class TestTimeoutIntegration:
 
     @pytest.mark.asyncio
     async def test_warmup_timeout_interaction(self):
-        """Test interaction between warmup phase and timeouts."""
         config = BenchmarkConfig(
             frameworks=[Framework.KREUZBERG_SYNC],
             categories=[DocumentCategory.TINY],
@@ -294,11 +283,8 @@ class TestTimeoutIntegration:
 
 
 class TestTimeoutErrorHandling:
-    """Test error handling specifically related to timeouts."""
-
     @pytest.mark.asyncio
     async def test_timeout_error_messages(self):
-        """Test that timeout errors have informative messages."""
         config = BenchmarkConfig(
             frameworks=[Framework.KREUZBERG_SYNC],
             categories=[DocumentCategory.TINY],
@@ -338,7 +324,6 @@ class TestTimeoutErrorHandling:
 
     @pytest.mark.asyncio
     async def test_timeout_retry_behavior(self):
-        """Test retry behavior when timeouts occur."""
         config = BenchmarkConfig(
             frameworks=[Framework.KREUZBERG_SYNC],
             categories=[DocumentCategory.TINY],

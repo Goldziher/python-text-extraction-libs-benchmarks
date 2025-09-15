@@ -100,7 +100,6 @@ class ResultAggregator:
         )
 
     def _group_by_framework(self, results: list[BenchmarkResult]) -> dict[Framework, list[BenchmarkSummary]]:
-        """Group results by framework."""
         grouped = defaultdict(list)
 
         for framework in Framework:
@@ -115,7 +114,6 @@ class ResultAggregator:
         return dict(grouped)
 
     def _group_by_category(self, results: list[BenchmarkResult]) -> dict[DocumentCategory, list[BenchmarkSummary]]:
-        """Group results by category."""
         grouped = defaultdict(list)
 
         for category in DocumentCategory:
@@ -130,7 +128,6 @@ class ResultAggregator:
         return dict(grouped)
 
     def _create_matrix(self, results: list[BenchmarkResult]) -> dict[str, BenchmarkSummary]:
-        """Create framework/category cross-tabulation matrix."""
         matrix = {}
 
         for framework in Framework:
@@ -146,7 +143,6 @@ class ResultAggregator:
     def _create_summary(
         self, framework: Framework, category: DocumentCategory, results: list[BenchmarkResult]
     ) -> BenchmarkSummary:
-        """~key Create statistical summary for framework/category - core metrics for comparison."""
         successful = [r for r in results if r.status == ExtractionStatus.SUCCESS]
         failed = [r for r in results if r.status == ExtractionStatus.FAILED]
         partial = [r for r in results if r.status == ExtractionStatus.PARTIAL]
@@ -207,7 +203,6 @@ class ResultAggregator:
         )
 
     def _analyze_failures(self, results: list[BenchmarkResult]) -> dict[str, int]:
-        """Analyze failure patterns."""
         failures = defaultdict(int)
 
         for result in results:
@@ -217,7 +212,6 @@ class ResultAggregator:
         return dict(failures)
 
     def _calculate_performance_trends(self, results: list[BenchmarkResult]) -> dict[Framework, list[float]]:
-        """Calculate performance trends over iterations."""
         trends = defaultdict(lambda: defaultdict(list))
 
         for result in results:
@@ -235,7 +229,6 @@ class ResultAggregator:
         return dict(performance_trends)
 
     def _group_by_platform(self, results: list[BenchmarkResult]) -> dict[str, dict[Framework, BenchmarkSummary]]:
-        """Group results by platform."""
         platform_groups = defaultdict(list)
 
         for result in results:
@@ -254,11 +247,9 @@ class ResultAggregator:
         return platform_results
 
     def _create_platform_summary(self, framework: Framework, results: list[BenchmarkResult]) -> BenchmarkSummary:
-        """Create a platform-specific summary across all categories."""
         return self._create_summary(framework, DocumentCategory.TINY, results)
 
     def _empty_aggregated_results(self) -> AggregatedResults:
-        """Create empty aggregated results."""
         return AggregatedResults(
             total_runs=0,
             total_files_processed=0,
@@ -273,7 +264,6 @@ class ResultAggregator:
         )
 
     def save_results(self, aggregated: AggregatedResults, output_dir: Path) -> None:
-        """Save aggregated results to disk."""
         output_dir.mkdir(parents=True, exist_ok=True)
 
         results_path = output_dir / "aggregated_results.json"

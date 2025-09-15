@@ -57,7 +57,6 @@ class ComprehensiveBenchmarkRunner:
         self.failed_files: dict[str, int] = {}
 
     def __del__(self) -> None:
-        """Ensure ThreadPoolExecutor is properly shut down."""
         if hasattr(self, "executor") and self.executor is not None:
             try:
                 self.executor.shutdown(wait=True)
@@ -65,16 +64,13 @@ class ComprehensiveBenchmarkRunner:
                 pass
 
     async def __aenter__(self) -> Self:
-        """Async context manager entry."""
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        """Async context manager exit - ensure cleanup."""
         if hasattr(self, "executor") and self.executor is not None:
             self.executor.shutdown(wait=True)
 
     def _clear_kreuzberg_cache(self) -> None:
-        """Clear Kreuzberg cache to ensure fair benchmarking."""
         cache_paths = [
             Path.home() / ".kreuzberg",
             Path.cwd() / ".kreuzberg",
@@ -117,7 +113,6 @@ class ComprehensiveBenchmarkRunner:
     async def _run_benchmark_with_timeout_check(
         self, start_time: float, max_duration_seconds: float
     ) -> list[BenchmarkResult]:
-        """Run benchmark iterations with periodic timeout checks."""
         if self.config.warmup_runs > 0:
             self.console.print("\n[yellow]Running warmup iterations...[/yellow]")
             await self._run_warmup()
@@ -173,7 +168,6 @@ class ComprehensiveBenchmarkRunner:
                     pass
 
     async def _get_warmup_files(self) -> list[Path]:
-        """Get a small set of files for warmup."""
         warmup_files = []
         test_dir = self.config.output_dir.parent / "test_documents"
 
@@ -185,7 +179,6 @@ class ComprehensiveBenchmarkRunner:
         return warmup_files[: self.config.warmup_runs]
 
     async def _run_single_iteration(self, iteration: int) -> list[BenchmarkResult]:
-        """Run a single benchmark iteration."""
         iteration_results = []
 
         with Progress(
@@ -223,7 +216,6 @@ class ComprehensiveBenchmarkRunner:
     async def _get_test_files(
         self, category: DocumentCategory, framework: Framework | None = None
     ) -> list[tuple[Path, dict[str, Any]]]:
-        """Get test files for a specific category."""
         test_dir = self.config.output_dir.parent / "test_documents"
         files = self.categorizer.get_files_for_category(test_dir, category, self.config.table_extraction_only)
 
@@ -239,7 +231,6 @@ class ComprehensiveBenchmarkRunner:
         return files
 
     def _should_skip_file(self, file_path: str) -> bool:
-        """Check if a file should be skipped due to repeated failures."""
         if not self.config.skip_on_repeated_failure:
             return False
 
@@ -254,7 +245,6 @@ class ComprehensiveBenchmarkRunner:
         iteration: int,
         category: DocumentCategory,
     ) -> BenchmarkResult | None:
-        """Benchmark a single file with retry logic."""
         if "kreuzberg" in framework.value:
             import shutil
 
@@ -360,7 +350,6 @@ class ComprehensiveBenchmarkRunner:
         return None
 
     async def _run_extraction(self, framework: Framework, file_path: Path) -> ExtractionResult:
-        """Run text extraction with resource monitoring."""
         try:
             extractor = get_extractor(framework)
 
@@ -381,7 +370,6 @@ class ComprehensiveBenchmarkRunner:
     async def _run_async_extraction(
         self, extractor: AsyncExtractorProtocol, file_path: Path, framework: Framework
     ) -> ExtractionResult:
-        """Run async extraction with profiling."""
         async with AsyncPerformanceProfiler(self.config.sampling_interval_ms) as metrics:
             start_time = time.time()
 
@@ -420,8 +408,6 @@ class ComprehensiveBenchmarkRunner:
     async def _run_sync_extraction(
         self, extractor: ExtractorProtocol, file_path: Path, framework: Framework
     ) -> ExtractionResult:
-        """Run sync extraction in thread pool with profiling."""
-
         def extract_with_profiling() -> ExtractionResult:
             with profile_performance(self.config.sampling_interval_ms) as metrics:
                 start_time = time.time()
@@ -466,7 +452,6 @@ class ComprehensiveBenchmarkRunner:
         return result
 
     def _save_results_sync(self) -> None:
-        """Save benchmark results to disk."""
         import msgspec
 
         self.config.output_dir.mkdir(parents=True, exist_ok=True)
@@ -483,12 +468,10 @@ class ComprehensiveBenchmarkRunner:
         self.console.print(f"\n[green]Results saved to {self.config.output_dir}[/green]")
 
     async def _save_results(self) -> None:
-        """Save benchmark results to disk."""
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, self._save_results_sync)
 
     def _generate_summaries(self) -> list[BenchmarkSummary]:
-        """Generate summary statistics from results."""
         import statistics
         from collections import defaultdict
 
@@ -574,7 +557,6 @@ class ComprehensiveBenchmarkRunner:
         return summaries
 
     def _calculate_quality_statistics(self, successful_results: list[BenchmarkResult]) -> dict[str, float] | None:
-        """Calculate quality statistics from successful results."""
         import statistics
 
         quality_scores = [r.overall_quality_score for r in successful_results if r.overall_quality_score is not None]

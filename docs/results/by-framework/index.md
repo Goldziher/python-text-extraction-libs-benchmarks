@@ -6,4 +6,6 @@ ______________________________________________________________________
 
 Detailed performance analysis for each framework:
 
-- [**unstructured** (269 tests, 0.0% success)](unstructured.md)
+- [**extractous** (3 tests, 100.0% success)](extractous.md)
+- [**kreuzberg_sync** (3 tests, 100.0% success)](kreuzberg-sync.md)
+- [**markitdown** (3 tests, 100.0% success)](markitdown.md)

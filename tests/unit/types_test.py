@@ -1,5 +1,3 @@
-"""Tests for types module."""
-
 import msgspec
 
 from src.types import (
@@ -16,7 +14,6 @@ from src.types import (
 
 
 def test_framework_enum() -> None:
-    """Test Framework enum values."""
     expected_frameworks = [
         Framework.KREUZBERG_SYNC,
         Framework.KREUZBERG_ASYNC,
@@ -32,7 +29,6 @@ def test_framework_enum() -> None:
 
 
 def test_file_type_enum() -> None:
-    """Test FileType enum values."""
     expected_types = [
         FileType.PDF,
         FileType.DOCX,
@@ -50,7 +46,6 @@ def test_file_type_enum() -> None:
 
 
 def test_document_category_enum() -> None:
-    """Test DocumentCategory enum values."""
     expected_categories = [
         DocumentCategory.TINY,
         DocumentCategory.SMALL,
@@ -69,7 +64,6 @@ def test_document_category_enum() -> None:
 
 
 def test_extraction_status_enum() -> None:
-    """Test ExtractionStatus enum values."""
     expected_statuses = [
         ExtractionStatus.SUCCESS,
         ExtractionStatus.PARTIAL,
@@ -84,7 +78,6 @@ def test_extraction_status_enum() -> None:
 
 
 def test_resource_metrics_creation() -> None:
-    """Test ResourceMetrics creation."""
     metrics = ResourceMetrics(
         timestamp=1234567890.0,
         cpu_percent=50.0,
@@ -111,7 +104,6 @@ def test_resource_metrics_creation() -> None:
 
 
 def test_benchmark_result_creation() -> None:
-    """Test BenchmarkResult creation."""
     result = BenchmarkResult(
         file_path="test.pdf",
         file_size=1024,
@@ -146,7 +138,6 @@ def test_benchmark_result_creation() -> None:
 
 
 def test_benchmark_result_with_optional_fields() -> None:
-    """Test BenchmarkResult with optional fields."""
     result = BenchmarkResult(
         file_path="test.pdf",
         file_size=1024,
@@ -177,7 +168,6 @@ def test_benchmark_result_with_optional_fields() -> None:
 
 
 def test_benchmark_summary_creation() -> None:
-    """Test BenchmarkSummary creation."""
     summary = BenchmarkSummary(
         framework=Framework.KREUZBERG_SYNC,
         category=DocumentCategory.SMALL,
@@ -208,7 +198,6 @@ def test_benchmark_summary_creation() -> None:
 
 
 def test_benchmark_summary_consistency() -> None:
-    """Test BenchmarkSummary internal consistency."""
     summary = BenchmarkSummary(
         framework=Framework.KREUZBERG_SYNC,
         category=DocumentCategory.SMALL,
@@ -235,7 +224,6 @@ def test_benchmark_summary_consistency() -> None:
 
 
 def test_aggregated_results_creation() -> None:
-    """Test AggregatedResults creation."""
     summary = BenchmarkSummary(
         framework=Framework.KREUZBERG_SYNC,
         category=DocumentCategory.SMALL,
@@ -275,7 +263,6 @@ def test_aggregated_results_creation() -> None:
 
 
 def test_benchmark_config_creation() -> None:
-    """Test BenchmarkConfig creation."""
     config = BenchmarkConfig(
         iterations=5,
         warmup_runs=2,
@@ -302,7 +289,6 @@ def test_benchmark_config_creation() -> None:
 
 
 def test_benchmark_config_defaults() -> None:
-    """Test BenchmarkConfig default values."""
     config = BenchmarkConfig()
 
     assert config.iterations == 3
@@ -317,7 +303,6 @@ def test_benchmark_config_defaults() -> None:
 
 
 def test_msgspec_serialization() -> None:
-    """Test msgspec serialization/deserialization."""
     result = BenchmarkResult(
         file_path="test.pdf",
         file_size=1024,
@@ -346,7 +331,6 @@ def test_msgspec_serialization() -> None:
 
 
 def test_resource_metrics_serialization() -> None:
-    """Test ResourceMetrics serialization."""
     metrics = ResourceMetrics(
         timestamp=1234567890.0,
         cpu_percent=50.0,
@@ -366,7 +350,6 @@ def test_resource_metrics_serialization() -> None:
 
 
 def test_benchmark_result_validation() -> None:
-    """Test BenchmarkResult validation."""
     result = BenchmarkResult(
         file_path="test.pdf",
         file_size=1024,
@@ -391,7 +374,6 @@ def test_benchmark_result_validation() -> None:
 
 
 def test_benchmark_result_with_error() -> None:
-    """Test BenchmarkResult with error status."""
     result = BenchmarkResult(
         file_path="test.pdf",
         file_size=1024,
@@ -417,7 +399,6 @@ def test_benchmark_result_with_error() -> None:
 
 
 def test_nested_structure_serialization() -> None:
-    """Test serialization of deeply nested structures."""
     results = []
     summaries = []
 
@@ -479,7 +460,6 @@ def test_nested_structure_serialization() -> None:
 
 
 def test_partial_data_handling() -> None:
-    """Test handling of partial/missing data."""
     result = BenchmarkResult(
         file_path="test.pdf",
         file_size=1024,
