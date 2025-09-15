@@ -6,7 +6,7 @@ ______________________________________________________________________
 
 ## Framework Overview
 
-- **Supported Formats:** 25 (.docx, .epub, .jpeg, .jpg, .odp, .ods, .odt, .png, .txt, .xlsx, ...)
+- **Supported Formats:** 25 (.csv, .epub, .mhtml, .ods, .ppt, .pptx, .rtf, .tiff, .xlsx, .xml, ...)
 - **Total Tests Run:** 3
 - **Overall Success Rate:** 100.0%
 - **Average Extraction Time:** 0.75s

@@ -6,7 +6,7 @@ ______________________________________________________________________
 
 ## Framework Overview
 
-- **Supported Formats:** 19 (.docx, .epub, .jpeg, .jpg, .json, .mp3, .png, .pptx, .xlsx, .zip, ...)
+- **Supported Formats:** 19 (.csv, .epub, .mp3, .pdf, .pptx, .rtf, .wav, .xlsx, .xml, .zip, ...)
 - **Total Tests Run:** 3
 - **Overall Success Rate:** 100.0%
 - **Average Extraction Time:** 0.75s

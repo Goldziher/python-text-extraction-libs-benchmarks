@@ -6,7 +6,7 @@ ______________________________________________________________________
 
 ## Framework Overview
 
-- **Supported Formats:** 52 (.docx, .java, .jpeg, .jpg, .js, .mbox, .odt, .rb, .tar, .xlsx, ...)
+- **Supported Formats:** 52 (.avi, .cpp, .epub, .mbox, .ods, .pdf, .ppt, .psd, .wav, .xml, ...)
 - **Total Tests Run:** 3
 - **Overall Success Rate:** 100.0%
 - **Average Extraction Time:** 0.75s

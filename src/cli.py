@@ -61,7 +61,10 @@ def benchmark(
     continue_on_error: bool,
     enable_quality_assessment: bool,
 ) -> None:
-    frameworks = [f.value for f in Framework] if framework.lower() == "all" else [framework]
+    if framework.lower() == "all":
+        frameworks = [f.value for f in Framework]
+    else:
+        frameworks = [f.strip() for f in framework.split(",")]
 
     valid_frameworks = {f.value for f in Framework}
     invalid = [f for f in frameworks if f not in valid_frameworks]

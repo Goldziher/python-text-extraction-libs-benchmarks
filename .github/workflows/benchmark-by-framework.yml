@@ -4,7 +4,7 @@ on:
   release:
     types: [published]
   schedule:
-    - cron: '0 6 * * 1'  # Weekly on Monday at 6 AM UTC
+    - cron: '0 6 * * 1'
   workflow_dispatch:
     inputs:
       frameworks:
@@ -21,7 +21,7 @@ on:
 jobs:
   comprehensive-benchmark:
     runs-on: ubuntu-latest
-    timeout-minutes: 480  # 8 hours for comprehensive testing
+    timeout-minutes: 480
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -75,7 +75,7 @@ jobs:
 
           try:
               import extractous
-              frameworks.append(f'✅ Extractous: {extractous.__version__}')
+              frameworks.append('✅ Extractous: Available')
           except ImportError as e:
               frameworks.append(f'❌ Extractous: {e}')
 
