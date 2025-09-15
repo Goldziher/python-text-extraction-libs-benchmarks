@@ -217,9 +217,9 @@ uv run python -m src.cli benchmark --format-tier universal
 ### Framework-Specific Options
 
 ```bash
-# Test Kreuzberg with different OCR backends
+# Test Kreuzberg with Tesseract OCR backend
 uv run python -m src.cli benchmark \
-  --framework kreuzberg_tesseract,kreuzberg_easyocr,kreuzberg_paddleocr \
+  --framework kreuzberg_tesseract \
   --category images
 
 # Test async vs sync implementations

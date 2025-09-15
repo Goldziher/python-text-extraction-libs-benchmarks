@@ -1,75 +1,234 @@
-"""Configuration for benchmark file format filtering."""
+"""Configuration for benchmark file format support.
+
+Based on latest 2025 research of framework capabilities from official documentation.
+"""
 
 from __future__ import annotations
 
 from src.types import Framework
 
-UNIVERSAL_FORMATS = {
-    ".pdf",
-    ".pptx",
-    ".xlsx",
-    ".png",
-    ".bmp",
-    ".html",
-    ".csv",
+FRAMEWORK_SUPPORTED_FORMATS = {
+    Framework.KREUZBERG_SYNC: {
+        ".pdf",
+        ".docx",
+        ".doc",
+        ".rtf",
+        ".txt",
+        ".epub",
+        ".odt",
+        ".xlsx",
+        ".xls",
+        ".csv",
+        ".ods",
+        ".pptx",
+        ".ppt",
+        ".odp",
+        ".html",
+        ".xml",
+        ".mhtml",
+        ".md",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".bmp",
+        ".tiff",
+        ".gif",
+        ".webp",
+    },
+    Framework.KREUZBERG_ASYNC: {
+        ".pdf",
+        ".docx",
+        ".doc",
+        ".rtf",
+        ".txt",
+        ".epub",
+        ".odt",
+        ".xlsx",
+        ".xls",
+        ".csv",
+        ".ods",
+        ".pptx",
+        ".ppt",
+        ".odp",
+        ".html",
+        ".xml",
+        ".mhtml",
+        ".md",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".bmp",
+        ".tiff",
+        ".gif",
+        ".webp",
+    },
+    Framework.DOCLING: {
+        ".pdf",
+        ".docx",
+        ".pptx",
+        ".xlsx",
+        ".html",
+        ".md",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".tiff",
+        ".wav",
+        ".mp3",
+    },
+    Framework.MARKITDOWN: {
+        ".pdf",
+        ".docx",
+        ".xlsx",
+        ".xls",
+        ".pptx",
+        ".html",
+        ".epub",
+        ".csv",
+        ".json",
+        ".xml",
+        ".rtf",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".wav",
+        ".mp3",
+        ".eml",
+        ".msg",
+        ".zip",
+    },
+    Framework.UNSTRUCTURED: {
+        ".pdf",
+        ".docx",
+        ".doc",
+        ".pptx",
+        ".ppt",
+        ".xlsx",
+        ".xls",
+        ".odt",
+        ".ods",
+        ".odp",
+        ".csv",
+        ".tsv",
+        ".json",
+        ".ndjson",
+        ".html",
+        ".xml",
+        ".md",
+        ".txt",
+        ".rtf",
+        ".org",
+        ".rst",
+        ".epub",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".heic",
+        ".bmp",
+        ".tiff",
+        ".eml",
+        ".msg",
+    },
+    Framework.EXTRACTOUS: {
+        ".pdf",
+        ".docx",
+        ".doc",
+        ".pptx",
+        ".ppt",
+        ".xlsx",
+        ".xls",
+        ".rtf",
+        ".odt",
+        ".ods",
+        ".odp",
+        ".csv",
+        ".tsv",
+        ".json",
+        ".xml",
+        ".html",
+        ".md",
+        ".txt",
+        ".epub",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".bmp",
+        ".tiff",
+        ".gif",
+        ".ico",
+        ".psd",
+        ".svg",
+        ".eml",
+        ".msg",
+        ".mbox",
+        ".pst",
+        ".zip",
+        ".tar",
+        ".gz",
+        ".7z",
+        ".rar",
+        ".mp3",
+        ".mp4",
+        ".wav",
+        ".avi",
+        ".mov",
+        ".java",
+        ".py",
+        ".cpp",
+        ".c",
+        ".js",
+        ".ts",
+        ".go",
+        ".rs",
+        ".rb",
+        ".php",
+    },
 }
 
-COMMON_FORMATS = {
-    ".xls",
-    ".md",
-    ".jpeg",
-    ".txt",
-}
 
-TIER1_FORMATS = UNIVERSAL_FORMATS
-TIER2_FORMATS = UNIVERSAL_FORMATS | COMMON_FORMATS
-
-COMMON_SUPPORTED_FORMATS = UNIVERSAL_FORMATS
-
-FRAMEWORK_EXCLUSIONS = {
-    Framework.KREUZBERG_SYNC: {".eml", ".msg", ".json", ".yaml"},
-    Framework.KREUZBERG_ASYNC: {".eml", ".msg", ".json", ".yaml"},
-    Framework.KREUZBERG_TESSERACT: {".eml", ".msg", ".json", ".yaml"},
-    Framework.KREUZBERG_EASYOCR: {".eml", ".msg", ".json", ".yaml"},
-    Framework.KREUZBERG_PADDLEOCR: {".eml", ".msg", ".json", ".yaml"},
-    Framework.DOCLING: {".eml", ".msg", ".json", ".yaml", ".odt", ".org", ".rst", ".txt", ".xls"},
-    Framework.MARKITDOWN: {".docx", ".md", ".odt"},
-    Framework.UNSTRUCTURED: {".jpeg", ".jpg", ".odt", ".org", ".rst"},
-    Framework.EXTRACTOUS: {".docx", ".jpg"},
-}
-
-
-def should_test_file(file_path: str, framework: Framework | str, format_tier: str | None = None) -> bool:
-    """Determine if a file should be tested for a given framework.
+def get_supported_formats(framework: Framework | str) -> set[str]:
+    """Get the set of supported formats for a framework.
 
     Args:
-        file_path: Path to the file
-        framework: Framework name
-        format_tier: Format tier to use ('universal', 'common', or None for all)
+        framework: Framework enum or string name
 
     Returns:
-        True if the file should be tested, False otherwise
+        Set of supported file extensions
     """
-    from pathlib import Path
-
-    ext = Path(file_path).suffix.lower()
-
-    if format_tier:
-        if format_tier == "universal":
-            return ext in TIER1_FORMATS
-        if format_tier == "common":
-            return ext in TIER2_FORMATS
-        if format_tier == "common_only":
-            return ext in UNIVERSAL_FORMATS
-
-    # Convert string to Framework enum if needed
     if isinstance(framework, str):
         try:
             framework = Framework(framework)
         except ValueError as e:
             raise ValueError(f"Unknown framework: {framework}. Valid frameworks: {[f.value for f in Framework]}") from e
 
-    if framework in FRAMEWORK_EXCLUSIONS:
-        return ext not in FRAMEWORK_EXCLUSIONS[framework]
+    return FRAMEWORK_SUPPORTED_FORMATS.get(framework, set())
 
-    return True
+
+def should_test_file(file_path: str, framework: Framework | str) -> bool:
+    """Determine if a file should be tested for a given framework.
+
+    Args:
+        file_path: Path to the file
+        framework: Framework name
+
+    Returns:
+        True if the file format is supported by the framework
+    """
+    from pathlib import Path
+
+    ext = Path(file_path).suffix.lower()
+    supported_formats = get_supported_formats(framework)
+
+    return ext in supported_formats
+
+
+def get_all_test_formats() -> set[str]:
+    """Get all unique formats across all frameworks.
+
+    Returns:
+        Set of all file extensions that should be tested
+    """
+    all_formats = set()
+    for formats in FRAMEWORK_SUPPORTED_FORMATS.values():
+        all_formats.update(formats)
+    return all_formats

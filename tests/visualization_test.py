@@ -93,7 +93,7 @@ class TestVisualizationNoneHandling:
         visualizer = BenchmarkVisualizer(output_dir=tmp_path)
 
         with patch("matplotlib.pyplot.savefig"):
-            output_files = visualizer._create_category_analysis(sample_aggregated_results_with_nones)  # noqa: SLF001
+            output_files = visualizer._create_category_analysis(sample_aggregated_results_with_nones)
 
         assert isinstance(output_files, list)
 
@@ -102,7 +102,7 @@ class TestVisualizationNoneHandling:
         visualizer = BenchmarkVisualizer(output_dir=tmp_path)
 
         with patch("matplotlib.pyplot.savefig"):
-            output_files = visualizer._create_performance_comparison(sample_aggregated_results_with_nones)  # noqa: SLF001
+            output_files = visualizer._create_performance_comparison(sample_aggregated_results_with_nones)
 
         assert isinstance(output_files, list)
 
@@ -128,7 +128,7 @@ class TestVisualizationNoneHandling:
         visualizer = BenchmarkVisualizer(output_dir=tmp_path)
 
         with patch("plotly.graph_objects.Figure"):
-            output_path = visualizer._create_interactive_dashboard(sample_aggregated_results_with_nones)  # noqa: SLF001
+            output_path = visualizer._create_interactive_dashboard(sample_aggregated_results_with_nones)
 
         assert isinstance(output_path, Path)
 
@@ -209,6 +209,6 @@ class TestVisualizationNoneHandling:
         )
 
         with patch("matplotlib.pyplot.savefig"):
-            output_files = visualizer._create_category_analysis(aggregated)  # noqa: SLF001
+            output_files = visualizer._create_category_analysis(aggregated)
 
         assert isinstance(output_files, list)

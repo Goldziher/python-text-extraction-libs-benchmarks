@@ -1,0 +1,97 @@
+{
+  "total_runs": 1,
+  "total_files_processed": 278,
+  "total_time_seconds": 111.1324782371521,
+  "frameworks_tested": 1,
+  "framework_performance": {
+    "kreuzberg_async": {
+      "total_files": 278,
+      "successful_files": 272,
+      "success_rate": 0.9784172661870504,
+      "avg_files_per_second": 7.596157085833012,
+      "avg_memory_mb": 1935.091585489891
+    }
+  },
+  "category_performance": {
+    "tiny": {
+      "total_files": 47,
+      "successful_files": 47,
+      "success_rate": 1.0
+    },
+    "small": {
+      "total_files": 27,
+      "successful_files": 25,
+      "success_rate": 0.9259259259259259
+    },
+    "medium": {
+      "total_files": 12,
+      "successful_files": 12,
+      "success_rate": 1.0
+    },
+    "large": {
+      "total_files": 3,
+      "successful_files": 3,
+      "success_rate": 1.0
+    },
+    "huge": {
+      "total_files": 3,
+      "successful_files": 3,
+      "success_rate": 1.0
+    },
+    "pdf_standard": {
+      "total_files": 25,
+      "successful_files": 24,
+      "success_rate": 0.96
+    },
+    "pdf_scanned": {
+      "total_files": 4,
+      "successful_files": 4,
+      "success_rate": 1.0
+    },
+    "pdf_complex": {
+      "total_files": 2,
+      "successful_files": 2,
+      "success_rate": 1.0
+    },
+    "office": {
+      "total_files": 23,
+      "successful_files": 23,
+      "success_rate": 1.0
+    },
+    "web": {
+      "total_files": 17,
+      "successful_files": 17,
+      "success_rate": 1.0
+    },
+    "text": {
+      "total_files": 13,
+      "successful_files": 13,
+      "success_rate": 1.0
+    },
+    "ebook": {
+      "total_files": 2,
+      "successful_files": 2,
+      "success_rate": 1.0
+    },
+    "data": {
+      "total_files": 1,
+      "successful_files": 1,
+      "success_rate": 1.0
+    },
+    "images": {
+      "total_files": 7,
+      "successful_files": 6,
+      "success_rate": 0.8571428571428571
+    },
+    "english": {
+      "total_files": 85,
+      "successful_files": 83,
+      "success_rate": 0.9764705882352941
+    },
+    "unicode": {
+      "total_files": 7,
+      "successful_files": 7,
+      "success_rate": 1.0
+    }
+  }
+}

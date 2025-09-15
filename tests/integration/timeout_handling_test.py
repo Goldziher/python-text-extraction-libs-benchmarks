@@ -27,39 +27,34 @@ class TestTimeoutIntegration:
             categories=[DocumentCategory.TINY],
             iterations=1,
             warmup_runs=0,
-            max_run_duration_minutes=0.02,  # 1.2 seconds - very short
+            max_run_duration_minutes=0.02,
             output_dir=Path("test_output"),
         )
 
         runner = ComprehensiveBenchmarkRunner(config)
 
-        # Mock file discovery to return a test file
         with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as f:
             f.write(b"Test content")
             test_file = Path(f.name)
 
         try:
-            # Mock the categorizer to return our test file
             with (
                 patch.object(runner.categorizer, "get_files_by_category") as mock_get_files,
                 patch("src.benchmark.get_extractor") as mock_get_extractor,
             ):
                 mock_get_files.return_value = [test_file]
 
-                # Mock extractor that takes too long
                 mock_extractor = Mock()
-                mock_extractor.extract_text.side_effect = lambda x: asyncio.sleep(10)  # 10 second delay
+                mock_extractor.extract_text.side_effect = lambda x: asyncio.sleep(10)
                 mock_get_extractor.return_value = mock_extractor
 
                 start_time = asyncio.get_event_loop().time()
                 results = await runner.run_benchmark_suite()
                 end_time = asyncio.get_event_loop().time()
 
-                # Should complete within timeout window (plus small buffer)
                 elapsed_seconds = end_time - start_time
-                assert elapsed_seconds < 5  # Should timeout way before 10 seconds
+                assert elapsed_seconds < 5
 
-                # Results should be empty or contain timeout markers
                 assert isinstance(results, list)
 
         finally:
@@ -73,31 +68,27 @@ class TestTimeoutIntegration:
             categories=[DocumentCategory.TINY],
             iterations=1,
             warmup_runs=0,
-            timeout_seconds=1,  # Very short timeout for individual files
+            timeout_seconds=1,
             output_dir=Path("test_output"),
         )
 
         runner = ComprehensiveBenchmarkRunner(config)
 
-        # Create test file
         with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as f:
             f.write(b"Test content for timeout testing")
             test_file = Path(f.name)
 
         try:
             with patch("src.benchmark.get_extractor") as mock_get_extractor:
-                # Mock slow extractor
                 mock_extractor = Mock()
 
-                # Create an async function that sleeps longer than timeout
                 async def slow_extract(file_path):
-                    await asyncio.sleep(5)  # 5 seconds - longer than 1 second timeout
+                    await asyncio.sleep(5)
                     return "extracted text"
 
                 mock_extractor.extract_text = slow_extract
                 mock_get_extractor.return_value = mock_extractor
 
-                # Mock file metadata
                 mock_metadata = {
                     "file_size": 1000,
                     "file_type": "txt",
@@ -106,12 +97,10 @@ class TestTimeoutIntegration:
                 with patch.object(runner.categorizer, "_get_file_metadata") as mock_metadata_func:
                     mock_metadata_func.return_value = mock_metadata
 
-                    # This should timeout at the file level
                     result = await runner._benchmark_single_file(
                         Framework.KREUZBERG_SYNC, test_file, mock_metadata, 0, DocumentCategory.TINY
                     )
 
-                    # Should return a timeout result
                     assert result is not None
                     assert result.status == ExtractionStatus.TIMEOUT
                     assert "timeout" in result.error_message.lower()
@@ -127,13 +116,12 @@ class TestTimeoutIntegration:
             categories=[DocumentCategory.TINY],
             iterations=2,
             warmup_runs=0,
-            max_run_duration_minutes=0.05,  # 3 seconds
+            max_run_duration_minutes=0.05,
             output_dir=Path("test_output"),
         )
 
         runner = ComprehensiveBenchmarkRunner(config)
 
-        # Create test files
         test_files = []
         for i in range(3):
             with tempfile.NamedTemporaryFile(suffix=f"_test{i}.txt", delete=False) as f:
@@ -148,7 +136,6 @@ class TestTimeoutIntegration:
             ):
                 mock_get_files.return_value = test_files
 
-                # Mock extractor - first file fast, others slow
                 mock_extractor = Mock()
 
                 call_count = 0
@@ -157,9 +144,9 @@ class TestTimeoutIntegration:
                     nonlocal call_count
                     call_count += 1
                     if call_count == 1:
-                        await asyncio.sleep(0.1)  # Fast
+                        await asyncio.sleep(0.1)
                         return "extracted text 1"
-                    await asyncio.sleep(10)  # Very slow - will timeout
+                    await asyncio.sleep(10)
                     return "extracted text slow"
 
                 mock_extractor.extract_text = variable_speed_extract
@@ -167,8 +154,6 @@ class TestTimeoutIntegration:
 
                 results = await runner.run_benchmark_suite()
 
-                # Should have some results before timeout
-                # At minimum, should have called save_results to preserve partial results
                 mock_save.assert_called()
 
         finally:
@@ -189,14 +174,12 @@ class TestTimeoutIntegration:
 
         runner = ComprehensiveBenchmarkRunner(config)
 
-        # Create test file
         with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as f:
             f.write(b"Test async timeout")
             test_file = Path(f.name)
 
         try:
             with patch("src.benchmark.get_extractor") as mock_get_extractor:
-                # Mock async extractor
                 mock_extractor = AsyncMock()
                 mock_extractor.extract_text.side_effect = lambda x: asyncio.sleep(5)
                 mock_get_extractor.return_value = mock_extractor
@@ -225,13 +208,12 @@ class TestTimeoutIntegration:
             iterations=1,
             warmup_runs=0,
             timeout_seconds=2,
-            concurrent_files=2,  # Process 2 files at once
+            concurrent_files=2,
             output_dir=Path("test_output"),
         )
 
         runner = ComprehensiveBenchmarkRunner(config)
 
-        # Create multiple test files
         test_files = []
         for i in range(4):
             with tempfile.NamedTemporaryFile(suffix=f"_concurrent{i}.txt", delete=False) as f:
@@ -245,7 +227,6 @@ class TestTimeoutIntegration:
             ):
                 mock_get_files.return_value = test_files
 
-                # Mock extractor with variable delays
                 mock_extractor = Mock()
 
                 call_count = 0
@@ -254,12 +235,10 @@ class TestTimeoutIntegration:
                     nonlocal call_count
                     call_count += 1
                     if call_count <= 2:
-                        # First two files complete quickly
                         return f"extracted text {call_count}"
-                    # Later files timeout
                     import time
 
-                    time.sleep(10)  # Will cause timeout
+                    time.sleep(10)
                     return "should not reach here"
 
                 mock_extractor.extract_text = variable_delay_extract
@@ -267,12 +246,10 @@ class TestTimeoutIntegration:
 
                 results = await runner.run_benchmark_suite()
 
-                # Should have mix of successful and timeout results
                 success_count = sum(1 for r in results if r.status == ExtractionStatus.SUCCESS)
                 timeout_count = sum(1 for r in results if r.status == ExtractionStatus.TIMEOUT)
 
                 assert success_count > 0, "Should have some successful extractions"
-                # Timeout count depends on exact timing, but should handle gracefully
 
         finally:
             for test_file in test_files:
@@ -282,14 +259,12 @@ class TestTimeoutIntegration:
         """Test that timeout configurations are consistent across components."""
         from src.config_defaults import DefaultValues
 
-        # CLI and config should use same default timeout
         config = BenchmarkConfig(
             frameworks=[Framework.KREUZBERG_SYNC],
             categories=[DocumentCategory.TINY],
             output_dir=Path("test_output"),
         )
 
-        # Should use centralized defaults
         assert config.timeout_seconds == DefaultValues.EXTRACTION_TIMEOUT_SECONDS
         assert config.max_run_duration_minutes == DefaultValues.MAX_RUN_DURATION_MINUTES
 
@@ -301,23 +276,21 @@ class TestTimeoutIntegration:
             categories=[DocumentCategory.TINY],
             iterations=1,
             warmup_runs=2,
-            max_run_duration_minutes=0.03,  # Very short - should timeout during warmup
+            max_run_duration_minutes=0.03,
             output_dir=Path("test_output"),
         )
 
         runner = ComprehensiveBenchmarkRunner(config)
 
         with patch.object(runner, "_run_warmup") as mock_warmup:
-            # Mock slow warmup
             mock_warmup.side_effect = lambda: asyncio.sleep(10)
 
             start_time = asyncio.get_event_loop().time()
             results = await runner.run_benchmark_suite()
             end_time = asyncio.get_event_loop().time()
 
-            # Should timeout quickly, even during warmup
             elapsed = end_time - start_time
-            assert elapsed < 5  # Should timeout way before 10 seconds
+            assert elapsed < 5
 
 
 class TestTimeoutErrorHandling:
@@ -355,7 +328,6 @@ class TestTimeoutErrorHandling:
                         Framework.KREUZBERG_SYNC, test_file, mock_metadata, 0, DocumentCategory.TINY
                     )
 
-                    # Check error message quality
                     assert result.status == ExtractionStatus.TIMEOUT
                     assert result.error_type == "TimeoutError"
                     assert "timeout" in result.error_message.lower()
@@ -386,13 +358,11 @@ class TestTimeoutErrorHandling:
             with patch("src.benchmark.get_extractor") as mock_get_extractor:
                 mock_extractor = Mock()
 
-                # Track call count for retries
                 call_count = 0
 
                 def counting_extract(file_path):
                     nonlocal call_count
                     call_count += 1
-                    # Always timeout
                     import time
 
                     time.sleep(5)
@@ -410,7 +380,6 @@ class TestTimeoutErrorHandling:
                         Framework.KREUZBERG_SYNC, test_file, mock_metadata, 0, DocumentCategory.TINY
                     )
 
-                    # Should have retried the configured number of times
                     assert result.attempts == config.max_retries
                     assert result.status == ExtractionStatus.TIMEOUT
 

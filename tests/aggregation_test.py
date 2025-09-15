@@ -244,7 +244,7 @@ class TestResultAggregator:
         """Test that matrix keys follow the expected format."""
         aggregator = ResultAggregator()
 
-        matrix = aggregator._create_matrix(sample_results)  # noqa: SLF001
+        matrix = aggregator._create_matrix(sample_results)
 
         expected_keys = ["kreuzberg_sync_tiny", "kreuzberg_sync_small", "markitdown_tiny"]
 

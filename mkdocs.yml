@@ -1,5 +1,5 @@
-site_name: Python Text Extraction Libraries Benchmarks 2025
-site_description: Comprehensive performance analysis and benchmarks for Python text extraction frameworks
+site_name: Python Text Extraction Benchmarks 2025
+site_description: Comprehensive performance analysis of Python text extraction frameworks
 site_url: https://benchmarks.kreuzberg.dev
 site_author: Kreuzberg Contributors
 repo_name: Goldziher/python-text-extraction-libraries-benchmarks-2025
@@ -9,8 +9,6 @@ copyright: Copyright &copy; 2025 Kreuzberg Contributors
 
 theme:
   name: material
-  logo: assets/logo.png
-  favicon: assets/favicon.png
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -85,12 +83,8 @@ markdown_extensions:
 
 plugins:
   - search
-  - social
   - minify:
       minify_html: true
-  - git-revision-date-localized:
-      enable_creation_date: true
-      type: timeago
 
 extra:
   social:
@@ -98,35 +92,39 @@ extra:
       link: https://github.com/Goldziher/python-text-extraction-libraries-benchmarks-2025
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/kreuzberg/
-  version:
-    provider: mike
-    default: latest
-
-extra_css:
-  - css/extra.css
 
 nav:
   - Home: index.md
-  - Latest Results:
-      - results/index.md
-      - Performance:
-          - Speed Analysis: results/performance/speed.md
-          - Memory Usage: results/performance/memory.md
-      - Format Analysis:
-          - Document Formats: results/formats/documents.md
-          - Image Extraction: results/formats/images.md
-          - Data Formats: results/formats/data.md
-      - Interactive:
-          - Dashboard: results/interactive/dashboard.md
-  - Framework Guide:
-      - frameworks/index.md
-      - Kreuzberg: frameworks/kreuzberg.md
-      - Docling: frameworks/docling.md
-      - MarkItDown: frameworks/markitdown.md
-      - Unstructured: frameworks/unstructured.md
-      - Extractous: frameworks/extractous.md
+
+  - Results Overview:
+      - Summary Dashboard: results/overview.md
+      - By File Type:
+          - results/by-file-type/index.md
+          - PDF Documents: results/by-file-type/pdf.md
+          - Word Documents: results/by-file-type/docx.md
+          - Spreadsheets: results/by-file-type/spreadsheets.md
+          - Images: results/by-file-type/images.md
+          - Web Documents: results/by-file-type/web.md
+          - Data Formats: results/by-file-type/data.md
+      - By File Size:
+          - results/by-file-size/index.md
+          - Tiny (<100KB): results/by-file-size/tiny.md
+          - Small (100KB-1MB): results/by-file-size/small.md
+          - Medium (1MB-10MB): results/by-file-size/medium.md
+          - Large (10MB-50MB): results/by-file-size/large.md
+          - Huge (>50MB): results/by-file-size/huge.md
+      - By Framework:
+          - results/by-framework/index.md
+          - Kreuzberg: results/by-framework/kreuzberg.md
+          - Unstructured: results/by-framework/unstructured.md
+          - MarkItDown: results/by-framework/markitdown.md
+          - Extractous: results/by-framework/extractous.md
+          - Docling: results/by-framework/docling.md
+
   - Methodology:
-      - methodology/index.md
-      - Test Environment: methodology/environment.md
-      - Metrics & Scoring: methodology/metrics.md
-      - Test Documents: methodology/documents.md
+      - Benchmarking Process: methodology/benchmarking.md
+      - Metrics Explained: methodology/metrics.md
+      - Quality Assessment: methodology/quality.md
+
+  - Raw Data:
+      - CSV Downloads: raw-data/downloads.md

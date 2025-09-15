@@ -62,7 +62,6 @@ class ComprehensiveBenchmarkRunner:
             try:
                 self.executor.shutdown(wait=True)
             except Exception:
-                # Avoid exceptions during cleanup
                 pass
 
     async def __aenter__(self) -> Self:
@@ -98,19 +97,18 @@ class ComprehensiveBenchmarkRunner:
             f"[bold blue]Starting comprehensive benchmark suite[/bold blue]\n"
             f"Iterations: {self.config.iterations}\n"
             f"Frameworks: {', '.join(f.value for f in self.config.frameworks)}\n"
-            f"Categories: {', '.join(c.value for c in self.config.categories)}\n"
+            f"Categories: ALL (testing all file sizes and types)\n"
+            f"Quality Assessment: {'[green]Enabled[/green]' if self.config.enable_quality_assessment else '[red]Disabled[/red]'}\n"
             f"Max duration: {self.config.max_run_duration_minutes} minutes\n"
         )
 
         try:
-            # Wrap the entire benchmark in a timeout
             return await asyncio.wait_for(
                 self._run_benchmark_with_timeout_check(start_time, max_duration_seconds), timeout=max_duration_seconds
             )
         except TimeoutError:
             elapsed_minutes = (time.time() - start_time) / 60
             self.console.print(f"[red]❌ Benchmark suite timed out after {elapsed_minutes:.1f} minutes[/red]")
-            # Save whatever results we have so far
             if self.results:
                 await self._save_results()
                 self.console.print(f"[yellow]⚠️ Saved {len(self.results)} partial results before timeout[/yellow]")
@@ -124,13 +122,11 @@ class ComprehensiveBenchmarkRunner:
             self.console.print("\n[yellow]Running warmup iterations...[/yellow]")
             await self._run_warmup()
 
-            # Check timeout after warmup
             if time.time() - start_time > max_duration_seconds:
                 self.console.print("[red]❌ Timeout reached during warmup phase[/red]")
                 return self.results
 
         for iteration in range(self.config.iterations):
-            # Check timeout before each iteration
             elapsed = time.time() - start_time
             if elapsed > max_duration_seconds:
                 remaining_minutes = (max_duration_seconds - elapsed) / 60
@@ -148,7 +144,6 @@ class ComprehensiveBenchmarkRunner:
             iteration_results = await self._run_single_iteration(iteration)
             self.results.extend(iteration_results)
 
-            # Check timeout after iteration
             if time.time() - start_time > max_duration_seconds:
                 self.console.print("[red]❌ Timeout reached after completing iteration[/red]")
                 break
@@ -232,19 +227,12 @@ class ComprehensiveBenchmarkRunner:
         test_dir = self.config.output_dir.parent / "test_documents"
         files = self.categorizer.get_files_for_category(test_dir, category, self.config.table_extraction_only)
 
-        if self.config.file_types:
-            files = [(path, meta) for path, meta in files if meta.get("file_type") in self.config.file_types]
-
-        if self.config.common_formats_only or self.config.format_tier or framework:
+        if framework:
             from .config import should_test_file
-
-            format_tier = self.config.format_tier
-            if self.config.common_formats_only and not format_tier:
-                format_tier = "universal"
 
             filtered_files = []
             for path, meta in files:
-                if should_test_file(str(path), framework.value if framework else "", format_tier):
+                if should_test_file(str(path), framework):
                     filtered_files.append((path, meta))
             files = filtered_files
 

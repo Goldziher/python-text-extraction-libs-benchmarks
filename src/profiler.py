@@ -17,7 +17,6 @@ from src.types import ResourceMetrics
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-# Module logger
 logger = get_logger(__name__)
 
 
@@ -120,14 +119,13 @@ class EnhancedResourceMonitor:
             )
             self.metrics_buffer.append(baseline_metric)
         except Exception as e:
-            # Create emergency baseline metric to avoid empty buffer
             emergency_metric = ResourceMetrics(
                 timestamp=time.time(),
                 cpu_percent=0.0,
-                memory_rss=1024 * 1024,  # 1MB fallback
+                memory_rss=1024 * 1024,
                 memory_vms=1024 * 1024,
                 num_threads=1,
-                open_files=10,  # Conservative fallback
+                open_files=10,
             )
             self.metrics_buffer.append(emergency_metric)
             logger.warning("Failed to collect baseline metric", error=str(e))
@@ -159,7 +157,6 @@ class EnhancedResourceMonitor:
                 self.metrics_buffer.append(emergency_sample)
             except Exception as e:
                 logger.warning("Failed to create emergency sample", error=str(e))
-                # Continue with absolute fallback metrics below
 
             if not self.metrics_buffer:
                 return PerformanceMetrics(

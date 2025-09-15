@@ -1,6 +1,7 @@
 # MarkItDown
 
 !!! info "Framework Overview"
+
     **Developer**: Microsoft
     **Language**: Python
     **Architecture**: Fast conversion to Markdown
@@ -13,12 +14,14 @@ MarkItDown is Microsoft's lightweight document conversion framework focused on s
 ## Key Features
 
 ### High-Speed Processing
+
 - **Optimized for throughput**: 20-50+ files/second
 - **Low memory footprint**: ~250MB average usage
 - **Fast startup**: Minimal initialization overhead
 - **Efficient batch processing**: Excellent for large document sets
 
 ### Format Support
+
 - **Office documents**: DOCX, PPTX, XLSX
 - **PDF documents**: Basic text extraction
 - **Web formats**: HTML, XML
@@ -26,6 +29,7 @@ MarkItDown is Microsoft's lightweight document conversion framework focused on s
 - **Image formats**: Limited OCR capability
 
 ### Markdown Focus
+
 - **Clean Markdown output**: Well-formatted text
 - **Structure preservation**: Headers, lists, tables
 - **Link preservation**: URLs and references
@@ -34,12 +38,14 @@ MarkItDown is Microsoft's lightweight document conversion framework focused on s
 ## Performance Characteristics
 
 ### Strengths
+
 - **Unmatched speed**: Fastest framework tested
 - **Low resource usage**: Memory efficient
 - **Simple integration**: Easy to use and deploy
 - **Batch processing**: Excellent throughput
 
 ### Trade-offs
+
 - **Limited accuracy**: ~47% overall success rate
 - **Simple extraction**: Basic structure analysis
 - **OCR limitations**: Minimal image text extraction
@@ -48,6 +54,7 @@ MarkItDown is Microsoft's lightweight document conversion framework focused on s
 ## Benchmark Results
 
 ### Speed Performance
+
 - **Tiny files**: 180+ files/sec
 - **Small files**: 45 files/sec
 - **Medium files**: 26.6 files/sec
@@ -55,6 +62,7 @@ MarkItDown is Microsoft's lightweight document conversion framework focused on s
 - **Huge files**: 2.1 files/sec
 
 ### Success Rates
+
 - **Overall**: 47.3%
 - **Office documents**: 65%
 - **Data formats**: 85%
@@ -62,6 +70,7 @@ MarkItDown is Microsoft's lightweight document conversion framework focused on s
 - **Images**: 15%
 
 ### Resource Usage
+
 - **Average memory**: 253 MB
 - **Peak memory**: 380 MB
 - **CPU utilization**: 45% average
@@ -70,6 +79,7 @@ MarkItDown is Microsoft's lightweight document conversion framework focused on s
 ## Use Cases
 
 ### Ideal For
+
 - **High-volume processing**: Thousands of documents
 - **Simple text extraction**: Basic content needs
 - **Real-time applications**: Fast response requirements
@@ -77,6 +87,7 @@ MarkItDown is Microsoft's lightweight document conversion framework focused on s
 - **Markdown workflows**: Content publishing pipelines
 
 ### Consider Alternatives When
+
 - **High accuracy needed**: Complex document structure
 - **PDF-heavy workloads**: Scanned or complex PDFs
 - **OCR requirements**: Image text extraction
@@ -85,11 +96,13 @@ MarkItDown is Microsoft's lightweight document conversion framework focused on s
 ## Configuration
 
 ### Installation
+
 ```bash
 pip install markitdown>=0.1.3
 ```
 
 ### Basic Usage
+
 ```python
 from markitdown import MarkItDown
 
@@ -99,6 +112,7 @@ markdown_text = result.text_content
 ```
 
 ### Advanced Configuration
+
 ```python
 from markitdown import MarkItDown
 
@@ -119,12 +133,14 @@ for file_path in file_list:
 ## Integration Notes
 
 ### Framework Comparison
+
 - **vs Docling**: 100x faster, much lower accuracy
 - **vs Kreuzberg**: 3x faster, significantly lower accuracy
 - **vs Unstructured**: 20x faster, lower success rate
 - **vs Extractous**: 18x faster, lower reliability
 
 ### Production Considerations
+
 - Implement quality checks for critical documents
 - Use as first pass with fallback to accurate frameworks
 - Monitor success rates by document type
@@ -133,6 +149,7 @@ for file_path in file_list:
 ## Recent Updates
 
 ### Version 0.1.3+
+
 - Improved Office document support
 - Better error handling
 - Enhanced table extraction
@@ -140,6 +157,7 @@ for file_path in file_list:
 - Additional format support
 
 ### Roadmap
+
 - Improved PDF handling
 - Better OCR integration
 - Enhanced structure analysis

@@ -6,7 +6,7 @@ repos:
         stages: [commit-msg]
         additional_dependencies: ["@commitlint/config-conventional"]
   - repo: https://github.com/Goldziher/ai-rulez
-    rev: v2.2.1
+    rev: v2.3.0
     hooks:
       - id: ai-rulez-validate
       - id: ai-rulez-generate

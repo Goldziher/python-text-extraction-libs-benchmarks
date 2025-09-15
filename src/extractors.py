@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+import signal
 import sys
 from pathlib import Path
 
@@ -19,15 +21,6 @@ except ImportError:
     TesseractConfig = None  # type: ignore[assignment,misc]
     PSMMode = None  # type: ignore[assignment,misc]
 
-try:
-    from kreuzberg import EasyOCRConfig
-except ImportError:
-    EasyOCRConfig = None  # type: ignore[assignment,misc]
-
-try:
-    from kreuzberg import PaddleOCRConfig
-except ImportError:
-    PaddleOCRConfig = None  # type: ignore[assignment,misc]
 
 try:
     from docling.document_converter import DocumentConverter
@@ -52,7 +45,7 @@ except ImportError:
     Extractor = None  # type: ignore[assignment,misc]
 
 
-from typing import Any
+from typing import Any, Never
 
 from .types import AsyncExtractorProtocol, ExtractorProtocol
 
@@ -82,14 +75,14 @@ def get_language_config(file_path: str | Path) -> str:
 
 
 class KreuzbergSyncExtractor:
-    """Synchronous Kreuzberg text extractor."""
+    """Synchronous Kreuzberg text extractor with optimized configuration."""
 
     def extract_text(self, file_path: str) -> str:
         """Extract text using Kreuzberg synchronously."""
         if kreuzberg is None:
             msg = "Kreuzberg is not installed"
             raise ImportError(msg)
-        config = ExtractionConfig(use_cache=False)
+        config = self._get_optimized_config(file_path)
         result = kreuzberg.extract_file_sync(file_path, config=config)
         return result.content
 
@@ -98,21 +91,29 @@ class KreuzbergSyncExtractor:
         if kreuzberg is None:
             msg = "Kreuzberg is not installed"
             raise ImportError(msg)
-        config = ExtractionConfig(use_cache=False)
+        config = self._get_optimized_config(file_path)
         result = kreuzberg.extract_file_sync(file_path, config=config)
         metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
         return result.content, metadata
 
+    def _get_optimized_config(self, file_path: str) -> ExtractionConfig:
+        """Get optimized configuration for sync extraction with high-quality Tesseract settings."""
+        lang_code = get_language_config(file_path)
+
+        tesseract_config = TesseractConfig(language=lang_code, psm=PSMMode.AUTO, output_format="text")
+
+        return ExtractionConfig(ocr_backend="tesseract", ocr_config=tesseract_config, use_cache=False)
+
 
 class KreuzbergAsyncExtractor:
-    """Asynchronous Kreuzberg text extractor."""
+    """Asynchronous Kreuzberg text extractor with optimized configuration."""
 
     async def extract_text(self, file_path: str) -> str:
         """Extract text using Kreuzberg asynchronously."""
         if kreuzberg is None:
             msg = "Kreuzberg is not installed"
             raise ImportError(msg)
-        config = ExtractionConfig(use_cache=False)
+        config = self._get_optimized_config(file_path)
         result = await kreuzberg.extract_file(file_path, config=config)
         return result.content
 
@@ -121,505 +122,433 @@ class KreuzbergAsyncExtractor:
         if kreuzberg is None:
             msg = "Kreuzberg is not installed"
             raise ImportError(msg)
-        config = ExtractionConfig(use_cache=False)
+        config = self._get_optimized_config(file_path)
         result = await kreuzberg.extract_file(file_path, config=config)
         metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
         return result.content, metadata
 
+    def _get_optimized_config(self, file_path: str) -> ExtractionConfig:
+        """Get optimized configuration for async extraction with high-quality Tesseract settings."""
+        lang_code = get_language_config(file_path)
+
+        tesseract_config = TesseractConfig(language=lang_code, psm=PSMMode.AUTO, output_format="text")
+
+        return ExtractionConfig(ocr_backend="tesseract", ocr_config=tesseract_config, use_cache=False)
+
 
 class DoclingExtractor:
-    """Docling text extractor."""
+    """Docling text extractor with optimized configuration and robust error handling."""
 
     def __init__(self) -> None:
-        """Initialize Docling converter with minimal configuration.
-
-        Note: We use mostly default settings to provide fair comparison,
-        only applying the recommended faster PDF backend which is a
-        configuration option rather than disabling features.
-        """
+        """Initialize Docling converter with optimized configuration for performance and reliability."""
         if DocumentConverter is None:
             msg = "Docling is not installed"
             raise ImportError(msg)
 
         try:
             from docling.datamodel.base_models import InputFormat
-            from docling.format_options import PdfFormatOption
-            from docling.pdf_backend import DoclingParseV2DocumentBackend
-
-            self.converter = DocumentConverter(
-                format_options={InputFormat.PDF: PdfFormatOption(backend=DoclingParseV2DocumentBackend)}
+            from docling.datamodel.pipeline_options import (
+                EasyOcrOptions,
+                LayoutOptions,
+                TableStructureOptions,
+                ThreadedPdfPipelineOptions,
             )
+
+            ocr_options = EasyOcrOptions(
+                lang=["en", "de", "fr", "es"], confidence_threshold=0.3, suppress_mps_warnings=True
+            )
+
+            table_options = TableStructureOptions(do_cell_matching=True, mode="accurate")
+
+            layout_options = LayoutOptions(create_orphan_clusters=True, keep_empty_clusters=False)
+
+            pdf_options = ThreadedPdfPipelineOptions(
+                do_table_structure=True,
+                do_ocr=True,
+                do_picture_classification=False,
+                do_picture_description=False,
+                ocr_options=ocr_options,
+                table_structure_options=table_options,
+                layout_options=layout_options,
+                ocr_batch_size=2,
+                layout_batch_size=2,
+                table_batch_size=2,
+                batch_timeout_seconds=30.0,
+                queue_max_size=50,
+            )
+
+            format_options = {InputFormat.PDF: pdf_options}
+
+            self.converter = DocumentConverter(format_options=format_options)
+            self.max_file_size = 1024 * 1024 * 1024
+            self.timeout = 600
+
         except ImportError:
             self.converter = DocumentConverter()
+            self.max_file_size = 1024 * 1024 * 1024
+            self.timeout = 600
+
+    def _validate_file(self, file_path: str) -> bool:
+        """Validate file before processing."""
+        try:
+            path_obj = Path(file_path)
+            if not path_obj.exists():
+                return False
+
+            file_size = path_obj.stat().st_size
+            return not file_size > self.max_file_size
+        except Exception:
+            return False
 
     def extract_text(self, file_path: str) -> str:
-        """Extract text using Docling."""
-        result = self.converter.convert(file_path)
-        return result.document.export_to_text()
+        """Extract text using Docling with robust error handling."""
+        if not self._validate_file(file_path):
+            return ""
+
+        try:
+            result = self.converter.convert(file_path)
+            text = result.document.export_to_text()
+            return text if text else ""
+        except Exception:
+            return ""
 
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Docling."""
-        result = self.converter.convert(file_path)
-        text = result.document.export_to_text()
+        """Extract text and metadata using Docling with robust error handling."""
+        if not self._validate_file(file_path):
+            return "", {"error": "file_validation_failed"}
 
-        metadata = {}
-        if hasattr(result.document, "origin"):
-            metadata["origin"] = {
-                "mimetype": getattr(result.document.origin, "mimetype", None),
-                "binary_hash": getattr(result.document.origin, "binary_hash", None),
-                "filename": getattr(result.document.origin, "filename", None),
-            }
-        if hasattr(result.document, "pages"):
-            metadata["page_count"] = len(result.document.pages)
+        try:
+            result = self.converter.convert(file_path)
+            text = result.document.export_to_text()
+            text = text if text else ""
 
-        return text, metadata
+            metadata = {}
+            if hasattr(result.document, "origin"):
+                metadata["origin"] = {
+                    "mimetype": getattr(result.document.origin, "mimetype", None),
+                    "binary_hash": getattr(result.document.origin, "binary_hash", None),
+                    "filename": getattr(result.document.origin, "filename", None),
+                }
+            if hasattr(result.document, "pages"):
+                metadata["page_count"] = len(result.document.pages)
+
+            if hasattr(result, "status"):
+                metadata["extraction_status"] = str(result.status)
+
+            try:
+                file_size = Path(file_path).stat().st_size
+                metadata["file_size_mb"] = round(file_size / 1024 / 1024, 2)
+            except Exception:
+                pass
+
+            return text, metadata
+        except Exception as e:
+            return "", {"error": str(e)[:100]}
 
 
 class MarkItDownExtractor:
-    """MarkItDown text extractor."""
+    """MarkItDown text extractor with robust error handling and timeout management."""
 
     def __init__(self) -> None:
-        """Initialize MarkItDown converter."""
+        """Initialize MarkItDown converter with optimized settings."""
         if MarkItDown is None:
             msg = "MarkItDown is not installed"
             raise ImportError(msg)
-        self.converter = MarkItDown()
+
+        self.converter = MarkItDown(enable_builtins=True)
+        self.timeout = 90
+        self.max_file_size = 100 * 1024 * 1024
+
+    def _validate_file(self, file_path: str) -> bool:
+        """Validate file before processing."""
+        try:
+            path_obj = Path(file_path)
+            if not path_obj.exists():
+                return False
+
+            file_size = path_obj.stat().st_size
+            if file_size > self.max_file_size:
+                return False
+
+            return os.access(file_path, os.R_OK)
+        except Exception:
+            return False
+
+    def _extract_with_timeout(self, file_path: str) -> Any:
+        """Extract with timeout protection."""
+
+        def timeout_handler(signum: int, frame: Any) -> Never:  # noqa: ARG001
+            raise TimeoutError(f"MarkItDown extraction timed out after {self.timeout}s")
+
+        old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(self.timeout)
+
+        try:
+            result = self.converter.convert(file_path)
+            signal.alarm(0)
+            return result
+        except Exception as e:
+            signal.alarm(0)
+            raise e
+        finally:
+            signal.signal(signal.SIGALRM, old_handler)
 
     def extract_text(self, file_path: str) -> str:
-        """Extract text using MarkItDown."""
-        result = self.converter.convert(file_path)
-        return result.text_content
+        """Extract text using MarkItDown with robust error handling."""
+        if not self._validate_file(file_path):
+            return ""
+
+        try:
+            result = self._extract_with_timeout(file_path)
+            return result.text_content if result.text_content else ""
+        except TimeoutError:
+            return ""
+        except Exception:
+            return ""
 
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using MarkItDown."""
-        result = self.converter.convert(file_path)
-        metadata = {}
-        if hasattr(result, "title") and result.title:
-            metadata["title"] = str(result.title)
-        return result.text_content, metadata
+        """Extract text and metadata using MarkItDown with robust error handling."""
+        if not self._validate_file(file_path):
+            return "", {}
 
+        try:
+            result = self._extract_with_timeout(file_path)
 
-class KreuzbergTesseractExtractor:
-    """Kreuzberg with Tesseract OCR backend."""
+            text = result.text_content if result.text_content else ""
+            metadata = {}
 
-    def extract_text(self, file_path: str) -> str:
-        """Extract text using Kreuzberg with Tesseract OCR."""
-        if kreuzberg is None or TesseractConfig is None:
-            msg = "Kreuzberg is not installed"
-            raise ImportError(msg)
+            if hasattr(result, "title") and result.title:
+                metadata["title"] = str(result.title)
+            if hasattr(result, "content_type") and result.content_type:
+                metadata["content_type"] = str(result.content_type)
 
-        lang_code = get_language_config(file_path)
+            return text, metadata
 
-        config = ExtractionConfig(
-            ocr_backend="tesseract",
-            ocr_config=TesseractConfig(language=lang_code),
-            use_cache=False,
-        )
-
-        result = kreuzberg.extract_file_sync(file_path, config=config)
-        return result.content
-
-    def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Kreuzberg with Tesseract OCR."""
-        if kreuzberg is None or TesseractConfig is None:
-            msg = "Kreuzberg is not installed"
-            raise ImportError(msg)
-
-        lang_code = get_language_config(file_path)
-        config = ExtractionConfig(
-            ocr_backend="tesseract",
-            ocr_config=TesseractConfig(language=lang_code),
-            use_cache=False,
-        )
-
-        result = kreuzberg.extract_file_sync(file_path, config=config)
-        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
-        return result.content, metadata
-
-
-class KreuzbergEasyOCRExtractor:
-    """Kreuzberg with EasyOCR backend (async only)."""
-
-    async def extract_text(self, file_path: str) -> str:
-        """Extract text using Kreuzberg with EasyOCR."""
-        if kreuzberg is None or EasyOCRConfig is None:
-            msg = "Kreuzberg with EasyOCR is not installed. Install with: pip install kreuzberg[easyocr]"
-            raise ImportError(msg)
-
-        lang_code = get_language_config(file_path)
-        easyocr_langs = {
-            "eng": "en",
-            "deu": "de",
-            "heb": "en",
-            "chi_sim": "ch_sim",
-            "jpn": "ja",
-            "kor": "ko",
-        }
-
-        easyocr_lang = easyocr_langs.get(lang_code, "en")
-
-        config = ExtractionConfig(
-            ocr_backend="easyocr",
-            ocr_config=EasyOCRConfig(
-                language=easyocr_lang,
-                use_gpu=False,
-            ),
-            use_cache=False,
-        )
-
-        result = await kreuzberg.extract_file(file_path, config=config)
-        return result.content
-
-    async def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Kreuzberg with EasyOCR."""
-        if kreuzberg is None or EasyOCRConfig is None:
-            msg = "Kreuzberg with EasyOCR is not installed. Install with: pip install kreuzberg[easyocr]"
-            raise ImportError(msg)
-
-        lang_code = get_language_config(file_path)
-        easyocr_langs = {
-            "eng": "en",
-            "deu": "de",
-            "heb": "en",
-            "chi_sim": "ch_sim",
-            "jpn": "ja",
-            "kor": "ko",
-        }
-
-        easyocr_lang = easyocr_langs.get(lang_code, "en")
-        config = ExtractionConfig(
-            ocr_backend="easyocr",
-            ocr_config=EasyOCRConfig(
-                language=easyocr_lang,
-                use_gpu=False,
-            ),
-            use_cache=False,
-        )
-
-        result = await kreuzberg.extract_file(file_path, config=config)
-        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
-        return result.content, metadata
-
-
-class KreuzbergPaddleOCRExtractor:
-    """Kreuzberg with PaddleOCR backend (async only)."""
-
-    async def extract_text(self, file_path: str) -> str:
-        """Extract text using Kreuzberg with PaddleOCR."""
-        if kreuzberg is None or PaddleOCRConfig is None:
-            msg = "Kreuzberg with PaddleOCR is not installed. Install with: pip install kreuzberg[paddleocr]"
-            raise ImportError(msg)
-
-        lang_code = get_language_config(file_path)
-        paddle_langs = {
-            "eng": "en",
-            "deu": "german",
-            "chi_sim": "ch",
-            "jpn": "japan",
-            "kor": "korean",
-            "eng+deu+fra": "en",
-        }
-
-        paddle_lang = paddle_langs.get(lang_code, "en")
-
-        config = ExtractionConfig(
-            ocr_backend="paddleocr",
-            ocr_config=PaddleOCRConfig(
-                language=paddle_lang,
-                use_gpu=False,
-            ),
-            use_cache=False,
-        )
-
-        result = await kreuzberg.extract_file(file_path, config=config)
-        return result.content
-
-    async def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Kreuzberg with PaddleOCR."""
-        if kreuzberg is None or PaddleOCRConfig is None:
-            msg = "Kreuzberg with PaddleOCR is not installed. Install with: pip install kreuzberg[paddleocr]"
-            raise ImportError(msg)
-
-        lang_code = get_language_config(file_path)
-        paddle_langs = {
-            "eng": "en",
-            "deu": "german",
-            "chi_sim": "ch",
-            "jpn": "japan",
-            "kor": "korean",
-            "eng+deu+fra": "en",
-        }
-
-        paddle_lang = paddle_langs.get(lang_code, "en")
-        config = ExtractionConfig(
-            ocr_backend="paddleocr",
-            ocr_config=PaddleOCRConfig(
-                language=paddle_lang,
-                use_gpu=False,
-            ),
-            use_cache=False,
-        )
-
-        result = await kreuzberg.extract_file(file_path, config=config)
-        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
-        return result.content, metadata
-
-
-class KreuzbergEasyOCRSyncExtractor:
-    """Kreuzberg with EasyOCR backend (synchronous)."""
-
-    def extract_text(self, file_path: str) -> str:
-        """Extract text using Kreuzberg with EasyOCR synchronously."""
-        if kreuzberg is None or EasyOCRConfig is None:
-            msg = "Kreuzberg with EasyOCR is not installed. Install with: pip install kreuzberg[easyocr]"
-            raise ImportError(msg)
-
-        lang_code = get_language_config(file_path)
-        easyocr_langs = {
-            "eng": "en",
-            "deu": "de",
-            "heb": "en",
-            "chi_sim": "ch_sim",
-            "jpn": "ja",
-            "kor": "ko",
-        }
-
-        easyocr_lang = easyocr_langs.get(lang_code, "en")
-
-        config = ExtractionConfig(
-            ocr_backend="easyocr",
-            ocr_config=EasyOCRConfig(
-                language=easyocr_lang,
-                use_gpu=False,
-            ),
-            use_cache=False,
-        )
-
-        result = kreuzberg.extract_file_sync(file_path, config=config)
-        return result.content
-
-    def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Kreuzberg with EasyOCR synchronously."""
-        if kreuzberg is None or EasyOCRConfig is None:
-            msg = "Kreuzberg with EasyOCR is not installed. Install with: pip install kreuzberg[easyocr]"
-            raise ImportError(msg)
-
-        lang_code = get_language_config(file_path)
-        easyocr_langs = {
-            "eng": "en",
-            "deu": "de",
-            "heb": "en",
-            "chi_sim": "ch_sim",
-            "jpn": "ja",
-            "kor": "ko",
-        }
-
-        easyocr_lang = easyocr_langs.get(lang_code, "en")
-        config = ExtractionConfig(
-            ocr_backend="easyocr",
-            ocr_config=EasyOCRConfig(
-                language=easyocr_lang,
-                use_gpu=False,
-            ),
-            use_cache=False,
-        )
-
-        result = kreuzberg.extract_file_sync(file_path, config=config)
-        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
-        return result.content, metadata
-
-
-class KreuzbergPaddleOCRSyncExtractor:
-    """Kreuzberg with PaddleOCR backend (synchronous)."""
-
-    def extract_text(self, file_path: str) -> str:
-        """Extract text using Kreuzberg with PaddleOCR synchronously."""
-        if kreuzberg is None or PaddleOCRConfig is None:
-            msg = "Kreuzberg with PaddleOCR is not installed. Install with: pip install kreuzberg[paddleocr]"
-            raise ImportError(msg)
-
-        lang_code = get_language_config(file_path)
-        paddleocr_langs = {
-            "eng": "en",
-            "deu": "german",
-            "heb": "en",
-            "chi_sim": "ch",
-            "jpn": "japan",
-            "kor": "korean",
-        }
-
-        paddleocr_lang = paddleocr_langs.get(lang_code, "en")
-
-        config = ExtractionConfig(
-            ocr_backend="paddleocr",
-            ocr_config=PaddleOCRConfig(
-                language=paddleocr_lang,
-                use_gpu=False,
-            ),
-            use_cache=False,
-        )
-
-        result = kreuzberg.extract_file_sync(file_path, config=config)
-        return result.content
-
-    def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Kreuzberg with PaddleOCR synchronously."""
-        if kreuzberg is None or PaddleOCRConfig is None:
-            msg = "Kreuzberg with PaddleOCR is not installed. Install with: pip install kreuzberg[paddleocr]"
-            raise ImportError(msg)
-
-        lang_code = get_language_config(file_path)
-        paddleocr_langs = {
-            "eng": "en",
-            "deu": "german",
-            "chi_sim": "ch",
-            "jpn": "japan",
-            "kor": "korean",
-            "eng+deu+fra": "en",
-        }
-
-        paddle_lang = paddleocr_langs.get(lang_code, "en")
-        config = ExtractionConfig(
-            ocr_backend="paddleocr",
-            ocr_config=PaddleOCRConfig(
-                language=paddle_lang,
-                use_gpu=False,
-            ),
-            use_cache=False,
-        )
-
-        result = kreuzberg.extract_file_sync(file_path, config=config)
-        metadata = dict(result.metadata) if hasattr(result, "metadata") else {}
-        return result.content, metadata
+        except TimeoutError:
+            return "", {"error": "timeout"}
+        except Exception as e:
+            return "", {"error": str(e)[:100]}
 
 
 class UnstructuredExtractor:
-    """Unstructured text extractor."""
+    """Unstructured text extractor with adaptive strategy selection and retry logic."""
+
+    def __init__(self) -> None:
+        """Initialize with strategy configuration."""
+        self.max_retries = 2
+        self.timeout = 180
+        self.max_file_size = 150 * 1024 * 1024
+
+    def _get_file_size(self, file_path: str) -> int:
+        """Get file size safely."""
+        try:
+            return Path(file_path).stat().st_size
+        except Exception:
+            return 0
+
+    def _get_adaptive_strategy(self, file_path: str, file_size: int) -> dict[str, Any]:
+        """Select optimal strategy based on file characteristics."""
+        lang_code = get_language_config(file_path)
+        file_ext = Path(file_path).suffix.lower()
+
+        unstructured_langs = {
+            "eng": ["eng"],
+            "deu": ["deu"],
+            "heb": ["heb"],
+            "chi_sim": ["chi_sim"],
+            "jpn": ["jpn"],
+            "kor": ["kor"],
+        }
+        languages = unstructured_langs.get(lang_code, ["eng"])
+
+        config = {
+            "languages": languages,
+            "strategy": "auto",
+            "include_metadata": True,
+        }
+
+        if file_size > 100 * 1024 * 1024:
+            config["chunking_strategy"] = "by_title"
+            config["max_characters"] = 10000
+        elif file_size > 10 * 1024 * 1024:
+            config["chunking_strategy"] = "basic"
+            config["max_characters"] = 5000
+
+        if file_ext in [".pdf"]:
+            config["strategy"] = "hi_res"
+            config["extract_images_in_pdf"] = False
+        elif file_ext in [".docx", ".pptx", ".xlsx"]:
+            config["strategy"] = "fast"
+        elif file_ext in [".html", ".htm"]:
+            config["strategy"] = "fast"
+            config["skip_infer_table_types"] = True
+
+        return config
+
+    def _extract_with_strategy(self, file_path: str, config: dict[str, Any], attempt: int = 1) -> Any:
+        """Extract with a specific strategy, with fallback options."""
+        try:
+            return partition(filename=file_path, **config)
+        except Exception as e:
+            if attempt < self.max_retries:
+                if attempt == 1:
+                    fallback_config = config.copy()
+                    fallback_config["strategy"] = "fast"
+                    fallback_config.pop("chunking_strategy", None)
+                    return self._extract_with_strategy(file_path, fallback_config, attempt + 1)
+                if attempt == 2:
+                    minimal_config = {"languages": config["languages"], "strategy": "auto"}
+                    return self._extract_with_strategy(file_path, minimal_config, attempt + 1)
+            raise e
 
     def extract_text(self, file_path: str) -> str:
-        """Extract text using Unstructured."""
+        """Extract text using Unstructured with adaptive strategy."""
         if partition is None:
             msg = "Unstructured is not installed"
             raise ImportError(msg)
 
-        lang_code = get_language_config(file_path)
-        unstructured_langs = {
-            "eng": ["eng"],
-            "deu": ["deu"],
-            "heb": ["heb"],
-            "chi_sim": ["chi"],
-            "jpn": ["jpn"],
-            "kor": ["kor"],
-            "eng+deu+fra": ["eng", "deu", "fra"],
-        }
+        file_size = self._get_file_size(file_path)
+        if file_size > self.max_file_size:
+            return ""
 
-        languages = unstructured_langs.get(lang_code, ["eng"])
-
-        elements = partition(filename=file_path, languages=languages)
-        return "\n".join(str(element) for element in elements)
+        try:
+            config = self._get_adaptive_strategy(file_path, file_size)
+            elements = self._extract_with_strategy(file_path, config)
+            return "\n".join(str(element) for element in elements)
+        except Exception:
+            return ""
 
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Unstructured."""
+        """Extract text and metadata using Unstructured with adaptive strategy."""
         if partition is None:
             msg = "Unstructured is not installed"
             raise ImportError(msg)
 
-        lang_code = get_language_config(file_path)
-        unstructured_langs = {
-            "eng": ["eng"],
-            "deu": ["deu"],
-            "heb": ["heb"],
-            "chi_sim": ["chi"],
-            "jpn": ["jpn"],
-            "kor": ["kor"],
-            "eng+deu+fra": ["eng", "deu", "fra"],
-        }
+        file_size = self._get_file_size(file_path)
+        if file_size > self.max_file_size:
+            return "", {"error": "file_too_large"}
 
-        languages = unstructured_langs.get(lang_code, ["eng"])
-        elements = partition(filename=file_path, languages=languages)
+        try:
+            config = self._get_adaptive_strategy(file_path, file_size)
+            elements = self._extract_with_strategy(file_path, config)
 
-        text = "\n".join(str(element) for element in elements)
+            text = "\n".join(str(element) for element in elements)
+            metadata = {"strategy_used": config.get("strategy", "auto")}
 
-        metadata = {}
-        if elements:
-            first_elem = elements[0]
-            if hasattr(first_elem, "metadata"):
-                elem_meta = first_elem.metadata
-                if hasattr(elem_meta, "filename"):
-                    metadata["filename"] = elem_meta.filename
-                if hasattr(elem_meta, "file_directory"):
-                    metadata["file_directory"] = elem_meta.file_directory
-                if hasattr(elem_meta, "last_modified"):
-                    metadata["last_modified"] = str(elem_meta.last_modified) if elem_meta.last_modified else None
-                if hasattr(elem_meta, "filetype"):
-                    metadata["filetype"] = elem_meta.filetype
-                if hasattr(elem_meta, "page_number"):
-                    metadata["page_number"] = elem_meta.page_number
-                if hasattr(elem_meta, "languages"):
-                    metadata["languages"] = elem_meta.languages
+            if elements:
+                first_elem = elements[0]
+                if hasattr(first_elem, "metadata"):
+                    elem_meta = first_elem.metadata
+                    if hasattr(elem_meta, "filename"):
+                        metadata["filename"] = elem_meta.filename
+                    if hasattr(elem_meta, "file_directory"):
+                        metadata["file_directory"] = elem_meta.file_directory
+                    if hasattr(elem_meta, "last_modified"):
+                        metadata["last_modified"] = str(elem_meta.last_modified) if elem_meta.last_modified else None
+                    if hasattr(elem_meta, "filetype"):
+                        metadata["filetype"] = elem_meta.filetype
+                    if hasattr(elem_meta, "page_number"):
+                        metadata["page_number"] = elem_meta.page_number
+                    if hasattr(elem_meta, "languages"):
+                        metadata["languages"] = elem_meta.languages
 
-            element_types = {}
-            for elem in elements:
-                elem_type = type(elem).__name__
-                element_types[elem_type] = element_types.get(elem_type, 0) + 1
-            metadata["element_types"] = element_types
-            metadata["total_elements"] = len(elements)
+                element_types = {}
+                for elem in elements:
+                    elem_type = type(elem).__name__
+                    element_types[elem_type] = element_types.get(elem_type, 0) + 1
+                metadata["element_types"] = element_types
+                metadata["total_elements"] = len(elements)
 
-        return text, metadata
+            return text, metadata
+        except Exception as e:
+            return "", {"error": str(e)[:100]}
 
 
 class ExtractousExtractor:
-    """Extractous text extractor."""
+    """Extractous text extractor with adaptive configuration and performance optimizations."""
 
     def __init__(self) -> None:
-        """Initialize Extractous extractor with optimal configuration."""
+        """Initialize Extractous extractor with adaptive configuration."""
         if Extractor is None:
             msg = "Extractous is not installed. Install with: pip install extractous"
             raise ImportError(msg)
 
         self.extractor = Extractor()
+        self.max_file_size = 200 * 1024 * 1024
 
-        self.extractor.set_extract_string_max_length(1000000)
+        self.extractor.set_extract_string_max_length(5000000)
 
-    def extract_text(self, file_path: str) -> str:
-        """Extract text using Extractous."""
-        lang_code = get_language_config(file_path)
-
+    def _get_file_characteristics(self, file_path: str) -> dict[str, Any]:
+        """Analyze file to determine optimal extraction strategy."""
         try:
-            from extractous import TesseractOcrConfig
+            path_obj = Path(file_path)
+            file_size = path_obj.stat().st_size
+            file_ext = path_obj.suffix.lower()
 
-            tesseract_langs = {
-                "eng": "eng",
-                "deu": "deu",
-                "heb": "heb",
-                "chi_sim": "chi_sim",
-                "jpn": "jpn",
-                "kor": "kor",
+            return {
+                "size": file_size,
+                "extension": file_ext,
+                "is_large": file_size > 100 * 1024 * 1024,
+                "is_pdf": file_ext == ".pdf",
+                "is_office": file_ext in [".docx", ".pptx", ".xlsx"],
+                "is_image": file_ext in [".png", ".jpg", ".jpeg", ".tiff", ".bmp"],
+            }
+        except Exception:
+            return {
+                "size": 0,
+                "extension": "",
+                "is_large": False,
+                "is_pdf": False,
+                "is_office": False,
+                "is_image": False,
             }
 
-            tesseract_lang = tesseract_langs.get(lang_code, "eng")
+    def _configure_adaptive_extraction(self, file_path: str, characteristics: dict[str, Any]) -> None:
+        """Configure extractor based on file characteristics."""
+        if characteristics["is_large"]:
+            self.extractor.set_extract_string_max_length(2000000)
+        else:
+            self.extractor.set_extract_string_max_length(10000000)
 
-            ocr_config = TesseractOcrConfig().set_language(tesseract_lang)
-            self.extractor.set_ocr_config(ocr_config)
+    def extract_text(self, file_path: str) -> str:
+        """Extract text using Extractous with adaptive configuration."""
+        characteristics = self._get_file_characteristics(file_path)
 
-        except ImportError:
-            pass
+        if characteristics["size"] > self.max_file_size:
+            return ""
 
-        result = self.extractor.extract_file_to_string(file_path)
-        return result[0] if isinstance(result, tuple) else result
+        try:
+            self._configure_adaptive_extraction(file_path, characteristics)
+            result = self.extractor.extract_file_to_string(file_path)
+            return result[0] if isinstance(result, tuple) else result
+        except Exception:
+            return ""
 
     def extract_with_metadata(self, file_path: str) -> tuple[str, dict[str, Any]]:
-        """Extract text and metadata using Extractous."""
-        result = self.extractor.extract_file_to_string(file_path)
+        """Extract text and metadata using Extractous with adaptive configuration."""
+        characteristics = self._get_file_characteristics(file_path)
 
-        if isinstance(result, tuple) and len(result) >= 2:
-            text, raw_metadata = result[0], result[1]
-            metadata = dict(raw_metadata) if raw_metadata else {}
-        else:
-            text = result[0] if isinstance(result, tuple) else result
-            metadata = {}
+        if characteristics["size"] > self.max_file_size:
+            return "", {"error": "file_too_large", "size_mb": characteristics["size"] / 1024 / 1024}
 
-        return text, metadata
+        try:
+            self._configure_adaptive_extraction(file_path, characteristics)
+            result = self.extractor.extract_file_to_string(file_path)
+
+            if isinstance(result, tuple) and len(result) >= 2:
+                text, raw_metadata = result[0], result[1]
+                metadata = dict(raw_metadata) if raw_metadata else {}
+            else:
+                text = result[0] if isinstance(result, tuple) else result
+                metadata = {}
+
+            metadata["file_size_mb"] = round(characteristics["size"] / 1024 / 1024, 2)
+            metadata["extraction_strategy"] = "large_file" if characteristics["is_large"] else "standard"
+            metadata["ocr_enabled"] = characteristics["is_image"] or characteristics["is_pdf"]
+
+            return text, metadata
+        except Exception as e:
+            return "", {"error": str(e)[:100], "file_size_mb": round(characteristics["size"] / 1024 / 1024, 2)}
 
 
 def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
@@ -637,11 +566,6 @@ def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
     extractors = {
         "kreuzberg_sync": KreuzbergSyncExtractor,
         "kreuzberg_async": KreuzbergAsyncExtractor,
-        "kreuzberg_tesseract": KreuzbergTesseractExtractor,
-        "kreuzberg_easyocr": KreuzbergEasyOCRExtractor,
-        "kreuzberg_easyocr_sync": KreuzbergEasyOCRSyncExtractor,
-        "kreuzberg_paddleocr": KreuzbergPaddleOCRExtractor,
-        "kreuzberg_paddleocr_sync": KreuzbergPaddleOCRSyncExtractor,
         "docling": DoclingExtractor,
         "markitdown": MarkItDownExtractor,
         "unstructured": UnstructuredExtractor,

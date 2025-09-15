@@ -16,11 +16,6 @@ class Framework(str, Enum):
 
     KREUZBERG_SYNC = "kreuzberg_sync"
     KREUZBERG_ASYNC = "kreuzberg_async"
-    KREUZBERG_TESSERACT = "kreuzberg_tesseract"
-    KREUZBERG_EASYOCR = "kreuzberg_easyocr"
-    KREUZBERG_EASYOCR_SYNC = "kreuzberg_easyocr_sync"
-    KREUZBERG_PADDLEOCR = "kreuzberg_paddleocr"
-    KREUZBERG_PADDLEOCR_SYNC = "kreuzberg_paddleocr_sync"
     DOCLING = "docling"
     MARKITDOWN = "markitdown"
     UNSTRUCTURED = "unstructured"
@@ -261,7 +256,7 @@ class BenchmarkConfig(msgspec.Struct, kw_only=True):
 
     frameworks: list[Framework] = msgspec.field(default_factory=list)
     categories: list[DocumentCategory] = msgspec.field(default_factory=list)
-    file_types: list[FileType] = msgspec.field(default_factory=list)
+    file_types: list[FileType] | None = None
 
     output_dir: Path = msgspec.field(default_factory=lambda: Path("results"))
     save_intermediate: bool = True
@@ -272,7 +267,7 @@ class BenchmarkConfig(msgspec.Struct, kw_only=True):
     sampling_interval_ms: int = 50
     profile_startup: bool = True
     profile_io: bool = True
-
-    common_formats_only: bool = False
-    format_tier: str | None = None
     table_extraction_only: bool = False
+
+    enable_profiling: bool = True
+    enable_quality_assessment: bool = False

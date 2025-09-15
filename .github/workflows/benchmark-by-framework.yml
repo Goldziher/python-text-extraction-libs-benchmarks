@@ -114,7 +114,6 @@ jobs:
           source .venv/bin/activate
           uv pip install -e .
           uv pip install -e ".[kreuzberg]"
-          uv pip install -e ".[kreuzberg-ocr]"
           uv pip install pytest pytest-asyncio pytest-timeout
 
       - name: Install APT packages
@@ -212,7 +211,6 @@ jobs:
           source .venv/bin/activate
           uv pip install -e .
           uv pip install -e ".[kreuzberg]"
-          uv pip install -e ".[kreuzberg-ocr]"
           uv pip install pytest pytest-asyncio pytest-timeout
 
       - name: Install APT packages

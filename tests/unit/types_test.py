@@ -308,7 +308,7 @@ def test_benchmark_config_defaults() -> None:
     assert config.iterations == 3
     assert config.warmup_runs == 1
     assert config.cooldown_seconds == 5
-    assert config.timeout_seconds == 1200
+    assert config.timeout_seconds == 1800
     assert config.max_memory_mb == 4096
     assert config.max_retries == 3
     assert config.continue_on_error is True

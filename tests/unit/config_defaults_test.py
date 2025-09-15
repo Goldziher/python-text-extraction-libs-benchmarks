@@ -8,7 +8,7 @@ class TestDefaultValues:
 
     def test_timeout_values(self):
         """Test timeout-related default values."""
-        assert DefaultValues.EXTRACTION_TIMEOUT_SECONDS == 1200
+        assert DefaultValues.EXTRACTION_TIMEOUT_SECONDS == 1800
         assert DefaultValues.MAX_RUN_DURATION_MINUTES == 30
         assert isinstance(DefaultValues.EXTRACTION_TIMEOUT_SECONDS, int)
         assert isinstance(DefaultValues.MAX_RUN_DURATION_MINUTES, int)
@@ -28,7 +28,7 @@ class TestDefaultValues:
     def test_resource_limits(self):
         """Test resource limit default values."""
         assert DefaultValues.MAX_MEMORY_MB == 4096
-        assert DefaultValues.MAX_CPU_PERCENT == 800  # 8 cores
+        assert DefaultValues.MAX_CPU_PERCENT == 800
         assert DefaultValues.MAX_CONCURRENT_FILES == 1
 
     def test_framework_specific_defaults(self):
@@ -38,16 +38,13 @@ class TestDefaultValues:
 
     def test_all_defaults_are_reasonable(self):
         """Test that all default values are within reasonable ranges."""
-        # Timeouts should be positive and reasonable
-        assert 0 < DefaultValues.EXTRACTION_TIMEOUT_SECONDS <= 3600  # Max 1 hour
-        assert 0 < DefaultValues.MAX_RUN_DURATION_MINUTES <= 120  # Max 2 hours
+        assert 0 < DefaultValues.EXTRACTION_TIMEOUT_SECONDS <= 3600
+        assert 0 < DefaultValues.MAX_RUN_DURATION_MINUTES <= 120
 
-        # Performance values should be positive
         assert DefaultValues.SAMPLING_INTERVAL_MS > 0
         assert DefaultValues.COOLDOWN_SECONDS >= 0
 
-        # Resource limits should be reasonable for modern systems
-        assert DefaultValues.MAX_MEMORY_MB >= 1024  # At least 1GB
+        assert DefaultValues.MAX_MEMORY_MB >= 1024
         assert DefaultValues.MAX_CPU_PERCENT > 0
 
 
@@ -62,7 +59,6 @@ class TestLanguageMapper:
         for lang in required_languages:
             assert lang in mapping, f"Missing {lang} in Tesseract mapping"
 
-        # Tesseract uses language codes directly
         assert mapping["eng"] == "eng"
         assert mapping["deu"] == "deu"
         assert mapping["heb"] == "heb"
@@ -75,7 +71,6 @@ class TestLanguageMapper:
         for lang in required_languages:
             assert lang in mapping, f"Missing {lang} in EasyOCR mapping"
 
-        # EasyOCR uses different codes
         assert mapping["eng"] == "en"
         assert mapping["deu"] == "de"
         assert mapping["heb"] == "he"
@@ -88,7 +83,6 @@ class TestLanguageMapper:
         for lang in required_languages:
             assert lang in mapping, f"Missing {lang} in PaddleOCR mapping"
 
-        # PaddleOCR uses different codes
         assert mapping["eng"] == "en"
         assert mapping["deu"] == "german"
         assert mapping["chi_sim"] == "ch"
@@ -99,12 +93,10 @@ class TestLanguageMapper:
         easyocr_keys = set(LanguageMapper.EASYOCR_MAPPING.keys())
         paddleocr_keys = set(LanguageMapper.PADDLEOCR_MAPPING.keys())
 
-        # All mappings should have the same input language codes
         assert tesseract_keys == easyocr_keys == paddleocr_keys
 
     def test_get_mapping_method(self):
         """Test the get_mapping class method."""
-        # Test valid backends
         tesseract_mapping = LanguageMapper.get_mapping("tesseract")
         assert tesseract_mapping == LanguageMapper.TESSERACT_MAPPING
 
@@ -116,11 +108,9 @@ class TestLanguageMapper:
 
     def test_get_mapping_case_insensitive(self):
         """Test that get_mapping handles case variations."""
-        # Test uppercase
         mapping = LanguageMapper.get_mapping("TESSERACT")
         assert mapping == LanguageMapper.TESSERACT_MAPPING
 
-        # Test mixed case
         mapping = LanguageMapper.get_mapping("EasyOCR")
         assert mapping == LanguageMapper.EASYOCR_MAPPING
 
@@ -142,15 +132,13 @@ class TestLanguageMapper:
     def test_hebrew_fallback_in_paddleocr(self):
         """Test that Hebrew falls back to English in PaddleOCR (unsupported)."""
         mapping = LanguageMapper.PADDLEOCR_MAPPING
-        assert mapping["heb"] == "en"  # Hebrew not supported, fallback to English
+        assert mapping["heb"] == "en"
 
     def test_language_mapping_uniqueness(self):
         """Test that language mappings don't have unexpected duplicates."""
         for backend_name in ["tesseract", "easyocr", "paddleocr"]:
             mapping = LanguageMapper.get_mapping(backend_name)
 
-            # Check that we don't have the same input mapping to different outputs
-            # (this would indicate a configuration error)
             input_langs = list(mapping.keys())
             assert len(input_langs) == len(set(input_langs)), f"Duplicate keys in {backend_name} mapping"
 
@@ -160,27 +148,22 @@ class TestConfigurationIntegration:
 
     def test_timeout_consistency(self):
         """Test that timeout values are consistent across the system."""
-        # Default CLI timeout should match the configured default
         from src.config_defaults import DefaultValues
 
-        # These should be the same value used in CLI and types
-        assert DefaultValues.EXTRACTION_TIMEOUT_SECONDS == 1200
+        assert DefaultValues.EXTRACTION_TIMEOUT_SECONDS == 1800
         assert DefaultValues.MAX_RUN_DURATION_MINUTES == 30
 
     def test_language_mapper_backend_names(self):
         """Test that language mapper backend names match expected values."""
-        # These backend names should match what's used in extractors
         expected_backends = ["tesseract", "easyocr", "paddleocr"]
 
         for backend in expected_backends:
-            # Should not raise exception
             mapping = LanguageMapper.get_mapping(backend)
             assert isinstance(mapping, dict)
             assert len(mapping) > 0
 
     def test_default_values_types(self):
         """Test that all default values have correct types."""
-        # Integer values
         int_values = [
             DefaultValues.EXTRACTION_TIMEOUT_SECONDS,
             DefaultValues.MAX_RUN_DURATION_MINUTES,
@@ -198,7 +181,6 @@ class TestConfigurationIntegration:
         for value in int_values:
             assert isinstance(value, int), f"Expected int, got {type(value)}"
 
-        # Boolean values
         bool_values = [
             DefaultValues.KREUZBERG_CACHE_DISABLED,
         ]

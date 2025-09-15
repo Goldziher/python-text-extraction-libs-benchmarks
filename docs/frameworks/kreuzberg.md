@@ -41,7 +41,7 @@ text = await extract_text("scanned_document.pdf")
 # Specific OCR backend
 text = await extract_text(
     "image.png",
-    ocr_config={"backend": "easyocr", "languages": ["en", "de"]}
+    ocr_config={"backend": "tesseract", "languages": ["en", "de"]}
 )
 ```
 
@@ -72,16 +72,6 @@ pip install kreuzberg
 
 ### With OCR Support
 
-=== "EasyOCR (Recommended)"
-
-    ```bash
-    pip install kreuzberg[easyocr]
-    ```
-
-    - Best accuracy/speed balance
-    - 80+ language support
-    - GPU acceleration available
-
 === "Tesseract"
 
     ```bash
@@ -95,16 +85,6 @@ pip install kreuzberg
     - Mature, stable OCR engine
     - Extensive language pack support
     - Lower memory usage
-
-=== "PaddleOCR"
-
-    ```bash
-    pip install kreuzberg[paddleocr]
-    ```
-
-    - State-of-the-art accuracy
-    - Chinese language optimized
-    - Higher resource requirements
 
 ### Complete Installation
 

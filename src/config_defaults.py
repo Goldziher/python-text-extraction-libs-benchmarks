@@ -8,31 +8,24 @@ from typing import ClassVar
 class DefaultValues:
     """Centralized default values for all configuration parameters."""
 
-    # Timeout configurations (in seconds)
-    EXTRACTION_TIMEOUT_SECONDS = 1800  # 30 minutes per file
-    MAX_RUN_DURATION_MINUTES = 30  # 30 minutes total benchmark
+    EXTRACTION_TIMEOUT_SECONDS = 1800
+    MAX_RUN_DURATION_MINUTES = 30
 
-    # Performance monitoring
-    SAMPLING_INTERVAL_MS = 50  # Resource sampling frequency
-    COOLDOWN_SECONDS = 5  # Between iterations
+    SAMPLING_INTERVAL_MS = 50
+    COOLDOWN_SECONDS = 5
 
-    # Benchmark execution
-    DEFAULT_ITERATIONS = 3  # Number of benchmark iterations
-    DEFAULT_WARMUP_RUNS = 1  # Warmup iterations
-    MAX_RETRIES = 3  # Retry attempts for failed extractions
+    DEFAULT_ITERATIONS = 3
+    DEFAULT_WARMUP_RUNS = 1
+    MAX_RETRIES = 3
 
-    # Resource limits
-    MAX_MEMORY_MB = 4096  # Memory limit per process
-    MAX_CPU_PERCENT = 800  # CPU usage limit (8 cores = 800%)
+    MAX_MEMORY_MB = 4096
+    MAX_CPU_PERCENT = 800
 
-    # File processing
-    MAX_CONCURRENT_FILES = 1  # Concurrent file processing
+    MAX_CONCURRENT_FILES = 1
 
-    # Quality assessment
-    TEXT_PREVIEW_LENGTH = 200  # Characters to save for quality check
+    TEXT_PREVIEW_LENGTH = 200
 
-    # Framework-specific
-    KREUZBERG_CACHE_DISABLED = True  # Always disable cache for fair benchmarking
+    KREUZBERG_CACHE_DISABLED = True
 
 
 class LanguageMapper:
@@ -59,7 +52,7 @@ class LanguageMapper:
     PADDLEOCR_MAPPING: ClassVar[dict[str, str]] = {
         "eng": "en",
         "deu": "german",
-        "heb": "en",  # Hebrew not supported, fallback to English
+        "heb": "en",
         "chi_sim": "ch",
         "jpn": "japan",
         "kor": "korean",
@@ -70,5 +63,5 @@ class LanguageMapper:
         """Get language mapping for specific OCR backend."""
         mapping_name = f"{ocr_backend.upper()}_MAPPING"
         if not hasattr(cls, mapping_name):
-            return cls.TESSERACT_MAPPING  # Fallback to Tesseract mapping
+            return cls.TESSERACT_MAPPING
         return getattr(cls, mapping_name)

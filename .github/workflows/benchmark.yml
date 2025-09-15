@@ -1,0 +1,135 @@
+name: Idiomatic Benchmark
+
+on:
+  release:
+    types: [published]
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'test_documents/**'
+      - '.github/workflows/benchmark.yml'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            tesseract-ocr-deu \
+            tesseract-ocr-fra \
+            pandoc \
+            poppler-utils
+
+      - name: Install base dependencies
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv pip install -e .
+
+      - name: Run benchmarks
+        run: |
+          source .venv/bin/activate
+
+          # Clear any cache
+          rm -rf ~/.cache/kreuzberg 2>/dev/null || true
+
+          # Run benchmark for each framework with their supported formats
+          # The benchmark automatically tests only supported formats per framework
+          for framework in kreuzberg_sync kreuzberg_async kreuzberg_tesseract docling markitdown unstructured extractous; do
+            echo "=================================================="
+            echo "Benchmarking: $framework"
+            echo "=================================================="
+
+            # Install framework-specific dependencies
+            if [ "$framework" = "docling" ]; then
+              uv pip install -e ".[docling]" || echo "Skipping docling due to conflicts"
+              continue
+            else
+              uv pip install -e ".[$framework]" 2>/dev/null || uv pip install -e ".[${framework%_*}]" 2>/dev/null || true
+            fi
+
+            # Run benchmark with automatic format detection
+            # Quality assessment is enabled by default for comprehensive testing
+            uv run python -m src.cli benchmark \
+              --framework "$framework" \
+              --iterations 1 \
+              --timeout 300 \
+              --continue-on-error || true
+          done
+
+      - name: Aggregate results
+        run: |
+          source .venv/bin/activate
+          uv run python -m src.cli aggregate
+
+      - name: Generate reports
+        run: |
+          source .venv/bin/activate
+          uv run python -m src.cli report --format markdown
+          uv run python -m src.cli report --format html
+          uv run python -m src.cli visualize
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ github.run_id }}
+          path: |
+            results/
+            reports/
+            visualizations/
+          retention-days: 90
+
+      - name: Upload to GitHub Pages (on main branch)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          # This would deploy to GitHub Pages
+          # Configure as needed for your deployment strategy
+          echo "Results ready for deployment"
+
+  summary:
+    needs: benchmark
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results-${{ github.run_id }}
+
+      - name: Create summary
+        run: |
+          echo "# Benchmark Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f reports/benchmark_report.md ]; then
+            cat reports/benchmark_report.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No benchmark report found" >> $GITHUB_STEP_SUMMARY
+          fi

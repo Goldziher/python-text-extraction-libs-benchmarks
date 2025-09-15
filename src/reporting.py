@@ -326,10 +326,8 @@ class BenchmarkReporter:
 
 def generate_console_report(results: list[BenchmarkResult]) -> str:  # noqa: ARG001
     """Generate console report from benchmark results."""
-    # Stub function for test compatibility
     return "Console report generated"
 
 
 def generate_html_report(results: list[BenchmarkResult], output_path: Path) -> None:
     """Generate HTML report from benchmark results."""
-    # Stub function for test compatibility

@@ -35,10 +35,8 @@ class BenchmarkLogger:
         self.logger = logging.getLogger(name)
         self.logger.setLevel(getattr(logging, level.upper()))
 
-        # Remove existing handlers to avoid duplicates
         self.logger.handlers.clear()
 
-        # Add Rich handler for console output
         rich_handler = RichHandler(console=self.console, show_path=False)
         rich_handler.setFormatter(logging.Formatter(fmt="%(message)s", datefmt="[%X]"))
         self.logger.addHandler(rich_handler)
@@ -65,7 +63,6 @@ class BenchmarkLogger:
 
     def _log(self, level: LogLevel, message: str, **kwargs: Any) -> None:
         """Internal logging method with structured data."""
-        # Add context to message if provided
         if kwargs:
             extra_info = " | ".join(f"{k}={v}" for k, v in kwargs.items())
             message = f"{message} [{extra_info}]"
@@ -73,7 +70,6 @@ class BenchmarkLogger:
         getattr(self.logger, level.value)(message)
 
 
-# Global logger instance
 logger = BenchmarkLogger()
 
 

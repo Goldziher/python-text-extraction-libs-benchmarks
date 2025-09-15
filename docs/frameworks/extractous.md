@@ -1,6 +1,7 @@
 # Extractous
 
 !!! info "Framework Overview"
+
     **Developer**: Community/Rust-based
     **Language**: Rust with Python bindings
     **Architecture**: High-performance text extraction
@@ -13,6 +14,7 @@ Extractous is a Rust-based text extraction framework with Python bindings, desig
 ## Key Features
 
 ### Rust Performance
+
 - **Native speed**: Compiled Rust backend
 - **Memory safety**: Rust's ownership model prevents leaks
 - **Multi-threading**: Efficient parallel processing
@@ -20,6 +22,7 @@ Extractous is a Rust-based text extraction framework with Python bindings, desig
 - **Cross-platform**: Consistent performance across systems
 
 ### Format Support
+
 - **PDF documents**: Fast PDF text extraction
 - **Office formats**: DOCX, XLSX, PPTX support
 - **Web formats**: HTML, XML processing
@@ -27,6 +30,7 @@ Extractous is a Rust-based text extraction framework with Python bindings, desig
 - **Archive support**: ZIP, TAR file extraction
 
 ### Python Integration
+
 - **Simple API**: Pythonic interface
 - **Type hints**: Full typing support
 - **Error handling**: Proper exception management
@@ -35,6 +39,7 @@ Extractous is a Rust-based text extraction framework with Python bindings, desig
 ## Performance Characteristics
 
 ### Strengths
+
 - **Excellent speed**: 1.45 files/sec average
 - **Memory efficient**: 463MB average usage
 - **High reliability**: 98.8% success rate
@@ -42,6 +47,7 @@ Extractous is a Rust-based text extraction framework with Python bindings, desig
 - **Good balance**: Speed vs. accuracy trade-off
 
 ### Trade-offs
+
 - **Limited advanced features**: Basic extraction focus
 - **Smaller ecosystem**: Fewer extensions/plugins
 - **OCR limitations**: Basic image text support
@@ -50,6 +56,7 @@ Extractous is a Rust-based text extraction framework with Python bindings, desig
 ## Benchmark Results
 
 ### Speed Performance
+
 - **Tiny files**: 12.5 files/sec
 - **Small files**: 3.8 files/sec
 - **Medium files**: 1.45 files/sec
@@ -57,6 +64,7 @@ Extractous is a Rust-based text extraction framework with Python bindings, desig
 - **Huge files**: 0.3 files/sec
 
 ### Success Rates
+
 - **Overall**: 98.8%
 - **PDF documents**: 98.9%
 - **Office documents**: 99.2%
@@ -64,6 +72,7 @@ Extractous is a Rust-based text extraction framework with Python bindings, desig
 - **Data formats**: 99.5%
 
 ### Resource Usage
+
 - **Average memory**: 463 MB
 - **Peak memory**: 680 MB
 - **CPU utilization**: 55% average
@@ -72,6 +81,7 @@ Extractous is a Rust-based text extraction framework with Python bindings, desig
 ## Use Cases
 
 ### Ideal For
+
 - **High-throughput processing**: Balanced speed and accuracy
 - **Production systems**: Reliable document processing
 - **Resource optimization**: Efficient memory usage
@@ -79,6 +89,7 @@ Extractous is a Rust-based text extraction framework with Python bindings, desig
 - **Performance-critical applications**: Speed requirements
 
 ### Consider Alternatives When
+
 - **Complex structure analysis needed**: Advanced layout understanding
 - **Extensive OCR requirements**: Heavy image processing
 - **Rich metadata extraction**: Comprehensive document info
@@ -87,11 +98,13 @@ Extractous is a Rust-based text extraction framework with Python bindings, desig
 ## Configuration
 
 ### Installation
+
 ```bash
 pip install extractous>=0.3.0
 ```
 
 ### Basic Usage
+
 ```python
 from extractous import Extractor
 
@@ -100,6 +113,7 @@ text = extractor.extract_from_file("document.pdf")
 ```
 
 ### Advanced Configuration
+
 ```python
 from extractous import Extractor, ExtractorConfig
 
@@ -119,6 +133,7 @@ metadata = result.metadata
 ```
 
 ### Batch Processing
+
 ```python
 from extractous import Extractor
 from pathlib import Path
@@ -138,12 +153,14 @@ def process_directory(directory_path):
 ## Integration Notes
 
 ### Framework Comparison
+
 - **vs Kreuzberg**: Similar accuracy, slightly faster
 - **vs Docling**: Much faster, less structure analysis
 - **vs MarkItDown**: Slower but much more reliable
 - **vs Unstructured**: Faster, lower memory usage
 
 ### Production Considerations
+
 - Monitor Rust runtime requirements
 - Handle potential compilation dependencies
 - Test cross-platform deployment
@@ -152,6 +169,7 @@ def process_directory(directory_path):
 ## Recent Updates
 
 ### Version 0.3.0+
+
 - Improved PDF extraction accuracy
 - Better error handling
 - Enhanced metadata support
@@ -159,6 +177,7 @@ def process_directory(directory_path):
 - Additional format support
 
 ### Roadmap
+
 - Advanced table extraction
 - Better OCR integration
 - Streaming processing support
@@ -168,12 +187,14 @@ def process_directory(directory_path):
 ## Technical Details
 
 ### Rust Backend
+
 - Built with modern Rust (2021 edition)
 - Uses proven parsing libraries
 - Memory-safe operations
 - Efficient multi-threading
 
 ### Python Bindings
+
 - PyO3-based integration
 - Native Python types
 - Proper error propagation

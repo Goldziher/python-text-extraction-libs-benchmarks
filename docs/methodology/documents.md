@@ -3,6 +3,7 @@
 ## Document Collection Overview
 
 ### Total Test Suite
+
 - **94 files** across all categories
 - **~210 MB** total size
 - **Multiple languages** and formats
@@ -11,30 +12,35 @@
 ## File Size Distribution
 
 ### Tiny Files (< 100 KB)
+
 - **Count**: 15 files
 - **Purpose**: Basic functionality testing
 - **Formats**: TXT, JSON, CSV, small PDFs
 - **Examples**: Simple text files, configuration files, small reports
 
 ### Small Files (100 KB - 1 MB)
+
 - **Count**: 28 files
 - **Purpose**: Typical document processing
 - **Formats**: PDF, DOCX, XLSX, PPTX, HTML
 - **Examples**: Letters, presentations, spreadsheets, web pages
 
 ### Medium Files (1 MB - 10 MB)
+
 - **Count**: 32 files
 - **Purpose**: Substantial document handling
 - **Formats**: PDF reports, large presentations, image-heavy documents
 - **Examples**: Technical manuals, marketing materials, academic papers
 
 ### Large Files (10 MB - 50 MB)
+
 - **Count**: 15 files
 - **Purpose**: Heavy document processing
 - **Formats**: High-resolution PDFs, complex presentations
 - **Examples**: Technical specifications, detailed reports, image collections
 
 ### Huge Files (> 50 MB)
+
 - **Count**: 4 files
 - **Purpose**: Stress testing and performance limits
 - **Formats**: Very large PDFs, comprehensive documents
@@ -43,6 +49,7 @@
 ## Format Coverage
 
 ### Document Formats
+
 ```yaml
 PDF Documents:
   - Simple text PDFs
@@ -64,6 +71,7 @@ Web Formats:
 ```
 
 ### Data Formats
+
 ```yaml
 Structured Data:
   - JSON files
@@ -79,6 +87,7 @@ Text Formats:
 ```
 
 ### Image Formats
+
 ```yaml
 Image Files:
   - PNG screenshots
@@ -96,6 +105,7 @@ Image-containing Documents:
 ## Language Distribution
 
 ### Primary Languages
+
 - **English**: 65 files (69%)
 - **German**: 8 files (8.5%)
 - **Hebrew**: 6 files (6.4%)
@@ -105,7 +115,9 @@ Image-containing Documents:
 - **Mixed/Other**: 3 files (3.2%)
 
 ### Language Detection Testing
+
 Files are strategically named to test automatic language detection:
+
 - `english_*` - English content
 - `german_*` - German content
 - `hebrew_*` - Hebrew content
@@ -116,18 +128,21 @@ Files are strategically named to test automatic language detection:
 ## Content Complexity
 
 ### Simple Documents
+
 - Plain text
 - Basic formatting
 - Single language
 - Standard fonts
 
 ### Moderate Complexity
+
 - Mixed formatting
 - Tables and lists
 - Multiple sections
 - Some images
 
 ### High Complexity
+
 - Complex layouts
 - Mixed languages
 - Heavy graphics
@@ -135,6 +150,7 @@ Files are strategically named to test automatic language detection:
 - Technical diagrams
 
 ### Extreme Complexity
+
 - Scanned documents
 - Poor quality images
 - Complex layouts
@@ -144,18 +160,21 @@ Files are strategically named to test automatic language detection:
 ## Quality Assurance
 
 ### Document Validation
+
 - All files manually verified
 - Content quality assessed
 - Format integrity confirmed
 - Language accuracy checked
 
 ### Diversity Considerations
+
 - Multiple domains represented
 - Various complexity levels
 - Different creation tools
 - Real-world scenarios
 
 ### Privacy and Ethics
+
 - No personal information
 - No copyrighted content
 - Publicly available sources
@@ -164,24 +183,28 @@ Files are strategically named to test automatic language detection:
 ## Benchmark Scenarios
 
 ### Speed Testing
+
 - Focus on typical document sizes
 - Batch processing scenarios
 - Single-file performance
 - Throughput measurements
 
 ### Accuracy Testing
+
 - Content preservation validation
 - Format-specific extraction
 - Metadata completeness
 - Language detection accuracy
 
 ### Reliability Testing
+
 - Error handling scenarios
 - Timeout conditions
 - Resource constraint testing
 - Edge case handling
 
 ### Scalability Testing
+
 - Large file processing
 - Memory usage patterns
 - Performance degradation

@@ -17,7 +17,6 @@ class TestCLIWithRealData:
         self.runner = CliRunner()
         self.test_docs_dir = Path("test_documents")
 
-        # Ensure test documents exist
         if not self.test_docs_dir.exists():
             pytest.skip("test_documents directory not found")
 
@@ -28,7 +27,6 @@ class TestCLIWithRealData:
         assert result.exit_code == 0
         output = result.output.lower()
 
-        # Should list all expected frameworks
         expected_frameworks = [
             "kreuzberg_sync",
             "kreuzberg_async",
@@ -73,11 +71,9 @@ class TestCLIWithRealData:
 
             assert result.exit_code == 0
 
-            # Check that results were generated
             results_dir = Path(temp_dir)
             assert results_dir.exists()
 
-            # Look for expected output files
             json_files = list(results_dir.glob("*.json"))
             assert len(json_files) > 0, "No JSON result files generated"
 
@@ -106,7 +102,6 @@ class TestCLIWithRealData:
                 ],
             )
 
-            # Should complete without error even if some files fail
             assert result.exit_code == 0
 
             results_dir = Path(temp_dir)
@@ -141,16 +136,13 @@ class TestCLIWithRealData:
 
             assert result.exit_code == 0
 
-            # Quality assessment should generate additional files
             results_dir = Path(temp_dir)
             files = list(results_dir.glob("*"))
             assert len(files) > 1, "Expected multiple output files with quality assessment"
 
     def test_report_generation_with_real_data(self):
         """Test report generation using real benchmark data."""
-        # First run a small benchmark to generate data
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Run benchmark
             benchmark_result = self.runner.invoke(
                 main,
                 [
@@ -175,7 +167,6 @@ class TestCLIWithRealData:
 
             assert benchmark_result.exit_code == 0
 
-            # Now generate report
             report_result = self.runner.invoke(main, ["report", "--input-dir", temp_dir, "--output-format", "console"])
 
             assert report_result.exit_code == 0
@@ -185,7 +176,6 @@ class TestCLIWithRealData:
     def test_visualize_command_with_real_data(self):
         """Test visualization generation with real data."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Run benchmark first
             benchmark_result = self.runner.invoke(
                 main,
                 [
@@ -210,12 +200,10 @@ class TestCLIWithRealData:
 
             assert benchmark_result.exit_code == 0
 
-            # Generate visualizations
             viz_result = self.runner.invoke(main, ["visualize", "--input-dir", temp_dir, "--output-dir", temp_dir])
 
             assert viz_result.exit_code == 0
 
-            # Check that chart files were generated
             chart_files = list(Path(temp_dir).glob("*.png"))
             assert len(chart_files) > 0, "No chart files generated"
 
@@ -224,7 +212,6 @@ class TestCLIWithRealData:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
 
-            # Run multiple small benchmarks
             for framework in ["kreuzberg_sync", "markitdown"]:
                 run_dir = temp_path / f"run_{framework}"
                 run_dir.mkdir()
@@ -251,10 +238,8 @@ class TestCLIWithRealData:
                     ],
                 )
 
-                # Allow some frameworks to fail
                 assert result.exit_code in [0, 1]
 
-            # Aggregate results
             agg_result = self.runner.invoke(
                 main,
                 [
@@ -268,7 +253,6 @@ class TestCLIWithRealData:
 
             assert agg_result.exit_code == 0
 
-            # Check aggregated results exist
             agg_files = list(temp_path.glob("aggregated_*.json"))
             assert len(agg_files) > 0, "No aggregated results generated"
 
@@ -277,7 +261,6 @@ class TestCLIWithRealData:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
 
-            # Create a fake PDF file with invalid content
             fake_pdf = temp_path / "fake.pdf"
             fake_pdf.write_text("This is not a real PDF file")
 
@@ -303,7 +286,6 @@ class TestCLIWithRealData:
                 ],
             )
 
-            # Should complete despite errors
             assert result.exit_code == 0
 
     def test_specific_document_types(self):
@@ -347,7 +329,6 @@ class TestCLIWithRealData:
 
     def test_multilingual_documents(self):
         """Test benchmarking multilingual documents if available."""
-        # Look for documents with language indicators
         multilingual_patterns = ["*chinese*", "*japanese*", "*hebrew*", "*german*", "*korean*"]
 
         found_multilingual = False
@@ -418,7 +399,6 @@ class TestCLIWithRealData:
             end_time = time.time()
             elapsed = end_time - start_time
 
-            # Should complete reasonably quickly for tiny files
             assert elapsed < 180, f"Benchmark took too long: {elapsed} seconds"
             assert result.exit_code == 0
 
@@ -449,7 +429,6 @@ class TestCLIWithRealData:
 
             assert result.exit_code == 0
 
-            # Check JSON file integrity
             import json
 
             results_dir = Path(temp_dir)
@@ -462,7 +441,6 @@ class TestCLIWithRealData:
                     with open(json_file) as f:
                         data = json.load(f)
 
-                    # Basic structure validation
                     assert isinstance(data, (dict, list)), f"Invalid JSON structure in {json_file}"
 
                 except json.JSONDecodeError as e:
@@ -514,13 +492,10 @@ class TestCLIEdgeCases:
             main, ["benchmark", "--framework", "kreuzberg_sync", "--category", "tiny", "--output-dir", nonexistent_dir]
         )
 
-        # CLI should handle this gracefully
         assert result.exit_code in [0, 1]
 
     def test_insufficient_permissions(self):
         """Test CLI behavior with insufficient permissions."""
-        # This would require creating a directory with restricted permissions
-        # Skip for now as it's system-dependent
         pytest.skip("Permission testing requires system-specific setup")
 
     def test_extremely_short_timeout(self):
@@ -539,9 +514,9 @@ class TestCLIEdgeCases:
                     "--warmup-runs",
                     "0",
                     "--timeout",
-                    "1",  # 1 second - very short
+                    "1",
                     "--max-run-duration",
-                    "1",  # 1 minute - also short
+                    "1",
                     "--output-dir",
                     temp_dir,
                     "--continue-on-error",
@@ -550,7 +525,6 @@ class TestCLIEdgeCases:
 
             assert result.exit_code == 0
 
-            # Should generate results with timeout markers
             results_dir = Path(temp_dir)
             json_files = list(results_dir.glob("*.json"))
             assert len(json_files) > 0

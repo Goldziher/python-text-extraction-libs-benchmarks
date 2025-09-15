@@ -17,11 +17,6 @@ from src.types import AggregatedResults
 FRAMEWORK_COLORS = {
     "kreuzberg_sync": "#2E86AB",
     "kreuzberg_async": "#A23B72",
-    "kreuzberg_tesseract": "#4A7C7E",
-    "kreuzberg_easyocr": "#8B5A3C",
-    "kreuzberg_easyocr_sync": "#8B5A3C",
-    "kreuzberg_paddleocr": "#6A5ACD",
-    "kreuzberg_paddleocr_sync": "#6A5ACD",
     "docling": "#F18F01",
     "markitdown": "#C73E1D",
     "unstructured": "#5B9A8B",
@@ -707,10 +702,8 @@ class BenchmarkVisualizer:
 
 def generate_all_visualizations(results: list, output_dir: Path) -> None:
     """Generate all visualizations from benchmark results."""
-    # Stub function for test compatibility
 
 
-def load_benchmark_results(results_file: Path) -> list:
+def load_benchmark_results(results_file: Path) -> list:  # noqa: ARG001
     """Load benchmark results from file."""
-    # Stub function for test compatibility
     return []

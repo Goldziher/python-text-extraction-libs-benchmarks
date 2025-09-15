@@ -1,124 +1,74 @@
-# Metrics & Scoring
+______________________________________________________________________
+
+## title: Metrics Explained
+
+# Metrics Explained
 
 ## Performance Metrics
 
-### Speed Measurements
-- **Files per Second**: Primary speed metric
-- **MB per Second**: Throughput for large files
-- **Extraction Time**: Wall-clock time per file
-- **Startup Overhead**: Framework initialization cost
+### Speed Metrics
 
-### Memory Usage
-- **Peak RSS**: Maximum resident set size
-- **Average RSS**: Mean memory during extraction
-- **Memory Efficiency**: MB per file processed
-- **Memory Growth**: Memory leaks detection
+- **Extraction Time**: Wall-clock time for complete extraction (seconds)
+- **Files per Second**: Throughput measurement for batch processing
+- **Time per MB**: Normalized extraction time by file size
 
-### CPU Utilization
-- **Average CPU %**: Mean utilization during extraction
-- **Peak CPU %**: Maximum utilization spike
-- **CPU Efficiency**: Processing per CPU cycle
-- **Multi-core Usage**: Thread utilization patterns
+### Memory Metrics
+
+- **Peak Memory (RSS)**: Maximum resident set size during extraction
+- **Average Memory**: Mean memory usage throughout extraction
+- **Memory per MB**: Memory usage normalized by file size
+
+### CPU Metrics
+
+- **Peak CPU%**: Maximum CPU utilization during extraction
+- **Average CPU%**: Mean CPU utilization throughout extraction
 
 ## Quality Metrics
 
-### Success Rate
-- **Overall Success**: Files processed without errors
-- **Format-Specific**: Success rate by file type
-- **Size-Category**: Success rate by file size
-- **Language-Specific**: Success for different languages
+### Text Quality
 
-### Content Quality
-- **Text Accuracy**: Character-level precision
-- **Structure Preservation**: Format retention
-- **Metadata Extraction**: Completeness of metadata
-- **Language Detection**: Accuracy of language identification
+- **Character Count**: Total characters extracted
+- **Word Count**: Total words extracted
+- **Completeness Score**: Percentage of content successfully extracted
 
-## Scoring System
+### Accuracy Metrics
 
-### Composite Scores
-Each framework receives scores in multiple dimensions:
+- **Quality Score**: Overall quality assessment (0-100)
+- **Format Preservation**: How well formatting is maintained
+- **Metadata Extraction**: Success in extracting document metadata
 
-#### Speed Score (0-100)
-```
-Speed Score = (Framework Speed / Fastest Speed) × 100
-```
+## Reliability Metrics
 
-#### Efficiency Score (0-100)
-```
-Efficiency = (1 / Memory Usage) × Success Rate × 100
-```
+### Success Metrics
 
-#### Reliability Score (0-100)
-```
-Reliability = Success Rate × Quality Factor × 100
-```
+- **Success Rate**: Percentage of successful extractions
+- **Partial Success Rate**: Files with partial content extracted
+- **Timeout Rate**: Percentage of files that exceeded time limit
 
-### Weighted Overall Score
-```
-Overall Score = (Speed × 0.3) + (Efficiency × 0.3) + (Reliability × 0.4)
-```
+### Error Metrics
 
-## Benchmark Categories
+- **Failure Rate**: Percentage of complete failures
+- **Error Categories**: Classification of failure types
+- **Recovery Rate**: Ability to extract partial content on error
 
-### File Size Categories
-- **Tiny**: < 100 KB (quick tests)
-- **Small**: 100 KB - 1 MB (typical documents)
-- **Medium**: 1 MB - 10 MB (substantial files)
-- **Large**: 10 MB - 50 MB (heavy documents)
-- **Huge**: > 50 MB (stress tests)
+## Composite Scores
 
-### Format Tiers
-- **Universal**: PDF, DOCX, TXT, HTML
-- **Common**: PPTX, XLSX, JSON, XML, CSV
-- **All**: All supported formats including images
+### Overall Score
 
-## Statistical Analysis
+Calculated as weighted average:
 
-### Confidence Intervals
-- 95% confidence intervals for all metrics
-- Bootstrapping for robust estimates
-- Outlier detection and handling
-- Variance analysis across iterations
+- Speed: 30%
+- Memory Efficiency: 20%
+- Quality: 30%
+- Reliability: 20%
 
-### Comparative Analysis
-- Pairwise framework comparisons
-- Statistical significance testing
-- Effect size calculations
-- Performance regression analysis
+### Grade Calculation
 
-## Quality Assessment
-
-### Content Validation
-When `--enable-quality-assessment` is used:
-
-- **Text Similarity**: Compare extracted content
-- **Structure Analysis**: Evaluate format preservation
-- **Metadata Completeness**: Assess information extraction
-- **Language Accuracy**: Verify language detection
-
-### Error Classification
-- **Timeout Errors**: Exceeded time limits
-- **Memory Errors**: Out of memory conditions
-- **Format Errors**: Unsupported file types
-- **Content Errors**: Extraction failures
-
-## Reporting Standards
-
-### Transparency
-- All raw data available
-- Methodology fully documented
-- Reproducible test conditions
-- Open source benchmarking code
-
-### Bias Mitigation
-- No framework-specific optimizations
-- Identical test conditions
-- Fair timeout policies
-- Objective metric calculations
-
-### Update Frequency
-- Weekly automated runs
-- Version update notifications
-- Performance trend tracking
-- Historical comparison data
+- **A+**: 95-100
+- **A**: 90-94
+- **B+**: 85-89
+- **B**: 80-84
+- **C+**: 75-79
+- **C**: 70-74
+- **D**: 60-69
+- **F**: \<60
