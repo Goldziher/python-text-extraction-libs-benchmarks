@@ -57,6 +57,9 @@ jobs:
       - name: Install Dependencies
         shell: bash
         run: |
+          # Configure path for Kreuzberg v4 dev in CI environment
+          echo -e '\n[tool.uv.sources]\nkreuzberg = { path = "./kreuzberg", editable = true }' >> pyproject.toml
+
           # Install base package and dev dependencies
           # Install ALL frameworks for comprehensive testing
           uv sync --dev --extra all --extra kreuzberg-dev
