@@ -583,7 +583,12 @@ class ExtractousExtractor:
             }
 
 
-def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
+def get_extractor(framework: Framework | str) -> ExtractorProtocol | AsyncExtractorProtocol:
+    from .types import Framework
+
+    # Convert Framework enum to string if needed
+    framework_str = framework.value if isinstance(framework, Framework) else framework
+
     extractors = {
         "kreuzberg_sync": KreuzbergSyncExtractor,
         "kreuzberg_async": KreuzbergAsyncExtractor,
@@ -595,8 +600,8 @@ def get_extractor(framework: str) -> ExtractorProtocol | AsyncExtractorProtocol:
         "extractous": ExtractousExtractor,
     }
 
-    if framework not in extractors:
-        msg = f"Unsupported framework: {framework}"
+    if framework_str not in extractors:
+        msg = f"Unsupported framework: {framework_str}"
         raise ValueError(msg)
 
-    return extractors[framework]()  # type: ignore[return-value]
+    return extractors[framework_str]()  # type: ignore[return-value]
