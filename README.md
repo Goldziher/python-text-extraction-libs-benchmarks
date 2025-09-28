@@ -16,13 +16,9 @@
 
 > **🎯 [📊 VIEW LIVE BENCHMARK RESULTS →](https://benchmarks.kreuzberg.dev)**
 
-## Support This Project
+## Important: Benchmarks are moved
 
-If you find these benchmarks helpful, please consider sponsoring the development:
-
-<a href="https://github.com/sponsors/Goldziher"><img src="https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github-sponsors" alt="Sponsor on GitHub" height="32"></a>
-
-Your support helps maintain and improve these benchmarks for the community! 🚀
+This repository is archived. The benchmarks are being integrated in the main [Kreuzberg repository](https://github.com/Goldziher/kreuzberg), as part of the v4 version.
 
 ## 🔍 What is This?
 
